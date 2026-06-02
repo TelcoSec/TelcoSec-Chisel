@@ -1,0 +1,9 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=MobileInsight GUI
+Comment=Mobile Network Protocol Monitoring & Runtime Analysis
+Exec=python3 /opt/telcosec/mobileinsight-core/mi-gui/mi-gui.py
+Icon=system-run
+Terminal=false
+Categories=TelcoSec-Baseband;

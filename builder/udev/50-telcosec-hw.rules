@@ -1,0 +1,23 @@
+# TelcoSec-Chisel Hardware Access Rules for SDR and SIMtrace Devices
+# This allows members of the plugdev and dialout groups to access radio interfaces without root privileges.
+
+# HackRF One & Great Scott Gadgets
+ATTRS{idVendor}=="1d50", ATTRS{idProduct}=="6089", MODE="0660", GROUP="plugdev", ENV{ID_SOFTWARE_RADIO}="1"
+ATTRS{idVendor}=="1d50", ATTRS{idProduct}=="cc15", MODE="0660", GROUP="plugdev", ENV{ID_SOFTWARE_RADIO}="1"
+
+# BladeRF (Nuand)
+ATTRS{idVendor}=="2cf0", ATTRS{idProduct}=="5250", MODE="0660", GROUP="plugdev", ENV{ID_SOFTWARE_RADIO}="1"
+
+# LimeSDR
+ATTRS{idVendor}=="1d50", ATTRS{idProduct}=="6108", MODE="0660", GROUP="plugdev", ENV{ID_SOFTWARE_RADIO}="1"
+
+# RTL-SDR Dongles
+ATTRS{idVendor}=="0bda", ATTRS{idProduct}=="2832", MODE="0660", GROUP="plugdev", ENV{ID_SOFTWARE_RADIO}="1"
+ATTRS{idVendor}=="0bda", ATTRS{idProduct}=="2838", MODE="0660", GROUP="plugdev", ENV{ID_SOFTWARE_RADIO}="1"
+
+# USRP UHD (Ettus Research / National Instruments)
+ATTRS{idVendor}=="2514", MODE="0660", GROUP="plugdev", ENV{ID_SOFTWARE_RADIO}="1"
+
+# Osmocom SIMtrace 2 (Sniffer & Card Emulators)
+ATTRS{idVendor}=="1d50", ATTRS{idProduct}=="6076", MODE="0660", GROUP="plugdev"
+ATTRS{idVendor}=="1d50", ATTRS{idProduct}=="6085", MODE="0660", GROUP="plugdev"
