@@ -1,0 +1,22 @@
+# Wireshark preferences file for TelcoSec-Chisel
+# Pre-configures useful columns for telecom protocol analysis (GSMTAP, 5G NAS, GTP)
+
+# Column configuration (Format: Name, Type, [Optional Field])
+gui.column.format:
+	"No.", "%m",
+	"Time", "%t",
+	"Protocol", "%p",
+	"Length", "%L",
+	"GSMTAP Ch", "%e",
+	"gsmtap.cl_type",
+	"5G NAS Msg", "%e",
+	"nas_5g.msg_type",
+	"GTP TEID", "%e",
+	"gtp.teid_ri",
+	"Info", "%i"
+
+# Protocols to decode
+gui.auto_scroll_on_expand: TRUE
+console.log.level: 1e
+# Default style settings
+gui.packet_list_elide_mode: 1

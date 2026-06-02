@@ -1,0 +1,64 @@
+<!DOCTYPE Menu PUBLIC "-//freedesktop//DTD Menu 1.0//EN"
+ "http://www.freedesktop.org/standards/menu-spec/1.0/menu.dtd">
+<Menu>
+  <Name>Applications</Name>
+  <Menu>
+    <Name>TelcoSec-Chisel</Name>
+    <Directory>telcosec-chisel.directory</Directory>
+    
+    <!-- SDR Submenu -->
+    <Menu>
+      <Name>SDR Tools</Name>
+      <Directory>telcosec-sdr.directory</Directory>
+      <Include>
+        <And>
+          <Category>TelcoSec-SDR</Category>
+        </And>
+      </Include>
+    </Menu>
+
+    <!-- Baseband Emulation Submenu -->
+    <Menu>
+      <Name>Baseband Emulation</Name>
+      <Directory>telcosec-baseband.directory</Directory>
+      <Include>
+        <And>
+          <Category>TelcoSec-Baseband</Category>
+        </And>
+      </Include>
+    </Menu>
+
+    <!-- SIM Card Auditing Submenu -->
+    <Menu>
+      <Name>SIM Card Auditing</Name>
+      <Directory>telcosec-sim.directory</Directory>
+      <Include>
+        <And>
+          <Category>TelcoSec-SIM</Category>
+        </And>
+      </Include>
+    </Menu>
+
+    <!-- RAN Submenu -->
+    <Menu>
+      <Name>Radio Access Network (RAN)</Name>
+      <Directory>telcosec-ran.directory</Directory>
+      <Include>
+        <And>
+          <Category>TelcoSec-RAN</Category>
+        </And>
+      </Include>
+    </Menu>
+
+    <!-- Core Signaling Submenu -->
+    <Menu>
+      <Name>Core Signaling</Name>
+      <Directory>telcosec-core.directory</Directory>
+      <Include>
+        <And>
+          <Category>TelcoSec-Core</Category>
+        </And>
+      </Include>
+    </Menu>
+  </Menu>
+</Menu>
