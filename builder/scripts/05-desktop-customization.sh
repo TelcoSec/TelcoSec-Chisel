@@ -66,6 +66,13 @@ cat << 'EOF' | sudo tee /etc/firefox/policies/policies.json
 {
   "policies": {
     "DisableAppUpdate": true,
+    "Certificates": {
+      "Install": [
+        "/usr/local/share/ca-certificates/telcosec-ca.crt",
+        "/usr/local/share/ca-certificates/cloudflare_origin_ecc.crt",
+        "/usr/local/share/ca-certificates/cloudflare_origin_rsa.crt"
+      ]
+    },
     "Homepage": {
       "URL": "file:///usr/share/doc/telcosec/index.html",
       "Locked": false,
@@ -125,5 +132,4 @@ EOF
 # Clean up
 sudo apt-get autoremove -y
 sudo apt-get clean
-sudo rm -rf /tmp/*
 

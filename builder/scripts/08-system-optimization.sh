@@ -103,6 +103,10 @@ if [ -f /tmp/security/99-sctp-tuning.conf ]; then
   sudo cp /tmp/security/99-sctp-tuning.conf /etc/sysctl.d/
   sudo chmod 644 /etc/sysctl.d/99-sctp-tuning.conf
 fi
+if [ -f /tmp/security/99-security-hardening.conf ]; then
+  sudo cp /tmp/security/99-security-hardening.conf /etc/sysctl.d/
+  sudo chmod 644 /etc/sysctl.d/99-security-hardening.conf
+fi
 
 # Attempt to load module and apply sysctl settings (ignores failures in chroot)
 sudo modprobe sctp || true
@@ -165,6 +169,45 @@ done
 echo "IRQ affinity set to CPUs $HOUSEKEEPING_CPUS (mask 0x$MASK)"
 IRQSCRIPT
 sudo chmod +x /usr/local/bin/set-irq-affinity
+
+# 8. Firewall Hardening
+echo "Configuring default firewall policies..."
+if command -v ufw &> /dev/null; then
+  sudo ufw default deny incoming
+  sudo ufw default allow outgoing
+  sudo ufw enable || true
+  echo "  UFW firewall enabled with secure defaults (deny incoming, allow outgoing)"
+fi
+
+# 9. Custom Domain Certificates Trust
+# If a custom Root/Intermediate CA cert exists, install it to system CA trust store
+if [ -f /tmp/security/telcosec-ca.crt ]; then
+  echo "Installing TelcoSec domain CA certificate..."
+  sudo cp /tmp/security/telcosec-ca.crt /usr/local/share/ca-certificates/
+  sudo chmod 644 /usr/local/share/ca-certificates/telcosec-ca.crt
+fi
+
+# Download and install Cloudflare Origin CA root certificates (needed for domains using Cloudflare Origin Certificates)
+echo "Downloading and installing Cloudflare Origin CA certificates..."
+sudo wget -qO /usr/local/share/ca-certificates/cloudflare_origin_ecc.crt https://developers.cloudflare.com/ssl/static/origin_ca_ecc_root.pem || true
+sudo wget -qO /usr/local/share/ca-certificates/cloudflare_origin_rsa.crt https://developers.cloudflare.com/ssl/static/origin_ca_rsa_root.pem || true
+
+if [ -f /usr/local/share/ca-certificates/cloudflare_origin_ecc.crt ]; then
+  sudo chmod 644 /usr/local/share/ca-certificates/cloudflare_origin_ecc.crt
+fi
+if [ -f /usr/local/share/ca-certificates/cloudflare_origin_rsa.crt ]; then
+  sudo chmod 644 /usr/local/share/ca-certificates/cloudflare_origin_rsa.crt
+fi
+
+sudo update-ca-certificates || true
+
+# 10. SSH Host Keys Cleanup
+# Deletes any build-time SSH keys to ensure that OpenSSH regenerates unique,
+# fresh host keys upon the first boot of the live ISO or installed system.
+if [ -d /etc/ssh ]; then
+  echo "Cleaning up build-time SSH host keys to trigger regeneration on first boot..."
+  sudo rm -f /etc/ssh/ssh_host_*_key*
+fi
 
 echo "=== System Optimizations Applied Successfully ==="
 

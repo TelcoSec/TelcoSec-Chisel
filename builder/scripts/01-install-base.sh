@@ -39,7 +39,8 @@ sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
   network-manager-gnome \
   terminator firefox \
   git vim nano htop \
-  build-essential cmake pkg-config
+  build-essential cmake pkg-config \
+  ufw openssh-server
 
 
 
