@@ -40,7 +40,8 @@ echo "deb [signed-by=/usr/share/osmocom-keyring/osmocom.asc] https://downloads.o
   > /etc/apt/sources.list.d/osmocom-latest.list
 
 # MongoDB official repository (required by open5gs)
-wget -qO- https://www.mongodb.org/static/pgp/server-8.0.asc | gpg --dearmor > /usr/share/keyrings/mongodb-server-8.0.gpg
+mkdir -p /usr/share/keyrings
+wget -qO- https://pgp.mongodb.com/server-8.0.asc | gpg --dearmor > /usr/share/keyrings/mongodb-server-8.0.gpg
 echo "deb [signed-by=/usr/share/keyrings/mongodb-server-8.0.gpg] https://repo.mongodb.org/apt/ubuntu noble/mongodb-org/8.0 multiverse" \
   > /etc/apt/sources.list.d/mongodb-org-8.0.list
 
