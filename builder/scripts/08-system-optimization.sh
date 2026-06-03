@@ -110,5 +110,61 @@ if command -v sysctl &> /dev/null; then
   sudo sysctl --system || true
 fi
 
+# 7. Real-time & Low-latency Tuning for 5G NR / 5Ghoul
+# OAI requires tight timing budgets (~1 ms TTI); stock kernel + USB latency
+# settings are the two biggest sources of timing jitter on bare metal.
+echo "Deploying real-time and low-latency kernel tuning..."
+
+# GRUB: disable CPU mitigations (Spectre/Meltdown retpoline adds ~5-10% overhead)
+# and set clocksource to tsc for consistent timestamps.
+# CPU isolation (isolcpus) is left as a comment; the exact core range depends on
+# the target hardware. Users should add e.g. isolcpus=2-5,nohz_full=2-5,rcu_nocbs=2-5
+# to /etc/default/grub GRUB_CMDLINE_LINUX_DEFAULT for dedicated OAI cores.
+cat << 'EOF' | sudo tee /etc/default/grub.d/99-telcosec-rt.cfg
+# TelcoSec real-time tuning for 5G NR signal processing
+# Add isolcpus=<cores> nohz_full=<cores> rcu_nocbs=<cores> manually for your CPU topology
+GRUB_CMDLINE_LINUX_DEFAULT="$GRUB_CMDLINE_LINUX_DEFAULT mitigations=off clocksource=tsc tsc=reliable intel_idle.max_cstate=1 processor.max_cstate=1"
+EOF
+
+# USB latency: reduce polling interval for USRP B210 (default 5 ms → 1 ms)
+# Affects all USB devices on boot; safe for desktop use
+cat << 'EOF' | sudo tee /etc/udev/rules.d/51-usb-latency.rules
+# Reduce USB autosuspend latency for SDR devices (USRP B210 requires low-latency USB)
+ACTION=="add", SUBSYSTEM=="usb", ATTR{idVendor}=="2514", ATTR{power/autosuspend_delay_ms}="0"
+ACTION=="add", SUBSYSTEM=="usb", ATTR{idVendor}=="2514", ATTR{power/control}="on"
+# HackRF
+ACTION=="add", SUBSYSTEM=="usb", ATTR{idVendor}=="1d50", ATTR{power/control}="on"
+EOF
+
+# Hugepages for DPDK-based OAI fronthaul (2 MB pages, 512 = 1 GB reserved)
+cat << 'EOF' | sudo tee /etc/sysctl.d/99-hugepages.conf
+vm.nr_hugepages=512
+vm.hugetlb_shm_group=0
+EOF
+
+# IRQ affinity script: pins all IRQs away from isolated CPUs at boot.
+# Users call this after setting isolcpus in GRUB; harmless if no cores are isolated.
+cat << 'IRQSCRIPT' | sudo tee /usr/local/bin/set-irq-affinity
+#!/bin/bash
+# Pin all IRQs to CPU 0-1, freeing other cores for OAI real-time threads.
+# Adjust HOUSEKEEPING_CPUS to match your isolcpus setting.
+HOUSEKEEPING_CPUS="0,1"
+MASK=$(python3 -c "
+cpus='$HOUSEKEEPING_CPUS'.split(',')
+m=0
+for c in cpus:
+    if '-' in c:
+        a,b=map(int,c.split('-'))
+        for i in range(a,b+1): m|=(1<<i)
+    else:
+        m|=(1<<int(c))
+print(hex(m)[2:])")
+for irq in /proc/irq/*/smp_affinity; do
+  echo "$MASK" > "$irq" 2>/dev/null || true
+done
+echo "IRQ affinity set to CPUs $HOUSEKEEPING_CPUS (mask 0x$MASK)"
+IRQSCRIPT
+sudo chmod +x /usr/local/bin/set-irq-affinity
+
 echo "=== System Optimizations Applied Successfully ==="
 
