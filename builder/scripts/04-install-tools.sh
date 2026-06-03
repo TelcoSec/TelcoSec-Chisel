@@ -3,13 +3,17 @@ set -e
 
 echo "=== Installing Security Tools ==="
 
-sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
-  wireshark tshark \
-  nmap \
-  lksctp-tools libsctp-dev libglib2.0-dev \
-  sipsak \
-  python3-pip python3-venv \
-  wireguard twinkle baresip
+# Skip apt operations — handled by 00-install-all-packages.sh
+if [ ! -f /tmp/.packages-installed ]; then
+  echo "WARNING: Running standalone (packages not pre-installed)"
+  sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
+    wireshark tshark \
+    nmap \
+    lksctp-tools libsctp-dev libglib2.0-dev \
+    sipsak \
+    python3-pip python3-venv \
+    wireguard twinkle baresip
+fi
 
 # Install SIPVicious and Scapy
 pip3 install sipvicious scapy --break-system-packages
@@ -38,9 +42,11 @@ if [ -f /opt/telcosec/diafuzzer/requirements.txt ]; then
 fi
 sudo chown -R telcosec:telcosec /opt/telcosec/diafuzzer
 
-# Give Wireshark dumpcap network capture capabilities for non-root users
-echo "wireshark-common wireshark-common/install-syscap boolean true" | sudo debconf-set-selections
-sudo DEBIAN_FRONTEND=noninteractive dpkg-reconfigure wireshark-common
+# Wireshark permissions (dpkg-reconfigure already done in 00-install-all-packages.sh)
+if [ ! -f /tmp/.packages-installed ]; then
+  echo "wireshark-common wireshark-common/install-syscap boolean true" | sudo debconf-set-selections
+  sudo DEBIAN_FRONTEND=noninteractive dpkg-reconfigure wireshark-common
+fi
 sudo usermod -a -G wireshark telcosec
 
 # Install telecom-specific wordlists

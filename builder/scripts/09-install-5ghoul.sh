@@ -7,36 +7,40 @@ echo "=== Installing 5Ghoul 5G NR Attack Framework Dependencies ==="
 # All system deps are installed here during ISO build; the repo clone + compilation is
 # deferred to first-run to keep ISO build time reasonable. No VM support.
 
-# ── Build toolchain ──────────────────────────────────────────────────────────
-sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
-  git git-lfs \
-  cmake ninja-build meson \
-  ccache \
-  python3-pip python3-dev python3-numpy python3-pandas python3-scapy \
-  nodejs npm \
-  wireshark-dev \
-  libqt5websockets5-dev
+# Skip apt operations — handled by 00-install-all-packages.sh
+if [ ! -f /tmp/.packages-installed ]; then
+  echo "WARNING: Running standalone (packages not pre-installed)"
+  # ── Build toolchain ──────────────────────────────────────────────────────────
+  sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
+    git git-lfs \
+    cmake ninja-build meson \
+    ccache \
+    python3-pip python3-dev python3-numpy python3-pandas python3-scapy \
+    nodejs npm \
+    wireshark-dev \
+    libqt5websockets5-dev
 
-# ── 5Ghoul fuzzer runtime deps ───────────────────────────────────────────────
-sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
-  libglib2.0-dev \
-  libsnappy-dev \
-  liblua5.2-dev \
-  libc-ares-dev \
-  libnl-3-dev libnl-route-3-dev libnl-genl-3-dev \
-  libnghttp2-dev \
-  libnss3-dev \
-  libtbb-dev \
-  libdouble-conversion-dev \
-  libdwarf-dev libelf-dev libiberty-dev \
-  libunwind-dev \
-  libgflags-dev \
-  libevent-dev \
-  libfmt-dev \
-  libpcap-dev \
-  libasan6 libubsan1
+  # ── 5Ghoul fuzzer runtime deps ───────────────────────────────────────────────
+  sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
+    libglib2.0-dev \
+    libsnappy-dev \
+    liblua5.2-dev \
+    libc-ares-dev \
+    libnl-3-dev libnl-route-3-dev libnl-genl-3-dev \
+    libnghttp2-dev \
+    libnss3-dev \
+    libtbb-dev \
+    libdouble-conversion-dev \
+    libdwarf-dev libelf-dev libiberty-dev \
+    libunwind-dev \
+    libgflags-dev \
+    libevent-dev \
+    libfmt-dev \
+    libpcap-dev \
+    libasan6 libubsan1
+fi
 
-# ── Python tooling ───────────────────────────────────────────────────────────
+# ── Python tooling ───────────────────────────────────────────────────────
 sudo pip3 install --break-system-packages \
   colorlog \
   pyzmq \
