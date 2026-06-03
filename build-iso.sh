@@ -46,7 +46,7 @@ mount --bind /dev $ROOTFS/dev
 mount --bind /dev/pts $ROOTFS/dev/pts
 
 echo "--> Executing provisioning scripts inside chroot..."
-chroot $ROOTFS /bin/bash -c "
+chroot $ROOTFS /bin/bash -ec "
   export DEBIAN_FRONTEND=noninteractive
   apt-get update
   apt-get install -y sudo
