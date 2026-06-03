@@ -35,6 +35,10 @@ echo "Creating SDR Conda Environment..."
 conda create -y --override-channels -c conda-forge -n telcosec-sdr python=3.11 cmake ninja pkg-config boost-cpp swig pybind11 libusb
 conda activate telcosec-sdr
 
+# Export compilation environment variables to prefer the Conda environment
+export PKG_CONFIG_PATH="$CONDA_PREFIX/lib/pkgconfig:$PKG_CONFIG_PATH"
+export CMAKE_PREFIX_PATH="$CONDA_PREFIX"
+
 # 4. Compile SoapySDR from Source
 echo "Compiling SoapySDR..."
 mkdir -p /opt/telcosec/src && cd /opt/telcosec/src

@@ -19,13 +19,23 @@ sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
   gdb-multiarch libcapstone-dev gcc-mipsel-linux-gnu gcc-arm-none-eabi \
   scons g++ make
 
-# 2. Osmocom SIMtrace 2 (Host software & PCSC daemon)
+# 2. Osmocom SIMtrace 2 (Host software, firmware & flashing tools)
 echo "Installing Osmocom SIMtrace 2..."
+# Install dfu-util for hardware flashing
+sudo DEBIAN_FRONTEND=noninteractive apt-get install -y dfu-util
+
 # Adding the Osmocom latest repository for simtrace2 using modern key import
 wget -qO - https://download.opensuse.org/repositories/network:/osmocom:/latest/xUbuntu_24.04/Release.key | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/osmocom-latest.gpg > /dev/null
 echo "deb https://download.opensuse.org/repositories/network:/osmocom:/latest/xUbuntu_24.04/ ./" | sudo tee /etc/apt/sources.list.d/osmocom-latest.list
 sudo apt-get update
 sudo DEBIAN_FRONTEND=noninteractive apt-get install -y osmo-simtrace2 pcscd-osmo-simtrace2
+
+# Create firmware storage directory and download latest pre-compiled SIMtrace 2 firmware files
+echo "Downloading SIMtrace 2 firmware binaries..."
+sudo mkdir -p /opt/telcosec/simtrace2/firmware
+sudo wget -qO /opt/telcosec/simtrace2/firmware/simtrace-trace-dfu.bin https://ftp.osmocom.org/binaries/simtrace2/firmware/latest/simtrace-trace-dfu-latest.bin || true
+sudo wget -qO /opt/telcosec/simtrace2/firmware/simtrace-cardem-dfu.bin https://ftp.osmocom.org/binaries/simtrace2/firmware/latest/simtrace-cardem-dfu-latest.bin || true
+sudo chmod 644 /opt/telcosec/simtrace2/firmware/*.bin || true
 
 # Create tools root directory
 sudo mkdir -p /opt/telcosec
