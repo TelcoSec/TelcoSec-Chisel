@@ -18,6 +18,13 @@ mkdir -p $ROOTFS
 echo "--> Bootstrapping base Ubuntu system..."
 debootstrap --arch=amd64 noble $ROOTFS http://archive.ubuntu.com/ubuntu/
 
+echo "--> Configuring APT repositories inside chroot..."
+cat << 'EOF' > $ROOTFS/etc/apt/sources.list
+deb http://archive.ubuntu.com/ubuntu/ noble main restricted universe multiverse
+deb http://archive.ubuntu.com/ubuntu/ noble-updates main restricted universe multiverse
+deb http://security.ubuntu.com/ubuntu/ noble-security main restricted universe multiverse
+EOF
+
 # Setup cleanup trap for mounts
 cleanup() {
   echo "--> Cleaning up mounts..."
