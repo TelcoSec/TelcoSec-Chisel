@@ -21,6 +21,11 @@ EOF
 
 source /opt/telcosec/miniconda/etc/profile.d/conda.sh
 
+# Configure Conda to use conda-forge and avoid Anaconda commercial ToS issues
+conda config --add channels conda-forge
+conda config --set channel_priority strict
+conda config --remove channels defaults || true
+
 # 3. Create SDR Virtual Environment
 echo "Creating SDR Conda Environment..."
 conda create -y -n telcosec-sdr python=3.11 cmake ninja pkg-config boost-cpp swig pybind11
