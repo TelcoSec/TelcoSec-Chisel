@@ -9,7 +9,7 @@ if [ ! -f /tmp/.packages-installed ]; then
   sudo add-apt-repository -y ppa:open5gs/latest
   sudo apt-get update
   sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
-    open5gs srsran \
+    open5gs \
     cmake ninja-build \
     clang-15 lld-15 lldb-15 \
     libfftw3-dev liblapacke-dev libblas-dev liblapack-dev \
@@ -24,6 +24,42 @@ if [ ! -f /tmp/.packages-installed ]; then
   sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-15 100 || true
   sudo update-alternatives --install /usr/bin/lld     lld     /usr/bin/lld-15     100 || true
 fi
+
+# srsRAN — no Ubuntu 24.04 noble apt package available.
+# Install a first-run build script at /usr/local/bin/srsran-install.
+# Users run: sudo srsran-install
+echo "Creating srsRAN first-run build script..."
+cat << 'SRSRAN_SCRIPT' | sudo tee /usr/local/bin/srsran-install
+#!/bin/bash
+set -e
+INSTALL_DIR="/opt/telcosec/srsRAN_Project"
+echo "╔══════════════════════════════════════════════╗"
+echo "║   srsRAN Project Builder                    ║"
+echo "║   https://github.com/srsran/srsRAN_Project  ║"
+echo "╚══════════════════════════════════════════════╝"
+echo ""
+if [ "$(id -u)" -ne 0 ]; then
+  echo "Run as root: sudo srsran-install"
+  exit 1
+fi
+if [ ! -d "$INSTALL_DIR/.git" ]; then
+  echo "[1/3] Cloning srsRAN_Project..."
+  git clone --depth 1 --recurse-submodules https://github.com/srsran/srsRAN_Project.git "$INSTALL_DIR"
+else
+  echo "[1/3] Already cloned, pulling latest..."
+  git -C "$INSTALL_DIR" pull || true
+fi
+cd "$INSTALL_DIR"
+mkdir -p build && cd build
+echo "[2/3] Configuring with cmake..."
+cmake ../ -DENABLE_EXPORT=ON -DENABLE_ZEROMQ=ON
+echo "[3/3] Compiling (this takes 10-20 min)..."
+make -j$(nproc)
+make install
+echo ""
+echo "✓ srsRAN installed. Run: srsgnb --help"
+SRSRAN_SCRIPT
+sudo chmod +x /usr/local/bin/srsran-install
 
 # IP forwarding required by Open5GS UPF for UE internet routing
 cat << 'EOF' | sudo tee /etc/sysctl.d/99-open5gs.conf

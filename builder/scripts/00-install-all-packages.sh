@@ -84,7 +84,6 @@ apt-get install -y \
   \
   `# === Core network stack (03-install-core-network.sh) ===` \
   open5gs \
-  srsran \
   cmake ninja-build \
   clang-15 lld-15 lldb-15 \
   libfftw3-dev liblapacke-dev libblas-dev liblapack-dev \
@@ -124,10 +123,10 @@ apt-get install -y \
   gdb-multiarch libcapstone-dev gcc-mipsel-linux-gnu gcc-arm-none-eabi \
   scons g++ make \
   dfu-util \
-  osmo-simtrace2 pcscd-osmo-simtrace2 \
+  `# osmo-simtrace2 — not available as pre-built deb; compiled from source in 06-install-ue-analysis.sh` \
   \
   `# === Calamares installer (07-install-installer.sh) ===` \
-  calamares calamares-settings-ubuntu \
+  calamares calamares-settings-ubuntu-common \
   qml-module-qtquick-controls qml-module-qtquick-controls2 \
   qml-module-qtquick-dialogs qml-module-qtquick-layouts \
   qml-module-qtquick-window2 \
