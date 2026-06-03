@@ -28,7 +28,8 @@ sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
   libmbedtls-dev \
   libnuma-dev \
   libdpdk-dev dpdk dpdk-dev \
-  python3-yaml
+  python3-yaml \
+  libbladerf2 libbladerf-dev bladerf
 
 # Promote clang-15 as the default clang/clang++ (OAI build requires it)
 sudo update-alternatives --install /usr/bin/clang   clang   /usr/bin/clang-15   100 || true
