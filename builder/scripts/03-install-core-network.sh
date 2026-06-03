@@ -8,9 +8,7 @@ if [ ! -f /tmp/.packages-installed ]; then
   echo "WARNING: Running standalone (packages not pre-installed)"
   sudo add-apt-repository -y ppa:open5gs/latest
   # MongoDB official repository (required by open5gs)
-  wget -qO /tmp/mongodb-key https://www.mongodb.org/static/pgp/server-8.0.asc
-  sudo install -Dm644 /tmp/mongodb-key /usr/share/keyrings/mongodb-server-8.0.gpg
-  rm -f /tmp/mongodb-key
+  wget -qO- https://www.mongodb.org/static/pgp/server-8.0.asc | gpg --dearmor | sudo tee /usr/share/keyrings/mongodb-server-8.0.gpg >/dev/null
   echo "deb [signed-by=/usr/share/keyrings/mongodb-server-8.0.gpg] https://repo.mongodb.org/apt/ubuntu noble/mongodb-org/8.0 multiverse" \
     | sudo tee /etc/apt/sources.list.d/mongodb-org-8.0.list
   sudo apt-get update
