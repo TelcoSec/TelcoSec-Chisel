@@ -32,9 +32,11 @@ EOF
 add-apt-repository -y ppa:open5gs/latest
 
 # Osmocom latest repo (SIMtrace2, osmo-*)
-wget -qO - https://download.opensuse.org/repositories/network:/osmocom:/latest/xUbuntu_24.04/Release.key \
-  | gpg --dearmor | tee /etc/apt/trusted.gpg.d/osmocom-latest.gpg > /dev/null
-echo "deb https://download.opensuse.org/repositories/network:/osmocom:/latest/xUbuntu_24.04/ ./" \
+# Using the official Osmocom key and downloads URL (migrated from opensuse OBS)
+wget -qO /tmp/osmocom-key https://obs.osmocom.org/projects/osmocom/public_key
+install -Dm644 /tmp/osmocom-key /usr/share/osmocom-keyring/osmocom.asc
+rm -f /tmp/osmocom-key
+echo "deb [signed-by=/usr/share/osmocom-keyring/osmocom.asc] https://downloads.osmocom.org/packages/osmocom:/latest/xUbuntu_24.04/ ./" \
   > /etc/apt/sources.list.d/osmocom-latest.list
 
 # ─── 2. Single apt-get update ───────────────────────────────────────────────
