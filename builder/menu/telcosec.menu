@@ -60,5 +60,16 @@
         </And>
       </Include>
     </Menu>
+
+    <!-- 5G NR Attacks (5Ghoul) Submenu -->
+    <Menu>
+      <Name>5G NR Attacks (5Ghoul)</Name>
+      <Directory>telcosec-5gnr.directory</Directory>
+      <Include>
+        <And>
+          <Category>TelcoSec-5GNR</Category>
+        </And>
+      </Include>
+    </Menu>
   </Menu>
 </Menu>

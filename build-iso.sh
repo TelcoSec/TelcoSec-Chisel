@@ -58,6 +58,7 @@ chroot $ROOTFS /bin/bash -ec "
   bash /tmp/scripts/05-desktop-customization.sh
   bash /tmp/scripts/07-install-installer.sh
   bash /tmp/scripts/08-system-optimization.sh
+  bash /tmp/scripts/09-install-5ghoul.sh
   apt-get clean
   rm -rf /tmp/scripts
   rm -rf /tmp/calamares-config
