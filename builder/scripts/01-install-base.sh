@@ -40,7 +40,8 @@ sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
   terminator firefox \
   git vim nano htop \
   build-essential cmake pkg-config \
-  ufw openssh-server
+  ufw openssh-server \
+  docker.io docker-compose-v2
 
 
 
@@ -53,5 +54,5 @@ echo "=== Creating Default User ==="
 sudo groupadd -g 1000 telcosec || true
 sudo useradd -m -s /bin/bash -u 1000 -g telcosec telcosec || true
 echo "telcosec:telcosec" | sudo chpasswd
-sudo usermod -aG sudo,dialout,plugdev,audio,video telcosec || true
+sudo usermod -aG sudo,dialout,plugdev,audio,video,docker telcosec || true
 

@@ -46,6 +46,7 @@ Dedicated smartcard interface inspection toolchain:
 * **SCTP Stack Tuning**: Pre-loads the `sctp` kernel module at boot and configures `/etc/sysctl.d/99-sctp-tuning.conf` to optimize socket memory buffers, increase queue capacities, reduce RTO floor limits to 200ms, and lower retransmission bounds to prevent scanner hangs.
 * **Kernel Security Hardening**: Configures `/etc/sysctl.d/99-security-hardening.conf` with protected hardlinks/symlinks, VA space randomization (ASLR), dmesg restrictions, and disabled ICMP redirects/source routing.
 * **Firewall Configuration**: UFW (Uncomplicated Firewall) enabled by default with rules configured to block incoming traffic and allow outgoing traffic.
+* **Virtualization and Containers**: Docker and Docker Compose pre-installed, with the default user `telcosec` added to the `docker` group for passwordless container management.
 * **Pre-configured Firefox**: Preloaded with a custom-styled local documentation start page (`/usr/share/doc/telcosec/index.html`) explaining how to run baseband and signaling utilities. The bookmarks toolbar includes direct links to TelcoSec resources and automatically trusts custom CA certificates, including Cloudflare's Origin CAs.
 * **Calamares Installer**: Booting the Live ISO loads a live environment and includes a desktop shortcut to install the OS permanently to disk.
 
