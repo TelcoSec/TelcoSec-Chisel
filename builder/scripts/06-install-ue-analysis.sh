@@ -19,9 +19,11 @@ if [ ! -f /tmp/.packages-installed ]; then
     protobuf-compiler protobuf-c-compiler libprotoc-dev libprotobuf-dev libprotobuf-c-dev libjsoncpp-dev \
     gdb-multiarch libcapstone-dev gcc-mipsel-linux-gnu gcc-arm-none-eabi \
     scons g++ make dfu-util
-  # Osmocom repo
-  wget -qO - https://download.opensuse.org/repositories/network:/osmocom:/latest/xUbuntu_24.04/Release.key | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/osmocom-latest.gpg > /dev/null
-  echo "deb https://download.opensuse.org/repositories/network:/osmocom:/latest/xUbuntu_24.04/ ./" | sudo tee /etc/apt/sources.list.d/osmocom-latest.list
+  # Osmocom repo (new official URL)
+  wget -qO /tmp/osmocom-key https://obs.osmocom.org/projects/osmocom/public_key
+  sudo install -Dm644 /tmp/osmocom-key /usr/share/osmocom-keyring/osmocom.asc
+  rm -f /tmp/osmocom-key
+  echo "deb [signed-by=/usr/share/osmocom-keyring/osmocom.asc] https://downloads.osmocom.org/packages/osmocom:/latest/xUbuntu_24.04/ ./" | sudo tee /etc/apt/sources.list.d/osmocom-latest.list
   sudo apt-get update
   sudo DEBIAN_FRONTEND=noninteractive apt-get install -y osmo-simtrace2 pcscd-osmo-simtrace2
 fi
