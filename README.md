@@ -13,6 +13,7 @@ Radio hardware drivers are sandboxed inside a dedicated Conda virtual environmen
 *   **Drivers (Source-Compiled)**: UHD (USRP), HackRF, BladeRF, LimeSDR, and RTL-SDR.
 *   **Abstraction Layer**: SoapySDR compiled from source.
 *   **DSP Framework**: GNU Radio 3.10 and GQRX spectrum analyzer.
+*   **GSM Auditing & Calibration**: `gr-gsm` tools (`grgsm_livemon`, `grgsm_scanner`) for air-interface sniffing and decoding, and `kalibrate-rtl` (`kal`) for RTL-SDR frequency offset calibration against GSM base stations.
 
 ### 2. 📱 Baseband Emulation & UE Analysis
 Tools for auditing proprietary baseband microcode and analyzing diagnostic logs from User Equipment (UE):
@@ -30,8 +31,12 @@ Dedicated smartcard interface inspection toolchain:
 
 ### 4. 🔗 Radio Access Network (RAN) & Core Signaling
 *   **srsRAN**: 4G and 5G software radio RAN simulator for executing local virtual cells.
-*   **Wireshark & TShark**: Configured with custom column profiles displaying GSMTAP channel types, 5G NAS message types, and GTP TEIDs natively in the packet pane.
+*   **Wireshark & TShark**: Configured with custom column profiles displaying GSMTAP channels, 5G NAS message types, GTP TEIDs, MAP MSISDN, MAP Opcode, and Diameter Command Codes natively in the packet pane.
 *   **SIPVicious**: SIP auditing scanner for VoIP and IMS signaling infrastructure.
+*   **sctpscan**: Cloned, compiled, and installed the SCTP port scanner to discover SIGTRAN/M3UA, Diameter, and S1AP/NGAP endpoints.
+*   **SigPloit**: Cloned the SS7/Diameter/GTP signaling exploitation framework to audit telecom networks.
+*   **Diafuzzer**: Cloned Orange's Diameter protocol fuzzer to stress test core S6a, Gx, and Gy interfaces.
+*   **Scapy**: Integrated with built-in modules for crafting raw M3UA, TCAP, MAP, and Diameter signaling packets.
 
 ---
 
@@ -39,7 +44,8 @@ Dedicated smartcard interface inspection toolchain:
 
 *   **Non-Root Hardware Access**: Custom udev rules (`/etc/udev/rules.d/50-telcosec-hw.rules`) grant users in the `plugdev` group direct access to HackRF, USRP, LimeSDR, and SIMtrace 2 USB interfaces.
 *   **Real-time Scheduling**: Configured PAM security limits (`/etc/security/limits.d/99-realtime.conf`) and a `realtime` system group, enabling threads to request low-latency scheduling (priority 99) and lock physical memory to prevent RF sample drops.
-*   **Pre-configured Firefox**: Preloaded with a custom-styled local documentation start page (`/usr/share/doc/telcosec/index.html`) explaining how to run baseband utilities. The bookmarks toolbar includes direct links to official TelcoSec properties.
+*   **SCTP Stack Tuning**: Pre-loads the `sctp` kernel module at boot and configures `/etc/sysctl.d/99-sctp-tuning.conf` to optimize socket memory buffers, increase queue capacities, reduce RTO floor limits to 200ms, and lower retransmission bounds to prevent scanner hangs.
+*   **Pre-configured Firefox**: Preloaded with a custom-styled local documentation start page (`/usr/share/doc/telcosec/index.html`) explaining how to run baseband and signaling utilities. The bookmarks toolbar includes direct links to official TelcoSec properties.
 *   **Calamares Installer**: Booting the Live ISO loads a fully functional live environment, and includes a double-clickable desktop shortcut to install the OS permanently to disk.
 
 ---

@@ -13,6 +13,12 @@ gui.column.format:
 	"nas_5g.msg_type",
 	"GTP TEID", "%e",
 	"gtp.teid_ri",
+	"MAP MSISDN", "%e",
+	"gsm_map.msisdn",
+	"MAP Op", "%e",
+	"gsm_old.opCode",
+	"Diameter Cmd", "%e",
+	"diameter.cmd.code",
 	"Info", "%i"
 
 # Protocols to decode
@@ -20,3 +26,7 @@ gui.auto_scroll_on_expand: TRUE
 console.log.level: 1e
 # Default style settings
 gui.packet_list_elide_mode: 1
+
+# OpenAPI schemas path for 5G Service Based Interface dissection
+http2.openapi_schemas_path: /etc/wireshark/openapi
+
