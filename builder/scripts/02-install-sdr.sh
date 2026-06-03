@@ -57,5 +57,24 @@ make -j$(nproc)
 make install
 uhd_images_downloader
 
+# 7. Install GNU Radio, GQRX, gr-osmosdr, and gr-gsm globally
+echo "Installing GNU Radio, Osmocom SDR blocks, GQRX, and gr-gsm globally..."
+sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
+  gnuradio gnuradio-dev gqrx-sdr gr-osmosdr gr-gsm
+
+# 8. Compile and Install Kalibrate-RTL from Source
+echo "Compiling and installing Kalibrate-RTL..."
+sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
+  librtlsdr-dev librtlsdr0 libfftw3-double3 libfftw3-dev libfftw3-bin \
+  autoconf automake libtool
+cd /opt/telcosec/src
+git clone https://github.com/steve-m/kalibrate-rtl.git
+cd kalibrate-rtl
+./bootstrap
+./configure
+make -j$(nproc)
+sudo make install
+cd -
+
 # Set permissions
 sudo chown -R telcosec:telcosec /opt/telcosec

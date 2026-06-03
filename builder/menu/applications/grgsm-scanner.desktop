@@ -1,0 +1,9 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=gr-gsm Scanner
+Comment=GSM frequency scanner command-line tool
+Exec=bash -c "grgsm_scanner --help; echo ''; read -p 'Press Enter to exit...'"
+Icon=utilities-terminal
+Terminal=true
+Categories=TelcoSec-SDR;

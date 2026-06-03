@@ -1,0 +1,9 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=SigPloit Signaling Framework
+Comment=SS7, Diameter, and GTP Signaling Exploitation Framework
+Exec=bash -c "python3 /opt/telcosec/sigploit/sigploit.py || python /opt/telcosec/sigploit/sigploit.py; read -p 'Press enter to exit...'"
+Icon=utilities-terminal
+Terminal=true
+Categories=TelcoSec-Core;
