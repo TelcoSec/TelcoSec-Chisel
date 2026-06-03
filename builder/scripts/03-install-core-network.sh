@@ -7,8 +7,15 @@ echo "=== Configuring Core Network Stack (Open5GS + srsRAN + OAI build deps) ===
 if [ ! -f /tmp/.packages-installed ]; then
   echo "WARNING: Running standalone (packages not pre-installed)"
   sudo add-apt-repository -y ppa:open5gs/latest
+  # MongoDB official repository (required by open5gs)
+  wget -qO /tmp/mongodb-key https://www.mongodb.org/static/pgp/server-8.0.asc
+  sudo install -Dm644 /tmp/mongodb-key /usr/share/keyrings/mongodb-server-8.0.gpg
+  rm -f /tmp/mongodb-key
+  echo "deb [signed-by=/usr/share/keyrings/mongodb-server-8.0.gpg] https://repo.mongodb.org/apt/ubuntu noble/mongodb-org/8.0 multiverse" \
+    | sudo tee /etc/apt/sources.list.d/mongodb-org-8.0.list
   sudo apt-get update
   sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
+    mongodb-org \
     open5gs \
     cmake ninja-build \
     clang-15 lld-15 lldb-15 \

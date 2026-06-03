@@ -6,11 +6,18 @@ echo "=== Installing UE Analysis, Baseband & SIMtrace Tools ==="
 # Skip apt operations — handled by 00-install-all-packages.sh
 if [ ! -f /tmp/.packages-installed ]; then
   echo "WARNING: Running standalone (packages not pre-installed)"
+  # Osmocom repo (new official URL)
+  wget -qO /tmp/osmocom-key https://obs.osmocom.org/projects/osmocom/public_key
+  sudo install -Dm644 /tmp/osmocom-key /usr/share/osmocom-keyring/osmocom.asc
+  rm -f /tmp/osmocom-key
+  echo "deb [signed-by=/usr/share/osmocom-keyring/osmocom.asc] https://downloads.osmocom.org/packages/osmocom:/latest/xUbuntu_24.04/ ./" | sudo tee /etc/apt/sources.list.d/osmocom-latest.list
+  
+  sudo apt-get update
   sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
     pcscd pcsc-tools libpcsclite-dev \
     python3-pyscard python3-pip python3-venv python3-dev \
     libosmocore-dev \
-    git wget unzip cmake pkg-config build-essential gnupg \
+    git wget unzip cmake pkg-config build-essential gnupg autoconf automake libtool \
     qemu-system-arm qemu-system-mips qemu-system-x86 qemu-utils \
     libglib2.0-dev bison flex libpcap-dev libgcrypt20-dev \
     qtbase5-dev qttools5-dev qtmultimedia5-dev libqt5svg5-dev libc-ares-dev \
@@ -19,13 +26,6 @@ if [ ! -f /tmp/.packages-installed ]; then
     protobuf-compiler protobuf-c-compiler libprotoc-dev libprotobuf-dev libprotobuf-c-dev libjsoncpp-dev \
     gdb-multiarch libcapstone-dev gcc-mipsel-linux-gnu gcc-arm-none-eabi \
     scons g++ make dfu-util
-  # Osmocom repo (new official URL)
-  wget -qO /tmp/osmocom-key https://obs.osmocom.org/projects/osmocom/public_key
-  sudo install -Dm644 /tmp/osmocom-key /usr/share/osmocom-keyring/osmocom.asc
-  rm -f /tmp/osmocom-key
-  echo "deb [signed-by=/usr/share/osmocom-keyring/osmocom.asc] https://downloads.osmocom.org/packages/osmocom:/latest/xUbuntu_24.04/ ./" | sudo tee /etc/apt/sources.list.d/osmocom-latest.list
-  sudo apt-get update
-  sudo DEBIAN_FRONTEND=noninteractive apt-get install -y osmo-simtrace2 pcscd-osmo-simtrace2
 fi
 
 # Download SIMtrace 2 firmware binaries
@@ -67,9 +67,12 @@ PID_PYSIM=$!
 (git clone --depth 1 https://github.com/estkme-group/lpac.git lpac) &
 PID_LPAC=$!
 
+(git clone --depth 1 https://github.com/osmocom/simtrace2.git simtrace2) &
+PID_SIMTRACE2=$!
+
 # Wait for all clones to complete
 echo "Waiting for all git clones to finish..."
-wait $PID_FIRMWIRE $PID_MOBILEINSIGHT $PID_QCSUPER $PID_BALONG_FLASH $PID_BALONGTOOL $PID_MTK $PID_PYSIM $PID_LPAC
+wait $PID_FIRMWIRE $PID_MOBILEINSIGHT $PID_QCSUPER $PID_BALONG_FLASH $PID_BALONGTOOL $PID_MTK $PID_PYSIM $PID_LPAC $PID_SIMTRACE2
 echo "All repositories cloned successfully."
 
 # ─── Build/install sequentially ─────────────────────────────────────────────
@@ -125,6 +128,15 @@ cmake -DCMAKE_BUILD_TYPE=Release ..
 make -j$(nproc)
 sudo cp lpac /usr/local/bin/
 sudo chmod 755 /usr/local/bin/lpac
+
+# SIMtrace 2 host software (simtrace2-list, simtrace2-sniff, simtrace2-cardem-pcsc)
+echo "Compiling and installing SIMtrace 2 host utilities..."
+cd /opt/telcosec/simtrace2/host
+autoreconf -fi
+./configure
+make -j$(nproc)
+sudo make install
+sudo ldconfig
 
 # Clean up build objects and update ownership
 cd /opt/telcosec
