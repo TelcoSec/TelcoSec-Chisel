@@ -32,7 +32,7 @@ conda config --remove channels defaults || true
 
 # 3. Create SDR Virtual Environment
 echo "Creating SDR Conda Environment..."
-conda create -y --override-channels -c conda-forge -n telcosec-sdr python=3.11 cmake ninja pkg-config boost-cpp swig pybind11 libusb
+conda create -y --override-channels -c conda-forge -n telcosec-sdr python=3.11 cmake ninja pkg-config boost-cpp swig pybind11 libusb mako requests numpy ruamel.yaml
 conda activate telcosec-sdr
 
 # Export compilation environment variables to prefer the Conda environment
