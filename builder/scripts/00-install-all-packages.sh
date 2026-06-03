@@ -39,6 +39,13 @@ rm -f /tmp/osmocom-key
 echo "deb [signed-by=/usr/share/osmocom-keyring/osmocom.asc] https://downloads.osmocom.org/packages/osmocom:/latest/xUbuntu_24.04/ ./" \
   > /etc/apt/sources.list.d/osmocom-latest.list
 
+# MongoDB official repository (required by open5gs)
+wget -qO /tmp/mongodb-key https://www.mongodb.org/static/pgp/server-8.0.asc
+install -Dm644 /tmp/mongodb-key /usr/share/keyrings/mongodb-server-8.0.gpg
+rm -f /tmp/mongodb-key
+echo "deb [signed-by=/usr/share/keyrings/mongodb-server-8.0.gpg] https://repo.mongodb.org/apt/ubuntu noble/mongodb-org/8.0 multiverse" \
+  > /etc/apt/sources.list.d/mongodb-org-8.0.list
+
 # ─── 2. Single apt-get update ───────────────────────────────────────────────
 
 echo "  Updating package index (single pass)..."
@@ -83,7 +90,7 @@ apt-get install -y \
   autoconf automake libtool \
   \
   `# === Core network stack (03-install-core-network.sh) ===` \
-  open5gs \
+  mongodb-org open5gs \
   cmake ninja-build \
   clang-15 lld-15 lldb-15 \
   libfftw3-dev liblapacke-dev libblas-dev liblapack-dev \
