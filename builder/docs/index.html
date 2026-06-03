@@ -209,7 +209,7 @@
     <div class="container">
         <header>
             <h1>TelcoSec<span>-Chisel</span></h1>
-            <p class="subtitle">Premium Telecom Security & Radio Analysis Distribution</p>
+            <p class="subtitle">Telecom Security & Radio Analysis Distribution</p>
             <div class="quick-links">
                 <a href="https://community.telcosec.net/" class="btn primary" target="_blank">Community Hub</a>
                 <a href="https://academy.telcosec.net/" class="btn" target="_blank">TelcoSec Academy</a>
@@ -221,7 +221,7 @@
         <div class="grid">
             <!-- SDR Tools -->
             <div class="card">
-                <h2><span>📡</span> Software Defined Radio</h2>
+                <h2>Software Defined Radio</h2>
                 <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 15px;">
                     Source-compiled SDR drivers and DSP environments sandbox isolated in a Conda environment.
                 </p>
@@ -236,7 +236,7 @@
                     </li>
                     <li class="tool-item">
                         <div class="tool-name">UHD (USRP) / HackRF / SoapySDR</div>
-                        <div class="tool-desc">Out-of-the-box hardware drivers and transceiver configuration tools compiled from source.</div>
+                        <div class="tool-desc">Hardware drivers and transceiver configuration tools compiled from source.</div>
                     </li>
                     <li class="tool-item">
                         <div class="tool-name">gr-gsm Tools</div>
@@ -251,7 +251,7 @@
 
             <!-- Baseband & UE Tools -->
             <div class="card">
-                <h2><span>📱</span> UE & Baseband Analysis</h2>
+                <h2>UE & Baseband Analysis</h2>
                 <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 15px;">
                     Specialized platform auditing utilities for Samsung, Huawei, MediaTek, and Qualcomm basebands.
                 </p>
@@ -277,9 +277,9 @@
 
             <!-- SIM & Smartcard -->
             <div class="card">
-                <h2><span>💳</span> SIMtrace & Smartcards</h2>
+                <h2>SIM & eSIM Auditing</h2>
                 <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 15px;">
-                    Sniffing and analyzing phone-to-SIM card communication interfaces.
+                    Sniffing and analyzing phone-to-SIM card communication interfaces and profile management.
                 </p>
                 <ul class="tool-list">
                     <li class="tool-item">
@@ -291,6 +291,10 @@
                         <div class="tool-desc">SIM/USIM smartcard programming and profile management. Run: <span class="cmd">pySim-shell</span>.</div>
                     </li>
                     <li class="tool-item">
+                        <div class="tool-name">lpac (eSIM LPA)</div>
+                        <div class="tool-desc">eSIM Local Profile Assistant command-line client. Run <span class="cmd">lpac</span> to manage eSIM profiles via PC/SC card readers.</div>
+                    </li>
+                    <li class="tool-item">
                         <div class="tool-name">PCSC Daemon</div>
                         <div class="tool-desc">PC/SC smartcard interface daemon configured for card reader communication.</div>
                     </li>
@@ -299,9 +303,9 @@
 
             <!-- Core Simulators & Capture -->
             <div class="card">
-                <h2><span>⛓️</span> Core RAN & Signaling</h2>
+                <h2>Core RAN & Signaling</h2>
                 <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 15px;">
-                    Lightweight over-the-air capturing and RAN link emulation.
+                    Lightweight over-the-air capturing, RAN link emulation, and VPN/SIP softphone utilities.
                 </p>
                 <ul class="tool-list">
                     <li class="tool-item">
@@ -332,12 +336,42 @@
                         <div class="tool-name">Scapy (with SS7/Diameter)</div>
                         <div class="tool-desc">Python packet generation with built-in M3UA, TCAP, MAP, and Diameter encoders.</div>
                     </li>
+                    <li class="tool-item">
+                        <div class="tool-name">VPN & Softphones</div>
+                        <div class="tool-desc">WireGuard client and Twinkle (GUI) or Baresip (CLI) softphones for SIP/VoIP testing.</div>
+                    </li>
+                    <li class="tool-item">
+                        <div class="tool-name">Telecom Wordlists</div>
+                        <div class="tool-desc">Default credentials, APNs, and SIP user/password lists stored in <span class="cmd">/usr/share/wordlists/telecom/</span>.</div>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- System Security -->
+            <div class="card">
+                <h2>System & Network Security</h2>
+                <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 15px;">
+                    Hardened system settings and firewall configurations protecting the workspace.
+                </p>
+                <ul class="tool-list">
+                    <li class="tool-item">
+                        <div class="tool-name">Kernel Hardening (sysctl)</div>
+                        <div class="tool-desc">Configured in <span class="cmd">/etc/sysctl.d/99-security-hardening.conf</span> to prevent address leaks and link attacks.</div>
+                    </li>
+                    <li class="tool-item">
+                        <div class="tool-name">Uncomplicated Firewall (UFW)</div>
+                        <div class="tool-desc">Enabled by default with rules configured to block incoming traffic and allow outgoing traffic.</div>
+                    </li>
+                    <li class="tool-item">
+                        <div class="tool-name">Domain Certificate Trust</div>
+                        <div class="tool-desc">Automatically trusts custom CA certificates, including Cloudflare's Origin CAs.</div>
+                    </li>
                 </ul>
             </div>
         </div>
 
         <footer>
-            &copy; 2026 TelcoSec. All rights reserved. Developed for high-efficiency telecom penetration testing.
+            &copy; 2026 TelcoSec. All rights reserved. Developed for telecom security research.
         </footer>
     </div>
 </body>
