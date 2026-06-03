@@ -3,11 +3,14 @@ set -e
 
 echo "=== Installing Conda & Compiling SDR Drivers from Source ==="
 
-# 1. Install Build Dependencies
-sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
-  build-essential cmake git wget libusb-1.0-0-dev pkg-config
+# Skip apt operations — handled by 00-install-all-packages.sh
+if [ ! -f /tmp/.packages-installed ]; then
+  echo "WARNING: Running standalone (packages not pre-installed)"
+  sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
+    build-essential cmake git wget libusb-1.0-0-dev pkg-config
+fi
 
-# 2. Install Miniconda
+# 1. Install Miniconda
 echo "Installing Miniconda..."
 wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O /tmp/miniconda.sh
 bash /tmp/miniconda.sh -b -p /opt/telcosec/miniconda
@@ -30,20 +33,28 @@ conda config --add channels conda-forge
 conda config --set channel_priority strict
 conda config --remove channels defaults || true
 
-# 3. Create SDR Virtual Environment
+# 2. Create SDR Virtual Environment
 echo "Creating SDR Conda Environment..."
-conda create -y --override-channels -c conda-forge -n telcosec-sdr python=3.11 cmake ninja pkg-config boost-cpp swig pybind11 libusb mako requests numpy ruamel.yaml
+conda create -y --override-channels -c conda-forge -n telcosec-sdr python=3.11 cmake ninja pkg-config boost-cpp swig pybind11 libusb mako requests numpy ruamel.yaml setuptools
 conda activate telcosec-sdr
 
 # Export compilation environment variables to prefer the Conda environment
 export PKG_CONFIG_PATH="$CONDA_PREFIX/lib/pkgconfig:$PKG_CONFIG_PATH"
 export CMAKE_PREFIX_PATH="$CONDA_PREFIX"
 
+# 3. Clone all SDR source repos in parallel
+echo "Cloning SDR source repositories..."
+mkdir -p /opt/telcosec/src
+(git clone --depth 1 https://github.com/pothosware/SoapySDR.git /opt/telcosec/src/SoapySDR) &
+(git clone --depth 1 https://github.com/greatscottgadgets/hackrf.git /opt/telcosec/src/hackrf) &
+(git clone --depth 1 https://github.com/EttusResearch/uhd.git /opt/telcosec/src/uhd) &
+(git clone --depth 1 https://github.com/steve-m/kalibrate-rtl.git /opt/telcosec/src/kalibrate-rtl) &
+wait
+echo "All SDR repos cloned."
+
 # 4. Compile SoapySDR from Source
 echo "Compiling SoapySDR..."
-mkdir -p /opt/telcosec/src && cd /opt/telcosec/src
-git clone --depth 1 https://github.com/pothosware/SoapySDR.git
-cd SoapySDR
+cd /opt/telcosec/src/SoapySDR
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=$CONDA_PREFIX ..
 make -j$(nproc)
@@ -51,9 +62,7 @@ make install
 
 # 5. Compile HackRF from Source
 echo "Compiling HackRF..."
-cd /opt/telcosec/src
-git clone --depth 1 https://github.com/greatscottgadgets/hackrf.git
-cd hackrf/host
+cd /opt/telcosec/src/hackrf/host
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=$CONDA_PREFIX ..
 make -j$(nproc)
@@ -61,28 +70,30 @@ make install
 
 # 6. Compile UHD (USRP) from Source
 echo "Compiling UHD..."
-cd /opt/telcosec/src
-git clone --depth 1 https://github.com/EttusResearch/uhd.git
-cd uhd/host
+cd /opt/telcosec/src/uhd/host
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=$CONDA_PREFIX -DENABLE_TESTS=OFF -DENABLE_EXAMPLES=OFF ..
 make -j$(nproc)
 make install
-uhd_images_downloader
 
-# 7. Install GNU Radio, GQRX, gr-osmosdr, and gr-gsm globally
-echo "Installing GNU Radio, Osmocom SDR blocks, GQRX, and gr-gsm globally..."
-sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
-  gnuradio gnuradio-dev gqrx-sdr gr-osmosdr gr-gsm
+# Defer uhd_images_downloader to first-run (saves ~1.5 GB ISO space and ~10 min)
+echo "Creating UHD images first-run downloader..."
+cat << 'FIRSTRUN' | sudo tee /usr/local/bin/uhd-download-images
+#!/bin/bash
+echo "Downloading UHD FPGA images (~1.5 GB)..."
+echo "This only needs to run once after installation."
+source /opt/telcosec/miniconda/etc/profile.d/conda.sh
+conda activate telcosec-sdr 2>/dev/null || true
+uhd_images_downloader
+echo "UHD images downloaded successfully."
+FIRSTRUN
+sudo chmod +x /usr/local/bin/uhd-download-images
+
+# 7. GNU Radio, GQRX, gr-osmosdr, gr-gsm already installed by 00-install-all-packages.sh
 
 # 8. Compile and Install Kalibrate-RTL from Source
 echo "Compiling and installing Kalibrate-RTL..."
-sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
-  librtlsdr-dev librtlsdr0 libfftw3-double3 libfftw3-dev libfftw3-bin \
-  autoconf automake libtool
-cd /opt/telcosec/src
-git clone --depth 1 https://github.com/steve-m/kalibrate-rtl.git
-cd kalibrate-rtl
+cd /opt/telcosec/src/kalibrate-rtl
 ./bootstrap
 ./configure
 make -j$(nproc)

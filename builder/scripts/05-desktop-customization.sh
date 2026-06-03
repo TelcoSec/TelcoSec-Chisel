@@ -129,7 +129,5 @@ cat << 'EOF' | sudo tee /etc/firefox/policies/policies.json
 }
 EOF
 
-# Clean up
-sudo apt-get autoremove -y
-sudo apt-get clean
+# Cleanup deferred to build-iso.sh central cleanup phase
 

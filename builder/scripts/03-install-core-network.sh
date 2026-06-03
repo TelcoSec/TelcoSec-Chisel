@@ -1,40 +1,29 @@
 #!/bin/bash
 set -e
 
-echo "=== Installing Core Network Stack (Open5GS + srsRAN + OAI build deps) ==="
+echo "=== Configuring Core Network Stack (Open5GS + srsRAN + OAI build deps) ==="
 
-# Open5GS PPA (5G SA core: AMF, SMF, UPF, NRF, AUSF, UDM, PCF, NSSF, BSF, UDR)
-sudo add-apt-repository -y ppa:open5gs/latest
-sudo apt-get update
-
-sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
-  open5gs \
-  srsran
-
-# OpenAirInterface 5G NR build dependencies
-# (OAI is the gNB used by 5Ghoul; srsRAN stays for standalone use cases)
-sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
-  cmake ninja-build \
-  clang-15 lld-15 lldb-15 \
-  libfftw3-dev liblapacke-dev libblas-dev liblapack-dev \
-  libsctp-dev lksctp-tools \
-  libzmq3-dev libczmq-dev \
-  libjson-c-dev \
-  libglib2.0-dev \
-  libconfig-dev \
-  libyaml-cpp-dev \
-  libboost-all-dev \
-  libssl-dev \
-  libmbedtls-dev \
-  libnuma-dev \
-  libdpdk-dev dpdk dpdk-dev \
-  python3-yaml \
-  libbladerf2 libbladerf-dev bladerf
-
-# Promote clang-15 as the default clang/clang++ (OAI build requires it)
-sudo update-alternatives --install /usr/bin/clang   clang   /usr/bin/clang-15   100 || true
-sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-15 100 || true
-sudo update-alternatives --install /usr/bin/lld     lld     /usr/bin/lld-15     100 || true
+# Skip apt operations — handled by 00-install-all-packages.sh
+if [ ! -f /tmp/.packages-installed ]; then
+  echo "WARNING: Running standalone (packages not pre-installed)"
+  sudo add-apt-repository -y ppa:open5gs/latest
+  sudo apt-get update
+  sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
+    open5gs srsran \
+    cmake ninja-build \
+    clang-15 lld-15 lldb-15 \
+    libfftw3-dev liblapacke-dev libblas-dev liblapack-dev \
+    libsctp-dev lksctp-tools \
+    libzmq3-dev libczmq-dev \
+    libjson-c-dev libglib2.0-dev libconfig-dev \
+    libyaml-cpp-dev libboost-all-dev libssl-dev libmbedtls-dev \
+    libnuma-dev libdpdk-dev dpdk dpdk-dev \
+    python3-yaml \
+    libbladerf2 libbladerf-dev bladerf
+  sudo update-alternatives --install /usr/bin/clang   clang   /usr/bin/clang-15   100 || true
+  sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-15 100 || true
+  sudo update-alternatives --install /usr/bin/lld     lld     /usr/bin/lld-15     100 || true
+fi
 
 # IP forwarding required by Open5GS UPF for UE internet routing
 cat << 'EOF' | sudo tee /etc/sysctl.d/99-open5gs.conf
@@ -63,4 +52,4 @@ if [ -d /etc/open5gs ]; then
   echo "Open5GS PLMN patched to MCC=001, MNC=01"
 fi
 
-echo "=== Core network stack installed ==="
+echo "=== Core network stack configured ==="

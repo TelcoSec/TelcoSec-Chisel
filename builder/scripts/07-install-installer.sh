@@ -3,13 +3,16 @@ set -e
 
 echo "=== Installing & Fully Optimizing Calamares Installer ==="
 
-# Install Calamares core and QML dependencies for rich UI
-sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
-    calamares calamares-settings-ubuntu \
-    qml-module-qtquick-controls qml-module-qtquick-controls2 \
-    qml-module-qtquick-dialogs qml-module-qtquick-layouts \
-    qml-module-qtquick-window2 \
-    upower os-prober
+# Skip apt operations — handled by 00-install-all-packages.sh
+if [ ! -f /tmp/.packages-installed ]; then
+  echo "WARNING: Running standalone (packages not pre-installed)"
+  sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
+      calamares calamares-settings-ubuntu \
+      qml-module-qtquick-controls qml-module-qtquick-controls2 \
+      qml-module-qtquick-dialogs qml-module-qtquick-layouts \
+      qml-module-qtquick-window2 \
+      upower os-prober
+fi
 
 # 1. Deploy pre-built Calamares config from our builder directory
 echo "Deploying Calamares config and branding..."

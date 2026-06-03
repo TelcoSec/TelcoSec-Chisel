@@ -12,18 +12,39 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 180
     
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      - name: Free Disk Space
+        run: |
+          echo "=== Freeing disk space on runner ==="
+          sudo rm -rf /usr/local/lib/android || true
+          sudo rm -rf /usr/share/dotnet || true
+          sudo rm -rf /opt/ghc || true
+          sudo rm -rf /usr/local/share/boost || true
+          sudo docker image prune -af || true
+          echo "=== Disk space after cleanup ==="
+          df -h /
+
       - name: Install Build Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y debootstrap squashfs-tools grub-pc-bin grub-efi-amd64-bin xorriso mtools
+          sudo apt-get install -y debootstrap squashfs-tools grub-pc-bin grub-efi-amd64-bin xorriso mtools zstd
 
       - name: Build TelcoSec-Chisel Live ISO
         run: sudo bash build-iso.sh
+
+      - name: Report ISO Size
+        run: |
+          echo "=== ISO Build Report ==="
+          ls -lh telcosec-chisel-live.iso
+          ISO_SIZE_BYTES=$(stat --printf='%s' telcosec-chisel-live.iso)
+          ISO_SIZE_MB=$(( ISO_SIZE_BYTES / 1024 / 1024 ))
+          echo "ISO_SIZE_MB=${ISO_SIZE_MB}" >> $GITHUB_ENV
+          echo "ISO Size: ${ISO_SIZE_MB} MB"
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
