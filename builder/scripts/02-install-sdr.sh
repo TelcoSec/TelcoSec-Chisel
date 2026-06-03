@@ -32,7 +32,7 @@ conda config --remove channels defaults || true
 
 # 3. Create SDR Virtual Environment
 echo "Creating SDR Conda Environment..."
-conda create -y --override-channels -c conda-forge -n telcosec-sdr python=3.11 cmake ninja pkg-config boost-cpp swig pybind11
+conda create -y --override-channels -c conda-forge -n telcosec-sdr python=3.11 cmake ninja pkg-config boost-cpp swig pybind11 libusb
 conda activate telcosec-sdr
 
 # 4. Compile SoapySDR from Source
