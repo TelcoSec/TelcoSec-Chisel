@@ -34,7 +34,7 @@ sudo chown -R telcosec:telcosec /opt/telcosec
 # 3. FirmWire (Samsung Shannon & MediaTek baseband emulation/fuzzing)
 echo "Installing FirmWire..."
 cd /opt/telcosec
-git clone https://github.com/FirmWire/FirmWire.git firmwire
+git clone --depth 1 https://github.com/FirmWire/FirmWire.git firmwire
 cd firmwire
 python3 -m venv venv
 ./venv/bin/pip install --upgrade pip
@@ -44,7 +44,7 @@ python3 -m venv venv
 # 4. MobileInsight (Qualcomm/MediaTek over-the-air protocol parser)
 echo "Installing MobileInsight..."
 cd /opt/telcosec
-git clone https://github.com/mobile-insight/mobileinsight-core.git mobileinsight-core
+git clone --depth 1 https://github.com/mobile-insight/mobileinsight-core.git mobileinsight-core
 cd mobileinsight-core
 # Patch qt5-default package out of the installer since it is deprecated in newer Ubuntu versions
 sed -i 's/qt5-default/qtbase5-dev/g' install-ubuntu.sh
@@ -54,26 +54,26 @@ sudo ./install-ubuntu.sh
 # 5. QCSuper (Qualcomm DIAG port traffic capture and Wireshark dissection)
 echo "Installing QCSuper..."
 cd /opt/telcosec
-git clone https://github.com/P1sec/QCSuper.git qcsuper
+git clone --depth 1 https://github.com/P1sec/QCSuper.git qcsuper
 cd qcsuper
 sudo pip3 install -r requirements.txt --break-system-packages
 
 # 6. Balong-Flash & Balongtool (Huawei Balong modem flashing and engineering)
 echo "Compiling Huawei Balong Flashing Tools..."
 cd /opt/telcosec
-git clone https://github.com/forth32/balong-flash.git balong-flash
+git clone --depth 1 https://github.com/forth32/balong-flash.git balong-flash
 cd balong-flash
 make
 
 cd /opt/telcosec
-git clone https://github.com/forth32/balongtool.git balongtool
+git clone --depth 1 https://github.com/forth32/balongtool.git balongtool
 cd balongtool
 make
 
 # 7. MTKClient (MediaTek BootROM bypass, flashing and partitioning)
 echo "Installing MediaTek client (mtkclient)..."
 cd /opt/telcosec
-git clone https://github.com/bkerler/mtkclient.git mtkclient
+git clone --depth 1 https://github.com/bkerler/mtkclient.git mtkclient
 cd mtkclient
 sudo pip3 install -r requirements.txt --break-system-packages
 python3 setup.py build
@@ -82,11 +82,22 @@ sudo python3 setup.py install --break-system-packages
 # 8. pySim (SIM/USIM smartcard programming and operations)
 echo "Installing Osmocom pySim smartcard utility..."
 cd /opt/telcosec
-git clone https://github.com/osmocom/pysim.git pysim
+git clone --depth 1 https://github.com/osmocom/pysim.git pysim
 cd pysim
 sudo pip3 install -r requirements.txt --break-system-packages
 python3 setup.py build
 sudo python3 setup.py install --break-system-packages
+
+# 9. lpac (eSIM Local Profile Assistant tool for profile downloads & management)
+echo "Compiling and installing lpac eSIM profile manager..."
+cd /opt/telcosec
+git clone --depth 1 https://github.com/estkme-group/lpac.git lpac
+cd lpac
+mkdir build && cd build
+cmake -DCMAKE_BUILD_TYPE=Release ..
+make -j$(nproc)
+sudo cp lpac /usr/local/bin/
+sudo chmod 755 /usr/local/bin/lpac
 
 # Clean up build objects and update ownership
 cd /opt/telcosec

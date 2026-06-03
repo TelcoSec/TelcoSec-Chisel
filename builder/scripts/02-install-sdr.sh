@@ -21,6 +21,10 @@ EOF
 
 source /opt/telcosec/miniconda/etc/profile.d/conda.sh
 
+# Accept Terms of Service for default channels to prevent non-interactive blocks
+conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main || true
+conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r || true
+
 # Configure Conda to use conda-forge and avoid Anaconda commercial ToS issues
 conda config --add channels conda-forge
 conda config --set channel_priority strict
@@ -28,13 +32,13 @@ conda config --remove channels defaults || true
 
 # 3. Create SDR Virtual Environment
 echo "Creating SDR Conda Environment..."
-conda create -y -n telcosec-sdr python=3.11 cmake ninja pkg-config boost-cpp swig pybind11
+conda create -y --override-channels -c conda-forge -n telcosec-sdr python=3.11 cmake ninja pkg-config boost-cpp swig pybind11
 conda activate telcosec-sdr
 
 # 4. Compile SoapySDR from Source
 echo "Compiling SoapySDR..."
 mkdir -p /opt/telcosec/src && cd /opt/telcosec/src
-git clone https://github.com/pothosware/SoapySDR.git
+git clone --depth 1 https://github.com/pothosware/SoapySDR.git
 cd SoapySDR
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=$CONDA_PREFIX ..
@@ -44,7 +48,7 @@ make install
 # 5. Compile HackRF from Source
 echo "Compiling HackRF..."
 cd /opt/telcosec/src
-git clone https://github.com/greatscottgadgets/hackrf.git
+git clone --depth 1 https://github.com/greatscottgadgets/hackrf.git
 cd hackrf/host
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=$CONDA_PREFIX ..
@@ -54,7 +58,7 @@ make install
 # 6. Compile UHD (USRP) from Source
 echo "Compiling UHD..."
 cd /opt/telcosec/src
-git clone https://github.com/EttusResearch/uhd.git
+git clone --depth 1 https://github.com/EttusResearch/uhd.git
 cd uhd/host
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=$CONDA_PREFIX -DENABLE_TESTS=OFF -DENABLE_EXAMPLES=OFF ..
@@ -73,7 +77,7 @@ sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
   librtlsdr-dev librtlsdr0 libfftw3-double3 libfftw3-dev libfftw3-bin \
   autoconf automake libtool
 cd /opt/telcosec/src
-git clone https://github.com/steve-m/kalibrate-rtl.git
+git clone --depth 1 https://github.com/steve-m/kalibrate-rtl.git
 cd kalibrate-rtl
 ./bootstrap
 ./configure
