@@ -10,7 +10,7 @@ if [ ! -f /tmp/.packages-installed ]; then
   sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
     pcscd pcsc-tools libpcsclite-dev \
     python3-pyscard python3-pip python3-venv python3-dev \
-    libosmocore-dev \
+    libosmocore-dev libmd-dev \
     git wget unzip cmake pkg-config build-essential gnupg autoconf automake libtool \
     qemu-system-arm qemu-system-mips qemu-system-x86 qemu-utils \
     libglib2.0-dev bison flex libpcap-dev libgcrypt20-dev \
@@ -21,13 +21,6 @@ if [ ! -f /tmp/.packages-installed ]; then
     gdb-multiarch libcapstone-dev gcc-mipsel-linux-gnu gcc-arm-none-eabi \
     scons g++ make dfu-util
 fi
-
-# Download SIMtrace 2 firmware binaries
-echo "Downloading SIMtrace 2 firmware binaries..."
-sudo mkdir -p /opt/telcosec/simtrace2/firmware
-sudo wget -qO /opt/telcosec/simtrace2/firmware/simtrace-trace-dfu.bin https://ftp.osmocom.org/binaries/simtrace2/firmware/latest/simtrace-trace-dfu-latest.bin || true
-sudo wget -qO /opt/telcosec/simtrace2/firmware/simtrace-cardem-dfu.bin https://ftp.osmocom.org/binaries/simtrace2/firmware/latest/simtrace-cardem-dfu-latest.bin || true
-sudo chmod 644 /opt/telcosec/simtrace2/firmware/*.bin || true
 
 # Create tools root directory
 sudo mkdir -p /opt/telcosec
@@ -46,10 +39,10 @@ PID_MOBILEINSIGHT=$!
 (git clone --depth 1 https://github.com/P1sec/QCSuper.git qcsuper) &
 PID_QCSUPER=$!
 
-(git clone --depth 1 https://github.com/forth32/balong-flash.git balong-flash) &
+(git clone --depth 1 https://github.com/forth32/balongflash.git balong-flash) &
 PID_BALONG_FLASH=$!
 
-(git clone --depth 1 https://github.com/forth32/balongtool.git balongtool) &
+(git clone --depth 1 https://github.com/forth32/balong-nvtool.git balongtool) &
 PID_BALONGTOOL=$!
 
 (git clone --depth 1 https://github.com/bkerler/mtkclient.git mtkclient) &
@@ -68,6 +61,14 @@ PID_SIMTRACE2=$!
 echo "Waiting for all git clones to finish..."
 wait $PID_FIRMWIRE $PID_MOBILEINSIGHT $PID_QCSUPER $PID_BALONG_FLASH $PID_BALONGTOOL $PID_MTK $PID_PYSIM $PID_LPAC $PID_SIMTRACE2
 echo "All repositories cloned successfully."
+
+# Download SIMtrace 2 firmware binaries into the newly cloned directory
+echo "Downloading SIMtrace 2 firmware binaries..."
+sudo mkdir -p /opt/telcosec/simtrace2/firmware
+sudo wget -qO /opt/telcosec/simtrace2/firmware/simtrace-trace-dfu.bin https://ftp.osmocom.org/binaries/simtrace2/firmware/latest/simtrace-trace-dfu-latest.bin || true
+sudo wget -qO /opt/telcosec/simtrace2/firmware/simtrace-cardem-dfu.bin https://ftp.osmocom.org/binaries/simtrace2/firmware/latest/simtrace-cardem-dfu-latest.bin || true
+sudo chmod 644 /opt/telcosec/simtrace2/firmware/*.bin || true
+
 
 # ─── Build/install sequentially ─────────────────────────────────────────────
 
