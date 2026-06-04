@@ -55,7 +55,10 @@ if [ ! -f /tmp/.packages-installed ]; then
   echo "wireshark-common wireshark-common/install-syscap boolean true" | sudo debconf-set-selections
   sudo DEBIAN_FRONTEND=noninteractive dpkg-reconfigure wireshark-common
 fi
-sudo usermod -a -G wireshark telcosec
+if ! getent group wireshark >/dev/null; then
+  sudo groupadd -r wireshark
+fi
+sudo usermod -a -G wireshark telcosec || true
 
 # Install telecom-specific wordlists
 echo "Creating dedicated telecom wordlists directory..."

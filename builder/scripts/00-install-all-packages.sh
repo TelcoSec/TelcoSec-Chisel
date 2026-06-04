@@ -157,6 +157,9 @@ apt-get install -y \
 
 echo "wireshark-common wireshark-common/install-syscap boolean true" | debconf-set-selections
 dpkg-reconfigure wireshark-common
+if ! getent group wireshark >/dev/null; then
+  groupadd -r wireshark
+fi
 
 # ─── 6. Clang alternatives (OAI build requires clang-15 as default) ─────────
 
