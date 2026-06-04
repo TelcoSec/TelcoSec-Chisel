@@ -77,7 +77,8 @@ echo "Installing FirmWire..."
 cd /opt/telcosec/firmwire
 python3 -m venv venv
 ./venv/bin/pip install --upgrade pip
-./venv/bin/pip install "Cython<3.0.0"
+./venv/bin/pip install "Cython<3.0.0" setuptools wheel
+./venv/bin/pip install --no-build-isolation rocksdb
 ./venv/bin/pip install -r requirements.txt
 ./venv/bin/python setup.py install
 
