@@ -23,9 +23,15 @@ echo "Compiling and installing sctpscan..."
 sudo mkdir -p /opt/telcosec
 sudo git clone --depth 1 https://github.com/philpraxis/sctpscan.git /opt/telcosec/sctpscan || true
 cd /opt/telcosec/sctpscan
-# Remove legacy STREAMS header (removed from modern glibc / Ubuntu 24.04)
+# Patch 1: Remove legacy STREAMS header (dropped in glibc 2.30 / Ubuntu 24.04)
 sudo sed -i '/#include <stropts.h>/d' sctpscan.c
-gcc -O2 sctpscan.c -o sctpscan $(pkg-config --cflags --libs glib-2.0)
+# Patch 2: Fix old BSD two-arg setpgrp(0, getpid()) — modern POSIX takes no args
+sudo sed -i 's/setpgrp(0, getpid())/setpgrp()/g' sctpscan.c
+# Patch 3: Add sys/ioctl.h for ioctl() (no longer pulled in transitively)
+sudo sed -i '/#include <sys\/socket.h>/a #include <sys\/ioctl.h>' sctpscan.c
+# Suppress harmless pointer-to-int-cast and unused-result warnings
+gcc -O2 -Wno-pointer-to-int-cast -Wno-unused-result \
+  sctpscan.c -o sctpscan $(pkg-config --cflags --libs glib-2.0)
 sudo cp sctpscan /usr/local/bin/
 sudo chmod 755 /usr/local/bin/sctpscan
 sudo chown -R telcosec:telcosec /opt/telcosec/sctpscan
