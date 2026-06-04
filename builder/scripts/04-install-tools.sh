@@ -23,6 +23,8 @@ echo "Compiling and installing sctpscan..."
 sudo mkdir -p /opt/telcosec
 sudo git clone --depth 1 https://github.com/philpraxis/sctpscan.git /opt/telcosec/sctpscan || true
 cd /opt/telcosec/sctpscan
+# Remove legacy STREAMS header (removed from modern glibc / Ubuntu 24.04)
+sudo sed -i '/#include <stropts.h>/d' sctpscan.c
 gcc -O2 sctpscan.c -o sctpscan $(pkg-config --cflags --libs glib-2.0)
 sudo cp sctpscan /usr/local/bin/
 sudo chmod 755 /usr/local/bin/sctpscan
