@@ -78,6 +78,22 @@ cd /opt/telcosec/firmwire
 python3 -m venv venv
 ./venv/bin/pip install --upgrade pip
 ./venv/bin/pip install "Cython<3.0.0" setuptools wheel
+
+# Workaround for python-rocksdb build failure on RocksDB 7.x/8.x (backupable_db.h removed)
+if [ ! -f /usr/include/rocksdb/utilities/backupable_db.h ]; then
+  echo "=== Creating compatibility header backupable_db.h for RocksDB ==="
+  sudo mkdir -p /usr/include/rocksdb/utilities/
+  cat << 'EOF' | sudo tee /usr/include/rocksdb/utilities/backupable_db.h
+#pragma once
+#include "rocksdb/utilities/backup_engine.h"
+namespace rocksdb {
+  typedef BackupEngineOptions BackupableDBOptions;
+  typedef BackupEngine BackupableDB;
+  typedef BackupInfo BackupableDBInfo;
+}
+EOF
+fi
+
 ./venv/bin/pip install --no-build-isolation rocksdb
 ./venv/bin/pip install -r requirements.txt
 ./venv/bin/python setup.py install
