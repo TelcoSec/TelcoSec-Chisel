@@ -94,9 +94,42 @@ namespace rocksdb {
 EOF
 fi
 
-./venv/bin/pip install --no-build-isolation rocksdb
+echo "=== Downloading and patching python-rocksdb for RocksDB 7+/8+ ==="
+mkdir -p /tmp/rocksdb-build
+cd /tmp/rocksdb-build
+/opt/telcosec/firmwire/venv/bin/pip download --no-binary :all: --no-deps rocksdb
+tar -xzf rocksdb-*.tar.gz
+cd rocksdb-*/
+python3 -c "
+with open('rocksdb/cpp/filter_policy_wrapper.hpp', 'r') as f:
+    content = f.read()
+
+replacement = '''            virtual const char* CompatibilityName() const override {
+                return this->name.c_str();
+            }
+
+            virtual rocksdb::FilterBitsBuilder* GetBuilderWithContext(
+                const rocksdb::FilterBuildingContext&) const override {
+                return nullptr;
+            }
+
+            virtual rocksdb::FilterBitsReader* GetFilterBitsReader(
+                const rocksdb::Slice&) const override {
+                return nullptr;
+            }
+
+            virtual const char* Name() const {'''
+
+new_content = content.replace('            virtual const char* Name() const {', replacement)
+with open('rocksdb/cpp/filter_policy_wrapper.hpp', 'w') as f:
+    f.write(new_content)
+"
+/opt/telcosec/firmwire/venv/bin/pip install --no-build-isolation .
+cd /opt/telcosec/firmwire
+rm -rf /tmp/rocksdb-build
+
 ./venv/bin/pip install -r requirements.txt
-./venv/bin/python setup.py install
+
 
 # MobileInsight (Qualcomm/MediaTek over-the-air protocol parser)
 echo "Installing MobileInsight..."

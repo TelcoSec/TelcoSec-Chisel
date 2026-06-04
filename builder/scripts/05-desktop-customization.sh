@@ -91,7 +91,7 @@ cat << 'EOF' | sudo tee /etc/firefox/policies/policies.json
       },
       {
         "Title": "TelcoSec Academy",
-        "URL": "https://academy.telcosec.net/",
+        "URL": "https://app.telcosec.net/",
         "Placement": "toolbar"
       },
       {

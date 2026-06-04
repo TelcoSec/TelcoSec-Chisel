@@ -11,7 +11,7 @@ if [ ! -f /tmp/.packages-installed ]; then
       qml-module-qtquick-controls qml-module-qtquick-controls2 \
       qml-module-qtquick-dialogs qml-module-qtquick-layouts \
       qml-module-qtquick-window2 \
-      upower os-prober
+      upower os-prober python3-jsonschema
 fi
 
 # 1. Deploy pre-built Calamares config from our builder directory
