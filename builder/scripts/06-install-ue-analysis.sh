@@ -10,7 +10,7 @@ if [ ! -f /tmp/.packages-installed ]; then
   sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
     pcscd pcsc-tools libpcsclite-dev \
     python3-pyscard python3-pip python3-venv python3-dev \
-    libosmocore-dev libmd-dev \
+    libosmocore-dev libmd-dev librocksdb-dev \
     git wget unzip cmake pkg-config build-essential gnupg autoconf automake libtool \
     qemu-system-arm qemu-system-mips qemu-system-x86 qemu-utils \
     libglib2.0-dev bison flex libpcap-dev libgcrypt20-dev \
@@ -77,6 +77,7 @@ echo "Installing FirmWire..."
 cd /opt/telcosec/firmwire
 python3 -m venv venv
 ./venv/bin/pip install --upgrade pip
+./venv/bin/pip install "Cython<3.0.0"
 ./venv/bin/pip install -r requirements.txt
 ./venv/bin/python setup.py install
 

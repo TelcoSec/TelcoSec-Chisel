@@ -111,7 +111,7 @@ apt-get install -y \
   `# === UE analysis & baseband deps (06-install-ue-analysis.sh) ===` \
   pcscd pcsc-tools libpcsclite-dev \
   python3-pyscard python3-dev \
-  libosmocore-dev libmd-dev \
+  libosmocore-dev libmd-dev librocksdb-dev \
   unzip \
   qemu-system-arm qemu-system-mips qemu-system-x86 qemu-utils \
   bison flex libpcap-dev libgcrypt20-dev \
