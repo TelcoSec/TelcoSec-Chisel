@@ -333,6 +333,22 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
+    // ── Theme toggle switch implementation ───────────────────────────────
+    const themeToggleBtn = document.getElementById("themeToggleBtn");
+    
+    // Check local storage for theme preference
+    const savedTheme = localStorage.getItem("theme");
+    if (savedTheme === "light") {
+        document.body.classList.add("light-theme");
+    }
+
+    if (themeToggleBtn) {
+        themeToggleBtn.addEventListener("click", () => {
+            const isLight = document.body.classList.toggle("light-theme");
+            localStorage.setItem("theme", isLight ? "light" : "dark");
+        });
+    }
+
     // Initial render of tools
     renderTools();
 });

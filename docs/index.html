@@ -31,13 +31,13 @@
                 <div class="nav-section-title">Getting Started</div>
                 <ul class="nav-menu">
                     <li>
-                        <div class="nav-link active" data-target="overview">
+                        <div class="nav-link active" data-target="overview" id="navLinkOverview">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"></rect><rect x="14" y="3" width="7" height="5"></rect><rect x="14" y="12" width="7" height="9"></rect><rect x="3" y="16" width="7" height="5"></rect></svg>
                             Overview
                         </div>
                     </li>
                     <li>
-                        <div class="nav-link" data-target="features">
+                        <div class="nav-link" data-target="features" id="navLinkFeatures">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
                             OS Optimizations
                         </div>
@@ -47,19 +47,19 @@
                 <div class="nav-section-title">Reference</div>
                 <ul class="nav-menu">
                     <li>
-                        <div class="nav-link" data-target="tools">
+                        <div class="nav-link" data-target="tools" id="navLinkTools">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
                             Tools Directory
                         </div>
                     </li>
                     <li>
-                        <div class="nav-link" data-target="drivers">
+                        <div class="nav-link" data-target="drivers" id="navLinkDrivers">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="14.31" y1="8" x2="20.05" y2="17.94"></line><line x1="9.69" y1="8" x2="21.17" y2="8"></line><line x1="7.38" y1="12" x2="13.12" y2="2.06"></line><line x1="9.69" y1="16" x2="3.95" y2="6.06"></line><line x1="14.31" y1="16" x2="2.83" y2="16"></line><line x1="16.62" y1="12" x2="10.88" y2="21.94"></line></svg>
                             Drivers & Hardware
                         </div>
                     </li>
                     <li>
-                        <div class="nav-link" data-target="projects">
+                        <div class="nav-link" data-target="projects" id="navLinkProjects">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
                             TelcoSec Projects
                         </div>
@@ -69,19 +69,27 @@
                 <div class="nav-section-title">Specialized Guides</div>
                 <ul class="nav-menu">
                     <li>
-                        <div class="nav-link" data-target="fuzzer">
+                        <div class="nav-link" data-target="fuzzer" id="navLinkFuzzer">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
                             5Ghoul Fuzzing
                         </div>
                     </li>
                     <li>
-                        <div class="nav-link" data-target="builder">
+                        <div class="nav-link" data-target="builder" id="navLinkBuilder">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
                             ISO Builder
                         </div>
                     </li>
                 </ul>
             </nav>
+            
+            <!-- Theme Toggle Component -->
+            <div class="theme-switch-container">
+                <span class="theme-switch-label">Light Theme</span>
+                <button class="theme-toggle-btn" id="themeToggleBtn" aria-label="Toggle Theme">
+                    <span class="theme-toggle-slider" id="themeToggleSlider"></span>
+                </button>
+            </div>
             
             <div class="nav-footer">
                 <p>TelcoSec-Chisel v1.1.0</p>
@@ -192,7 +200,7 @@
             <!-- SECTION: OPTIMIZATIONS -->
             <section id="features" class="content-section">
                 <div class="section-header">
-                    <h1>OS Customizations & Tuning</h1>
+                    <h2>OS Customizations & Tuning</h2>
                     <p class="subtitle">Lowering latency and unlocking kernel interfaces for telecom auditing</p>
                 </div>
                 
@@ -200,7 +208,7 @@
                     Telecom software suites (like srsRAN, OAI, or SigPloit) place extreme demands on kernel timers, socket memory buffers, and transceiver streaming rates. TelcoSec-Chisel applies specific kernel and PAM optimizations by default.
                 </p>
 
-                <h2>1. Real-time Scheduling (PAM & Groups)</h2>
+                <h3>1. Real-time Scheduling (PAM & Groups)</h3>
                 <p>
                     Software Defined Radios require consistent scheduling intervals to avoid sample drops (under/overruns). Under standard Linux settings, non-root users cannot request real-time execution priority.
                 </p>
@@ -224,7 +232,7 @@
                     The default user <code class="inline-code">telcosec</code> belongs to the system <code class="inline-code">realtime</code> group, enabling GNU Radio and srsRAN threads to lock samples into physical RAM and run at scheduling priority 99.
                 </p>
 
-                <h2>2. Kernel SCTP Stack Optimizations</h2>
+                <h3>2. Kernel SCTP Stack Optimizations</h3>
                 <p>
                     SCTP (Stream Control Transmission Protocol) is the transport layer backbone of telecom networks (SS7/M3UA, Diameter over SCTP, S1AP, and NGAP). Standard OS kernels are optimized for TCP/UDP. TelcoSec-Chisel preloads the kernel SCTP module and tunes socket limits in <code class="inline-code">/etc/sysctl.d/99-sctp-tuning.conf</code>:
                 </p>
@@ -248,7 +256,7 @@ net.sctp.path_max_retrans = 2</code></pre>
                     </div>
                 </div>
 
-                <h2>3. Low-Latency USB & GRUB Configurations</h2>
+                <h3>3. Low-Latency USB & GRUB Configurations</h3>
                 <p>
                     To run high-bandwidth 5G NR Rogue Base Stations, USB polling jitter must be eliminated. The system deploys udev rules to turn off autosuspend delay on USRP B210 and HackRF hardware:
                 </p>
@@ -272,7 +280,7 @@ ACTION==&quot;add&quot;, SUBSYSTEM==&quot;usb&quot;, ATTR{idVendor}==&quot;1d50&
             <!-- SECTION: TOOLS -->
             <section id="tools" class="content-section">
                 <div class="section-header">
-                    <h1>Tools Directory</h1>
+                    <h2>Tools Directory</h2>
                     <p class="subtitle">Complete catalog of software pre-installed in the TelcoSec-Chisel image</p>
                 </div>
                 
@@ -282,12 +290,12 @@ ACTION==&quot;add&quot;, SUBSYSTEM==&quot;usb&quot;, ATTR{idVendor}==&quot;1d50&
                         <input type="text" id="toolSearch" class="search-input" placeholder="Search tools by name, command, or details...">
                     </div>
                     <div class="filter-tags">
-                        <button class="filter-btn active" data-filter="all">All Tools</button>
-                        <button class="filter-btn" data-filter="sdr">SDR</button>
-                        <button class="filter-btn" data-filter="ue">Baseband & UE</button>
-                        <button class="filter-btn" data-filter="sim">SIM/eSIM</button>
-                        <button class="filter-btn" data-filter="ran">RAN & Signaling</button>
-                        <button class="filter-btn" data-filter="sys">System Docs</button>
+                        <button class="filter-btn active" data-filter="all" id="filterBtnAll">All Tools</button>
+                        <button class="filter-btn" data-filter="sdr" id="filterBtnSdr">SDR</button>
+                        <button class="filter-btn" data-filter="ue" id="filterBtnUe">Baseband & UE</button>
+                        <button class="filter-btn" data-filter="sim" id="filterBtnSim">SIM/eSIM</button>
+                        <button class="filter-btn" data-filter="ran" id="filterBtnRan">RAN & Signaling</button>
+                        <button class="filter-btn" data-filter="sys" id="filterBtnSys">System Docs</button>
                     </div>
                 </div>
 
@@ -299,7 +307,7 @@ ACTION==&quot;add&quot;, SUBSYSTEM==&quot;usb&quot;, ATTR{idVendor}==&quot;1d50&
             <!-- SECTION: DRIVERS -->
             <section id="drivers" class="content-section">
                 <div class="section-header">
-                    <h1>Drivers & Hardware Access</h1>
+                    <h2>Drivers & Hardware Access</h2>
                     <p class="subtitle">Plugging in transceivers, readers, and sniffers without root</p>
                 </div>
                 
@@ -307,7 +315,7 @@ ACTION==&quot;add&quot;, SUBSYSTEM==&quot;usb&quot;, ATTR{idVendor}==&quot;1d50&
                     Traditional security environments force you to run RF interfaces as root to access raw USB descriptors. TelcoSec-Chisel utilizes custom udev permissions, allowing members of the standard `plugdev` group to read and write directly to transceivers.
                 </p>
 
-                <h2>1. Non-Root Hardware Access Rules</h2>
+                <h3>1. Non-Root Hardware Access Rules</h3>
                 <p>
                     The file <code class="inline-code">/etc/udev/rules.d/50-telcosec-hw.rules</code> maps USB product and vendor codes, assigning ownership group to `plugdev` and opening permissions:
                 </p>
@@ -329,7 +337,7 @@ ATTRS{idVendor}=="1d50", ATTRS{idProduct}=="60e3", MODE:="0660", GROUP:="plugdev
                     </div>
                 </div>
 
-                <h2>2. Software Defined Radio (SDR) Drivers Sandbox</h2>
+                <h3>2. Software Defined Radio (SDR) Drivers Sandbox</h3>
                 <p>
                     GNU Radio and hardware transceiver drivers are isolated in a custom Conda environment named <code class="inline-code">telcosec-sdr</code>. This prevents host apt-package scripts or pip executions from breaking driver configurations.
                 </p>
@@ -351,7 +359,7 @@ SoapySDRUtil --find</code></pre>
                     </div>
                 </div>
 
-                <h2>3. Smartcard PC/SC Readers (SIM Auditing)</h2>
+                <h3>3. Smartcard PC/SC Readers (SIM Auditing)</h3>
                 <p>
                     Auditing physical smartcards requires communicating with USB smartcard adapters. TelcoSec-Chisel preconfigures the standard PC/SC daemon (<code class="inline-code">pcscd</code>). Insert your card reader (e.g. Omnikey, ACS) and run:
                 </p>
@@ -374,7 +382,7 @@ pcsc_scan</code></pre>
             <!-- SECTION: FUZZER -->
             <section id="fuzzer" class="content-section">
                 <div class="section-header">
-                    <h1>5Ghoul Fuzzer Guide</h1>
+                    <h2>5Ghoul Fuzzer Guide</h2>
                     <p class="subtitle">Fuzzing 5G NR mobile modems on TelcoSec-Chisel</p>
                 </div>
                 
@@ -392,7 +400,7 @@ pcsc_scan</code></pre>
                     </div>
                 </div>
 
-                <h2>Deploying 5Ghoul on your Live System</h2>
+                <h3>Deploying 5Ghoul on your Live System</h3>
                 <div class="steps-container">
                     <div class="step-item">
                         <div class="step-badge">1</div>
@@ -462,7 +470,7 @@ sudo 5ghoul-run --Attack.Name=NAS_5GS_Fuzz --UE.IMSI=001011234567890</code></pre
             <!-- SECTION: BUILDER -->
             <section id="builder" class="content-section">
                 <div class="section-header">
-                    <h1>Developer Guide</h1>
+                    <h2>Developer Guide</h2>
                     <p class="subtitle">Building the Live ISO from scratch</p>
                 </div>
                 
@@ -470,7 +478,7 @@ sudo 5ghoul-run --Attack.Name=NAS_5GS_Fuzz --UE.IMSI=001011234567890</code></pre
                     TelcoSec-Chisel uses an automated bash orchestration build chain to bootstrap, configure, and output bootable XFCE live desktop images.
                 </p>
 
-                <h2>1. Setup Compilation Host</h2>
+                <h3>1. Setup Compilation Host</h3>
                 <p>
                     The build environment must be run on a native Ubuntu or Debian host machine (or inside a WSL2 container with systemd enabled). You need approximately 20 GB of free storage.
                 </p>
@@ -487,7 +495,7 @@ sudo apt-get install -y debootstrap squashfs-tools grub-pc-bin grub-efi-amd64-bi
                     </div>
                 </div>
 
-                <h2>2. Run the Build Pipeline</h2>
+                <h3>2. Run the Build Pipeline</h3>
                 <p>
                     Clone this repository, review configurations inside <code class="inline-code">builder/</code>, and execute the master build script.
                 </p>
@@ -503,7 +511,7 @@ sudo ./build-iso.sh</code></pre>
                     </div>
                 </div>
 
-                <h2>3. Pipeline Phase Execution Order</h2>
+                <h3>3. Pipeline Phase Execution Order</h3>
                 <p>
                     The orchestrator bootstraps a minimal chroot container and runs provisioning scripts sequentially. Do not alter their index prefixes, as each step relies on outputs of the previous scripts:
                 </p>
@@ -562,7 +570,7 @@ sudo ./build-iso.sh</code></pre>
             <!-- SECTION: PROJECTS -->
             <section id="projects" class="content-section">
                 <div class="section-header">
-                    <h1>TelcoSec Projects & Ecosystem</h1>
+                    <h2>TelcoSec Projects & Ecosystem</h2>
                     <p class="subtitle">Open source tools, frameworks, and platform research developed by the TelcoSec community</p>
                 </div>
 
@@ -570,7 +578,7 @@ sudo ./build-iso.sh</code></pre>
                     TelcoSec is an open-source research collective developing security auditing platforms, simulation nodes, and vulnerability databases for mobile telecom networks. Explore our core open source projects included in the distribution:
                 </p>
 
-                <h2>Core Repositories</h2>
+                <h3>Core Repositories</h3>
                 <div class="grid-2">
                     <div class="card highlight-teal">
                         <div class="card-title">
@@ -625,7 +633,7 @@ sudo ./build-iso.sh</code></pre>
                     </div>
                 </div>
 
-                <h2 style="margin-top: 40px;">Platforms & Research Ecosystem</h2>
+                <h3 style="margin-top: 40px;">Platforms & Research Ecosystem</h3>
                 <div class="grid-2">
                     <div class="card highlight-teal">
                         <div class="card-title">
@@ -732,7 +740,7 @@ sudo ./build-iso.sh</code></pre>
                     </div>
                 </div>
 
-                <h2 style="margin-top: 40px;">Community & Collaboration Channels</h2>
+                <h3>Community & Collaboration Channels</h3>
                 <div class="grid-3" style="margin-top: 10px;">
                     <a href="https://discord.gg/RykzXTQFXF" class="card highlight-teal" target="_blank">
                         <div class="card-title" style="color: var(--accent-teal);">Discord Chat</div>
