@@ -129,7 +129,7 @@ apt-get install -y \
   qml-module-qtquick-controls qml-module-qtquick-controls2 \
   qml-module-qtquick-dialogs qml-module-qtquick-layouts \
   qml-module-qtquick-window2 \
-  upower os-prober \
+  upower os-prober python3-jsonschema \
   \
   `# === 5Ghoul build toolchain (09-install-5ghoul.sh) ===` \
   git-lfs \

@@ -630,3 +630,105 @@ code.inline-code {
         display: flex;
     }
 }
+
+/* Academy Banner Promotion */
+.academy-banner {
+    background: linear-gradient(135deg, #171030 0%, #0c1a25 100%);
+    border: 1px solid rgba(0, 255, 213, 0.3);
+    border-radius: 12px;
+    padding: 30px;
+    margin: 30px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), 0 0 15px rgba(0, 255, 213, 0.05);
+    transition: all var(--transition-speed);
+}
+
+.academy-banner::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -20%;
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, rgba(157, 78, 221, 0.1) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+.academy-banner:hover {
+    border-color: var(--accent-teal);
+    box-shadow: 0 10px 30px rgba(0, 255, 213, 0.1), 0 0 20px var(--accent-teal-glow);
+    transform: translateY(-2px);
+}
+
+.academy-banner-content {
+    max-width: 75%;
+}
+
+.academy-badge {
+    display: inline-block;
+    background-color: var(--accent-teal);
+    color: var(--bg-primary);
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 20px;
+    margin-bottom: 15px;
+    letter-spacing: 1px;
+}
+
+.academy-banner h2 {
+    font-size: 1.6rem;
+    margin-bottom: 10px;
+    font-family: 'Outfit', sans-serif;
+    color: #ffffff;
+}
+
+.academy-banner p {
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    margin-bottom: 20px;
+    line-height: 1.5;
+}
+
+.academy-btn {
+    display: inline-block;
+    background-color: transparent;
+    border: 1px solid var(--accent-teal);
+    color: var(--accent-teal);
+    font-size: 0.9rem;
+    font-weight: 600;
+    padding: 10px 22px;
+    border-radius: 8px;
+    transition: all var(--transition-speed);
+}
+
+.academy-btn:hover {
+    background-color: var(--accent-teal);
+    color: var(--bg-primary);
+    box-shadow: 0 0 15px var(--accent-teal-glow);
+}
+
+.academy-banner-icon {
+    flex-shrink: 0;
+    color: var(--accent-teal);
+    opacity: 0.85;
+    margin-left: 20px;
+}
+
+@media (max-width: 768px) {
+    .academy-banner {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 20px;
+    }
+    .academy-banner-content {
+        max-width: 100%;
+    }
+    .academy-banner-icon {
+        display: none;
+    }
+}
