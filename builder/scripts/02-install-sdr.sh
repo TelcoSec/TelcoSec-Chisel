@@ -95,7 +95,7 @@ sudo chmod +x /usr/local/bin/uhd-download-images
 echo "Compiling and installing Kalibrate-RTL..."
 cd /opt/telcosec/src/kalibrate-rtl
 ./bootstrap
-./configure
+PKG_CONFIG=/usr/bin/pkg-config ./configure
 make -j$(nproc)
 sudo make install
 cd -
