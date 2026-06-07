@@ -57,7 +57,7 @@ echo "Deploying local documentation..."
 sudo mkdir -p /usr/share/doc/telcosec/
 if [ -d /tmp/docs ]; then
   sudo cp -rf /tmp/docs/. /usr/share/doc/telcosec/
-  sudo chmod 644 /usr/share/doc/telcosec/index.html
+  sudo find /usr/share/doc/telcosec/ -type f -exec chmod 644 {} +
 fi
 
 echo "Configuring Firefox enterprise policies..."

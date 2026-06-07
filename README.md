@@ -3,6 +3,9 @@
 TelcoSec-Chisel is an open-source Linux distribution for telecommunications security research, baseband analysis, and radio frequency penetration testing. Built on Ubuntu 24.04 LTS (Noble Numbat) with a lightweight XFCE desktop environment, it provides pre-installed drivers, compilers, and tools for Software Defined Radio (SDR) hardware, baseband firmware emulation, smartcard/SIM auditing, and core network signaling assessment.
 
 ## Repository and Desktop Structure
+wsl -d kali-linux -u root -- bash -c "cd //mnt//m//TelcoSec-Chisel && ./build-iso.sh"
+
+
 
 TelcoSec-Chisel organizes security auditing capabilities into dedicated submenus within the application manager and directories under `/opt/telcosec/`:
 
@@ -16,8 +19,7 @@ Radio hardware drivers are sandboxed inside a dedicated Conda virtual environmen
 ### 2. Baseband Emulation and User Equipment (UE) Analysis
 Tools for auditing proprietary baseband microcode and analyzing diagnostic logs from User Equipment (UE):
 * **FirmWire**: Baseband emulation and fuzzing platform supporting Samsung Shannon and MediaTek MTK baseband images.
-* **MobileInsight**: Runtime protocol analyzer to capture and parse signaling messages from Qualcomm and MediaTek diagnostic interfaces.
-* **QCSuper**: Qualcomm diagnostic protocol logger for capturing air-interface packets directly to PCAP files.
+* **QCSuper**: Qualcomm diagnostic protocol logger for capturing air-interface packets directly to PCAP files via the Qualcomm DIAG USB interface.
 * **MTKClient**: BROM bypass, partitioning, flashing, and dumping tool for MediaTek chipsets.
 * **Balong-Flash and Balongtool**: Huawei Balong modem flasher and firmware modifier.
 
