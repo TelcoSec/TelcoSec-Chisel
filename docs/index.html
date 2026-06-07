@@ -40,23 +40,11 @@
     <!-- Google Fonts — non-blocking (prevents render-blocking penalty) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap" onload="this.onload=null;this.rel='stylesheet'">
-    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap"></noscript>
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Barlow+Condensed:wght@300;400;600;700;900&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Barlow+Condensed:wght@300;400;600;700;900&display=swap"></noscript>
 
     <!-- Stylesheet -->
     <link rel="stylesheet" href="styles.css">
-    <style>
-        /* FAQ accordion */
-        .faq-list { margin: 20px 0 30px; display: flex; flex-direction: column; gap: 10px; }
-        .faq-item { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; transition: border-color 0.2s; }
-        .faq-item[open] { border-color: var(--accent-teal); }
-        .faq-question { cursor: pointer; padding: 16px 20px; font-weight: 600; font-size: 1rem; color: #fff; list-style: none; display: flex; justify-content: space-between; align-items: center; }
-        .faq-question::-webkit-details-marker { display: none; }
-        .faq-question::after { content: '+'; color: var(--accent-teal); font-size: 1.4rem; line-height: 1; transition: transform 0.2s; }
-        .faq-item[open] .faq-question::after { transform: rotate(45deg); }
-        .faq-answer { padding: 0 20px 16px; color: var(--text-secondary); line-height: 1.7; }
-    </style>
-
     <!-- Structured Data (JSON-LD) -->
     <script type="application/ld+json">
     [
@@ -186,6 +174,9 @@
     </script>
 </head>
 <body>
+    <!-- CRT boot scan animation — removed by JS after ~900ms -->
+    <div id="bootOverlay" aria-hidden="true"><div class="boot-scan"></div></div>
+
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
     <div class="layout-container">
         <!-- Sidebar Navigation -->
@@ -194,7 +185,12 @@
                 <div class="brand-logo">T</div>
                 <div class="brand-text">TelcoSec<span>-Chisel</span></div>
             </div>
-            
+
+            <div class="sidebar-status">
+                <span class="status-dot"></span>
+                <span class="sidebar-status-text">System Active</span>
+            </div>
+
             <nav>
                 <div class="nav-section-title">Getting Started</div>
                 <ul class="nav-menu">
@@ -282,9 +278,10 @@
             
             <!-- SECTION: OVERVIEW -->
             <section id="overview" class="content-section active">
-                <div class="section-header">
+                <div class="section-header" data-label="// Overview :: TelcoSec-Chisel v1.1.0">
                     <h1>TelcoSec-Chisel — Telecom Security Linux Distribution</h1>
                     <p class="subtitle">Bootable live OS for 5G/4G security research, SDR analysis, and baseband auditing</p>
+                    <canvas id="spectrumCanvas" aria-hidden="true"></canvas>
                 </div>
 
                 <p>
@@ -415,7 +412,7 @@
             
             <!-- SECTION: OPTIMIZATIONS -->
             <section id="features" class="content-section">
-                <div class="section-header">
+                <div class="section-header" data-label="// Kernel &amp; OS Tuning">
                     <h2>OS Customizations &amp; Kernel Tuning for Telecom Security</h2>
                     <p class="subtitle">Real-time scheduling, SCTP stack tuning, and low-latency USB for SDR and signaling tools</p>
                 </div>
@@ -495,7 +492,7 @@ ACTION==&quot;add&quot;, SUBSYSTEM==&quot;usb&quot;, ATTR{idVendor}==&quot;1d50&
             
             <!-- SECTION: TOOLS -->
             <section id="tools" class="content-section">
-                <div class="section-header">
+                <div class="section-header" data-label="// Tool Catalog :: 25+ Instruments">
                     <h2>Tools Directory — 25+ Pre-installed Telecom Security Tools</h2>
                     <p class="subtitle">Complete catalog of SDR, baseband, SIM, RAN, and signaling tools pre-installed in TelcoSec-Chisel</p>
                 </div>
@@ -528,7 +525,7 @@ ACTION==&quot;add&quot;, SUBSYSTEM==&quot;usb&quot;, ATTR{idVendor}==&quot;1d50&
             
             <!-- SECTION: DRIVERS -->
             <section id="drivers" class="content-section">
-                <div class="section-header">
+                <div class="section-header" data-label="// Hardware :: RF Transceiver Access">
                     <h2>SDR Drivers &amp; Hardware Access — USRP, HackRF, BladeRF, LimeSDR, RTL-SDR</h2>
                     <p class="subtitle">Non-root USB access for SDR transceivers and smartcard readers via custom udev rules</p>
                 </div>
@@ -603,7 +600,7 @@ pcsc_scan</code></pre>
             
             <!-- SECTION: FUZZER -->
             <section id="fuzzer" class="content-section">
-                <div class="section-header">
+                <div class="section-header" data-label="// 5Ghoul :: 5G NR Baseband Fuzzer">
                     <h2>5Ghoul — 5G NR Baseband Fuzzer Setup Guide</h2>
                     <p class="subtitle">Install, configure, and run the 5Ghoul fuzzer against 5G NR UE modems using USRP B210 or BladeRF A4</p>
                 </div>
@@ -691,7 +688,7 @@ sudo 5ghoul-run --Attack.Name=NAS_5GS_Fuzz --UE.IMSI=001011234567890</code></pre
             
             <!-- SECTION: BUILDER -->
             <section id="builder" class="content-section">
-                <div class="section-header">
+                <div class="section-header" data-label="// ISO Build Pipeline :: Ubuntu 24.04">
                     <h2>Developer Guide — Building the TelcoSec-Chisel Live ISO</h2>
                     <p class="subtitle">Build the bootable Ubuntu 24.04 ISO from source on any Ubuntu/Debian host or WSL2</p>
                 </div>
@@ -791,7 +788,7 @@ sudo ./build-iso.sh</code></pre>
 
             <!-- SECTION: PROJECTS -->
             <section id="projects" class="content-section">
-                <div class="section-header">
+                <div class="section-header" data-label="// Research Ecosystem :: Open Source">
                     <h2>TelcoSec Open-Source Projects &amp; Research Ecosystem</h2>
                     <p class="subtitle">Tools, labs, vulnerability databases, and community resources for telecom security professionals</p>
                 </div>

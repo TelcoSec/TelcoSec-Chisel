@@ -30,7 +30,8 @@
     <!-- Preconnect Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Barlow+Condensed:wght@300;400;600;700;900&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Barlow+Condensed:wght@300;400;600;700;900&display=swap"></noscript>
     
     <!-- Link Stylesheet -->
     <link rel="stylesheet" href="styles.css">
@@ -51,6 +52,8 @@
     </script>
 </head>
 <body>
+    <div id="bootOverlay" aria-hidden="true"><div class="boot-scan"></div></div>
+
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
     <div class="layout-container">
         <!-- Sidebar Navigation -->
@@ -59,7 +62,12 @@
                 <div class="brand-logo">T</div>
                 <div class="brand-text">TelcoSec<span>-Chisel</span></div>
             </div>
-            
+
+            <div class="sidebar-status">
+                <span class="status-dot"></span>
+                <span class="sidebar-status-text">System Active</span>
+            </div>
+
             <nav>
                 <div class="nav-section-title">Getting Started</div>
                 <ul class="nav-menu">
@@ -147,9 +155,10 @@
             
             <!-- SECTION: OVERVIEW -->
             <section id="overview" class="content-section active">
-                <div class="section-header">
+                <div class="section-header" data-label="// Overview :: TelcoSec-Chisel v1.1.0">
                     <h1>TelcoSec-Chisel</h1>
-                    <p class="subtitle">Telecom Security Auditing & Baseband Analysis Platform</p>
+                    <p class="subtitle">Telecom Security Auditing &amp; Baseband Analysis Platform</p>
+                    <canvas id="spectrumCanvas" aria-hidden="true"></canvas>
                 </div>
                 
                 <p>

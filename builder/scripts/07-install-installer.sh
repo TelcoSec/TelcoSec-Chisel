@@ -7,7 +7,7 @@ echo "=== Installing & Fully Optimizing Calamares Installer ==="
 if [ ! -f /tmp/.packages-installed ]; then
   echo "WARNING: Running standalone (packages not pre-installed)"
   sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
-      calamares calamares-settings-ubuntu \
+      calamares \
       qml-module-qtquick-controls qml-module-qtquick-controls2 \
       qml-module-qtquick-dialogs qml-module-qtquick-layouts \
       qml-module-qtquick-window2 \

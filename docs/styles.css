@@ -1101,6 +1101,7 @@ code.inline-code {
     justify-content: space-between;
     align-items: center;
     gap: 10px;
+    -webkit-user-select: none;
     user-select: none;
     transition: color var(--t);
 }

@@ -117,15 +117,17 @@ apt-get install -y \
   bison flex libpcap-dev libgcrypt20-dev \
   qtbase5-dev qttools5-dev qtmultimedia5-dev libqt5svg5-dev libc-ares-dev \
   libsdl2-mixer-2.0-0 libsdl2-image-2.0-0 libsdl2-2.0-0 \
+  libcurl4-openssl-dev \
   libelf-dev libffi-dev libdwarf-dev libwiretap-dev wireshark-dev python3-pycparser \
   protobuf-compiler protobuf-c-compiler libprotoc-dev libprotobuf-dev libprotobuf-c-dev libjsoncpp-dev \
   gdb-multiarch libcapstone-dev gcc-mipsel-linux-gnu gcc-arm-none-eabi \
   scons g++ make \
-  dfu-util \
+  dfu-util autoconf-archive \
+  libtalloc-dev libgnutls28-dev liburing-dev \
   `# osmo-simtrace2 — not available as pre-built deb; compiled from source in 06-install-ue-analysis.sh` \
   \
   `# === Calamares installer (07-install-installer.sh) ===` \
-  calamares calamares-settings-ubuntu-common \
+  calamares \
   qml-module-qtquick-controls qml-module-qtquick-controls2 \
   qml-module-qtquick-dialogs qml-module-qtquick-layouts \
   qml-module-qtquick-window2 \
