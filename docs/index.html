@@ -3,22 +3,190 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TelcoSec-Chisel | Telecom Security Linux Documentation</title>
-    
-    <!-- SEO Meta Tags -->
-    <meta name="description" content="Official documentation for TelcoSec-Chisel, a specialized Linux distribution for telecommunications security research, Software Defined Radio (SDR) analysis, and baseband auditing.">
-    <meta name="keywords" content="TelcoSec, Chisel, Linux, Telecom Security, SDR, 5G NR, 4G LTE, Baseband, FirmWire, 5Ghoul, gNodeB, USRP, HackRF, BladeRF">
-    <meta name="author" content="TelcoSec Project Team">
-    
-    <!-- Preconnect Fonts -->
+    <title>TelcoSec-Chisel — 5G/4G Telecom Security Linux Distribution</title>
+
+    <!-- Primary SEO -->
+    <meta name="description" content="Free bootable Linux OS for 5G and 4G telecom security research. Ships with GNU Radio, FirmWire, srsRAN, Open5GS, SIMtrace 2, and 25+ tools for SDR analysis, baseband auditing, and cellular protocol penetration testing.">
+    <meta name="keywords" content="telecom security linux, 5G security research, 4G LTE penetration testing, SDR security, baseband analysis, FirmWire, GNU Radio, srsRAN, Open5GS, SIMtrace, HackRF, USRP, BladeRF, TelcoSec-Chisel">
+    <meta name="author" content="TelcoSec">
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+    <meta name="theme-color" content="#00ffd5">
+    <link rel="canonical" href="https://telcosec.github.io/TelcoSec-Chisel/">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="TelcoSec">
+    <meta property="og:url" content="https://telcosec.github.io/TelcoSec-Chisel/">
+    <meta property="og:title" content="TelcoSec-Chisel — 5G/4G Telecom Security Linux Distribution">
+    <meta property="og:description" content="Free bootable Linux OS for 5G and 4G telecom security research. Ships with GNU Radio, FirmWire, srsRAN, Open5GS, SIMtrace 2, and 25+ tools for SDR analysis, baseband auditing, and cellular protocol penetration testing.">
+    <meta property="og:image" content="https://raw.githubusercontent.com/TelcoSec/TelcoSec-Chisel/main/assets/repo_cover.png">
+    <meta property="og:image:width" content="1280">
+    <meta property="og:image:height" content="640">
+    <meta property="og:image:alt" content="TelcoSec-Chisel — Telecom Security Linux Distribution">
+    <meta property="og:locale" content="en_US">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@TelcoSec">
+    <meta name="twitter:creator" content="@TelcoSec">
+    <meta name="twitter:url" content="https://telcosec.github.io/TelcoSec-Chisel/">
+    <meta name="twitter:title" content="TelcoSec-Chisel — 5G/4G Telecom Security Linux Distribution">
+    <meta name="twitter:description" content="Free bootable Linux OS for 5G and 4G telecom security research. Ships with GNU Radio, FirmWire, srsRAN, Open5GS, SIMtrace 2, and 25+ tools for SDR analysis, baseband auditing, and cellular protocol penetration testing.">
+    <meta name="twitter:image" content="https://raw.githubusercontent.com/TelcoSec/TelcoSec-Chisel/main/assets/repo_cover.png">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300ffd5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z'/%3E%3Cpath d='M12 8v4'/%3E%3Cpath d='M12 16h.01'/%3E%3C/svg%3E">
+
+    <!-- Google Fonts — non-blocking (prevents render-blocking penalty) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
-    
-    <!-- Link Stylesheet -->
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap"></noscript>
+
+    <!-- Stylesheet -->
     <link rel="stylesheet" href="styles.css">
+    <style>
+        /* FAQ accordion */
+        .faq-list { margin: 20px 0 30px; display: flex; flex-direction: column; gap: 10px; }
+        .faq-item { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; transition: border-color 0.2s; }
+        .faq-item[open] { border-color: var(--accent-teal); }
+        .faq-question { cursor: pointer; padding: 16px 20px; font-weight: 600; font-size: 1rem; color: #fff; list-style: none; display: flex; justify-content: space-between; align-items: center; }
+        .faq-question::-webkit-details-marker { display: none; }
+        .faq-question::after { content: '+'; color: var(--accent-teal); font-size: 1.4rem; line-height: 1; transition: transform 0.2s; }
+        .faq-item[open] .faq-question::after { transform: rotate(45deg); }
+        .faq-answer { padding: 0 20px 16px; color: var(--text-secondary); line-height: 1.7; }
+    </style>
+
+    <!-- Structured Data (JSON-LD) -->
+    <script type="application/ld+json">
+    [
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "TelcoSec-Chisel",
+        "applicationCategory": "SecurityApplication",
+        "applicationSubCategory": "Telecommunications Security, Software Defined Radio, Baseband Analysis",
+        "operatingSystem": "Linux (Ubuntu 24.04 LTS)",
+        "description": "TelcoSec-Chisel is a free, bootable live Linux distribution purpose-built for 5G and 4G telecom security research. It ships with 25+ pre-configured tools including GNU Radio, FirmWire baseband emulation, srsRAN, Open5GS, SIMtrace 2, QCSuper, Wireshark, and the 5Ghoul 5G NR fuzzer.",
+        "url": "https://telcosec.github.io/TelcoSec-Chisel/",
+        "downloadUrl": "https://github.com/TelcoSec/TelcoSec-Chisel/releases",
+        "softwareVersion": "1.1.0",
+        "releaseNotes": "https://github.com/TelcoSec/TelcoSec-Chisel/releases",
+        "screenshot": "https://raw.githubusercontent.com/TelcoSec/TelcoSec-Chisel/main/assets/repo_cover.png",
+        "featureList": [
+          "SDR drivers for USRP B210, HackRF One, BladeRF, LimeSDR, and RTL-SDR compiled from source",
+          "Baseband firmware emulation with FirmWire (Samsung Shannon and MediaTek MTK)",
+          "5G NR fuzzing with 5Ghoul over OAI rogue gNodeB",
+          "SIM and eSIM auditing with pySim-shell, SIMtrace 2, and lpac LPA",
+          "5G SA core network with Open5GS and MongoDB",
+          "4G/5G RAN simulation with srsRAN",
+          "SS7, Diameter, GTP, and SIP protocol exploitation tools",
+          "Custom Wireshark dissector profiles for GSMTAP, 5G NAS, Diameter, and GTP",
+          "SCTP kernel tuning and real-time scheduling for SDR stability",
+          "Calamares live-to-disk installer"
+        ],
+        "license": "https://github.com/TelcoSec/TelcoSec-Chisel/blob/main/LICENSE",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD",
+          "availability": "https://schema.org/InStock"
+        },
+        "publisher": {
+          "@type": "Organization",
+          "name": "TelcoSec",
+          "url": "https://telcosec.net/",
+          "sameAs": [
+            "https://github.com/TelcoSec",
+            "https://www.linkedin.com/company/telco-sec",
+            "https://www.youtube.com/@Telecom-Security"
+          ]
+        }
+      },
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "TelcoSec-Chisel Documentation",
+        "url": "https://telcosec.github.io/TelcoSec-Chisel/",
+        "description": "Official documentation for TelcoSec-Chisel — a free Linux distribution for 5G/4G telecom security research.",
+        "publisher": {
+          "@type": "Organization",
+          "name": "TelcoSec",
+          "url": "https://telcosec.net/"
+        },
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": "https://telcosec.github.io/TelcoSec-Chisel/#tools?q={search_term_string}",
+          "query-input": "required name=search_term_string"
+        }
+      },
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "What is TelcoSec-Chisel?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "TelcoSec-Chisel is a free, bootable live Linux distribution based on Ubuntu 24.04 LTS (Noble Numbat) with an XFCE desktop, purpose-built for telecommunications security research. It includes over 25 pre-configured tools for Software Defined Radio (SDR) analysis, baseband firmware auditing, SIM and eSIM inspection, and 5G/4G core network penetration testing."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What SDR hardware does TelcoSec-Chisel support?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "TelcoSec-Chisel includes drivers compiled from source for the Ettus Research USRP B210, Great Scott Gadgets HackRF One, Nuand BladeRF 2.0 micro xA4, LimeSDR, and RTL-SDR dongles. All radio drivers and GNU Radio are isolated in a Conda virtual environment named telcosec-sdr to prevent dependency conflicts."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What are the default login credentials for TelcoSec-Chisel?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "The default live boot credentials are username: telcosec and password: telcosec. The system is configured for graphical autologin, so you will only be prompted if autologin is disabled."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How do I build the TelcoSec-Chisel ISO?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Run 'sudo ./build-iso.sh' on an Ubuntu or Debian host after installing: debootstrap, squashfs-tools, grub-pc-bin, grub-efi-amd64-bin, xorriso, and mtools. The build requires approximately 20 GB of free disk space and takes 30 to 60 minutes. On Windows, you can build inside WSL2."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I run TelcoSec-Chisel in a virtual machine?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Most analysis tools work in a VM. However, SDR tools requiring native USB 3.0 passthrough — particularly when running the 5Ghoul 5G NR fuzzer — need bare metal installation for reliable operation due to USB latency requirements."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How do I install 5Ghoul on TelcoSec-Chisel?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Run 'sudo 5ghoul-install' for a USRP B210, or 'sudo 5ghoul-install --radio BLADERF' for a BladeRF A4. The installer clones the 5Ghoul repository, applies radio-specific patches, and compiles OpenAirInterface. This takes 20–60 minutes on first run. All build dependencies are pre-installed in the ISO."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What telecom protocol analysis tools are included?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "TelcoSec-Chisel includes: Wireshark with custom GSMTAP/5G NAS/Diameter/GTP dissector profiles, SigPloit (SS7/Diameter/GTP exploitation), Diafuzzer (Diameter fuzzer by Orange), SIPVicious (SIP/VoIP scanner), sctpscan (SCTP port scanner for SIGTRAN/S1AP/NGAP), and Scapy with built-in modules for M3UA, TCAP, MAP, and Diameter packet crafting."
+            }
+          }
+        ]
+      }
+    ]
+    </script>
 </head>
 <body>
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
     <div class="layout-container">
         <!-- Sidebar Navigation -->
         <aside class="sidebar">
@@ -31,54 +199,54 @@
                 <div class="nav-section-title">Getting Started</div>
                 <ul class="nav-menu">
                     <li>
-                        <div class="nav-link active" data-target="overview" id="navLinkOverview">
+                        <a class="nav-link active" data-target="overview" id="navLinkOverview" href="#overview">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"></rect><rect x="14" y="3" width="7" height="5"></rect><rect x="14" y="12" width="7" height="9"></rect><rect x="3" y="16" width="7" height="5"></rect></svg>
                             Overview
-                        </div>
+                        </a>
                     </li>
                     <li>
-                        <div class="nav-link" data-target="features" id="navLinkFeatures">
+                        <a class="nav-link" data-target="features" id="navLinkFeatures" href="#features">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
                             OS Optimizations
-                        </div>
+                        </a>
                     </li>
                 </ul>
 
                 <div class="nav-section-title">Reference</div>
                 <ul class="nav-menu">
                     <li>
-                        <div class="nav-link" data-target="tools" id="navLinkTools">
+                        <a class="nav-link" data-target="tools" id="navLinkTools" href="#tools">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
                             Tools Directory
-                        </div>
+                        </a>
                     </li>
                     <li>
-                        <div class="nav-link" data-target="drivers" id="navLinkDrivers">
+                        <a class="nav-link" data-target="drivers" id="navLinkDrivers" href="#drivers">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="14.31" y1="8" x2="20.05" y2="17.94"></line><line x1="9.69" y1="8" x2="21.17" y2="8"></line><line x1="7.38" y1="12" x2="13.12" y2="2.06"></line><line x1="9.69" y1="16" x2="3.95" y2="6.06"></line><line x1="14.31" y1="16" x2="2.83" y2="16"></line><line x1="16.62" y1="12" x2="10.88" y2="21.94"></line></svg>
-                            Drivers & Hardware
-                        </div>
+                            Drivers &amp; Hardware
+                        </a>
                     </li>
                     <li>
-                        <div class="nav-link" data-target="projects" id="navLinkProjects">
+                        <a class="nav-link" data-target="projects" id="navLinkProjects" href="#projects">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
                             TelcoSec Projects
-                        </div>
+                        </a>
                     </li>
                 </ul>
 
                 <div class="nav-section-title">Specialized Guides</div>
                 <ul class="nav-menu">
                     <li>
-                        <div class="nav-link" data-target="fuzzer" id="navLinkFuzzer">
+                        <a class="nav-link" data-target="fuzzer" id="navLinkFuzzer" href="#fuzzer">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
                             5Ghoul Fuzzing
-                        </div>
+                        </a>
                     </li>
                     <li>
-                        <div class="nav-link" data-target="builder" id="navLinkBuilder">
+                        <a class="nav-link" data-target="builder" id="navLinkBuilder" href="#builder">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
                             ISO Builder
-                        </div>
+                        </a>
                     </li>
                 </ul>
             </nav>
@@ -115,12 +283,12 @@
             <!-- SECTION: OVERVIEW -->
             <section id="overview" class="content-section active">
                 <div class="section-header">
-                    <h1>TelcoSec-Chisel</h1>
-                    <p class="subtitle">Telecom Security Auditing & Baseband Analysis Platform</p>
+                    <h1>TelcoSec-Chisel — Telecom Security Linux Distribution</h1>
+                    <p class="subtitle">Bootable live OS for 5G/4G security research, SDR analysis, and baseband auditing</p>
                 </div>
-                
+
                 <p>
-                    <strong>TelcoSec-Chisel</strong> is a bootable Live Linux distribution purpose-built for cellular security researchers, Software Defined Radio (SDR) engineers, and hardware pentesters. Based on <strong>Ubuntu 24.04 LTS (Noble Numbat)</strong> with a customized, low-overhead XFCE desktop environment, it packs pre-configured drivers, simulation frameworks, protocol dissectors, and smartcard utilities.
+                    <strong>TelcoSec-Chisel</strong> is a free, bootable live Linux distribution purpose-built for cellular security researchers, Software Defined Radio (SDR) engineers, and hardware pentesters. Based on <strong>Ubuntu 24.04 LTS (Noble Numbat)</strong> with a low-overhead XFCE desktop, it ships with 25+ pre-configured tools covering SDR drivers, 5G core simulation, baseband emulation, SIM auditing, and telecom protocol fuzzing — ready to use without installation.
                 </p>
 
                 <!-- Academy Banner Promotion -->
@@ -162,7 +330,7 @@
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--accent-teal);"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
                             Baseband Emulation
                         </div>
-                        <p class="card-desc">Audit baseband firmware binaries using FirmWire. MobileInsight and QCSuper parse diagnostic logs directly from active test UE devices.</p>
+                        <p class="card-desc">Audit baseband firmware binaries using FirmWire. QCSuper parses diagnostic logs directly from active test UE devices connected via Qualcomm DIAG USB.</p>
                     </div>
                     <div class="card">
                         <div class="card-title">
@@ -178,6 +346,54 @@
                         </div>
                         <p class="card-desc">Audit SIGTRAN, Diameter, SIP/VoIP, and GTP cores with Diafuzzer, SigPloit, SIPVicious, and custom Wireshark protocol dissecting profiles.</p>
                     </div>
+                </div>
+
+                <!-- FAQ — also serialised as FAQPage schema in <head> for rich results -->
+                <h2>Frequently Asked Questions</h2>
+                <div class="faq-list">
+
+                    <details class="faq-item">
+                        <summary class="faq-question">What is TelcoSec-Chisel?</summary>
+                        <div class="faq-answer">
+                            TelcoSec-Chisel is a free, bootable live Linux distribution based on Ubuntu 24.04 LTS with an XFCE desktop, purpose-built for telecommunications security research. It includes 25+ pre-configured tools for Software Defined Radio (SDR) analysis, baseband firmware auditing, SIM and eSIM inspection, and 5G/4G core network penetration testing — no installation required.
+                        </div>
+                    </details>
+
+                    <details class="faq-item">
+                        <summary class="faq-question">What SDR hardware does TelcoSec-Chisel support?</summary>
+                        <div class="faq-answer">
+                            Drivers compiled from source for the Ettus Research <strong>USRP B210</strong>, Great Scott Gadgets <strong>HackRF One</strong>, Nuand <strong>BladeRF 2.0 micro xA4</strong>, <strong>LimeSDR</strong>, and <strong>RTL-SDR</strong> dongles. All SDR drivers and GNU Radio are sandboxed in a Conda environment named <code class="inline-code">telcosec-sdr</code> to prevent system Python conflicts.
+                        </div>
+                    </details>
+
+                    <details class="faq-item">
+                        <summary class="faq-question">Can I run TelcoSec-Chisel in a virtual machine?</summary>
+                        <div class="faq-answer">
+                            Most analysis and protocol tools work in a VM. However, SDR tools that stream high-bandwidth samples — particularly the <strong>5Ghoul 5G NR fuzzer</strong> — require bare metal installation with native USB 3.0 passthrough for reliable operation. Running inside VirtualBox or VMware will cause USB overrun errors.
+                        </div>
+                    </details>
+
+                    <details class="faq-item">
+                        <summary class="faq-question">How do I install 5Ghoul for 5G NR fuzzing?</summary>
+                        <div class="faq-answer">
+                            All build dependencies are pre-installed. Run <code class="inline-code">sudo 5ghoul-install</code> for a USRP B210, or <code class="inline-code">sudo 5ghoul-install --radio BLADERF</code> for a BladeRF A4. The installer clones the repository, applies radio patches, and compiles OpenAirInterface. Allow 20–60 minutes for compilation. See the <strong>5Ghoul Fuzzing</strong> guide in this documentation for the full workflow.
+                        </div>
+                    </details>
+
+                    <details class="faq-item">
+                        <summary class="faq-question">What telecom protocol tools are included?</summary>
+                        <div class="faq-answer">
+                            <strong>Protocol scanners:</strong> sctpscan (SCTP/S1AP/NGAP/Diameter), SIPVicious (SIP/VoIP). <strong>Exploitation:</strong> SigPloit (SS7/Diameter/GTP), Diafuzzer (Diameter). <strong>Packet analysis:</strong> Wireshark with custom GSMTAP, 5G NAS, Diameter, and GTP column profiles; Scapy with M3UA, TCAP, and MAP modules. <strong>Core network:</strong> Open5GS (5G SA), srsRAN (4G/5G RAN simulator).
+                        </div>
+                    </details>
+
+                    <details class="faq-item">
+                        <summary class="faq-question">What are the default live boot credentials?</summary>
+                        <div class="faq-answer">
+                            Username: <code class="inline-code">telcosec</code> — Password: <code class="inline-code">telcosec</code>. The system is configured for graphical autologin; you will only be prompted if autologin has been disabled.
+                        </div>
+                    </details>
+
                 </div>
 
                 <h2>Quick Links</h2>
@@ -200,8 +416,8 @@
             <!-- SECTION: OPTIMIZATIONS -->
             <section id="features" class="content-section">
                 <div class="section-header">
-                    <h2>OS Customizations & Tuning</h2>
-                    <p class="subtitle">Lowering latency and unlocking kernel interfaces for telecom auditing</p>
+                    <h2>OS Customizations &amp; Kernel Tuning for Telecom Security</h2>
+                    <p class="subtitle">Real-time scheduling, SCTP stack tuning, and low-latency USB for SDR and signaling tools</p>
                 </div>
                 
                 <p>
@@ -280,14 +496,20 @@ ACTION==&quot;add&quot;, SUBSYSTEM==&quot;usb&quot;, ATTR{idVendor}==&quot;1d50&
             <!-- SECTION: TOOLS -->
             <section id="tools" class="content-section">
                 <div class="section-header">
-                    <h2>Tools Directory</h2>
-                    <p class="subtitle">Complete catalog of software pre-installed in the TelcoSec-Chisel image</p>
+                    <h2>Tools Directory — 25+ Pre-installed Telecom Security Tools</h2>
+                    <p class="subtitle">Complete catalog of SDR, baseband, SIM, RAN, and signaling tools pre-installed in TelcoSec-Chisel</p>
                 </div>
                 
                 <div class="directory-controls">
-                    <div class="search-wrapper">
+                    <div class="search-wrapper" id="searchWrapper">
                         <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
                         <input type="text" id="toolSearch" class="search-input" placeholder="Search tools by name, command, or details...">
+                        <div class="search-shortcut" id="searchShortcut">
+                            <kbd>/</kbd>
+                        </div>
+                        <button class="search-clear-btn" id="searchClearBtn" aria-label="Clear Search" style="display: none;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                        </button>
                     </div>
                     <div class="filter-tags">
                         <button class="filter-btn active" data-filter="all" id="filterBtnAll">All Tools</button>
@@ -307,8 +529,8 @@ ACTION==&quot;add&quot;, SUBSYSTEM==&quot;usb&quot;, ATTR{idVendor}==&quot;1d50&
             <!-- SECTION: DRIVERS -->
             <section id="drivers" class="content-section">
                 <div class="section-header">
-                    <h2>Drivers & Hardware Access</h2>
-                    <p class="subtitle">Plugging in transceivers, readers, and sniffers without root</p>
+                    <h2>SDR Drivers &amp; Hardware Access — USRP, HackRF, BladeRF, LimeSDR, RTL-SDR</h2>
+                    <p class="subtitle">Non-root USB access for SDR transceivers and smartcard readers via custom udev rules</p>
                 </div>
                 
                 <p>
@@ -382,8 +604,8 @@ pcsc_scan</code></pre>
             <!-- SECTION: FUZZER -->
             <section id="fuzzer" class="content-section">
                 <div class="section-header">
-                    <h2>5Ghoul Fuzzer Guide</h2>
-                    <p class="subtitle">Fuzzing 5G NR mobile modems on TelcoSec-Chisel</p>
+                    <h2>5Ghoul — 5G NR Baseband Fuzzer Setup Guide</h2>
+                    <p class="subtitle">Install, configure, and run the 5Ghoul fuzzer against 5G NR UE modems using USRP B210 or BladeRF A4</p>
                 </div>
                 
                 <p>
@@ -470,8 +692,8 @@ sudo 5ghoul-run --Attack.Name=NAS_5GS_Fuzz --UE.IMSI=001011234567890</code></pre
             <!-- SECTION: BUILDER -->
             <section id="builder" class="content-section">
                 <div class="section-header">
-                    <h2>Developer Guide</h2>
-                    <p class="subtitle">Building the Live ISO from scratch</p>
+                    <h2>Developer Guide — Building the TelcoSec-Chisel Live ISO</h2>
+                    <p class="subtitle">Build the bootable Ubuntu 24.04 ISO from source on any Ubuntu/Debian host or WSL2</p>
                 </div>
                 
                 <p>
@@ -549,7 +771,7 @@ sudo ./build-iso.sh</code></pre>
                         </tr>
                         <tr style="border-bottom: 1px solid var(--border-color);">
                             <td style="padding: 12px; font-family: monospace; color: var(--accent-teal);">06-install-ue-analysis.sh</td>
-                            <td style="padding: 12px; color: var(--text-secondary);">Deploys FirmWire baseband QEMU environment, MobileInsight, QCSuper, and card programming scripts.</td>
+                            <td style="padding: 12px; color: var(--text-secondary);">Deploys FirmWire baseband QEMU environment, QCSuper, and card programming scripts.</td>
                         </tr>
                         <tr style="border-bottom: 1px solid var(--border-color);">
                             <td style="padding: 12px; font-family: monospace; color: var(--accent-teal);">07-install-installer.sh</td>
@@ -570,8 +792,8 @@ sudo ./build-iso.sh</code></pre>
             <!-- SECTION: PROJECTS -->
             <section id="projects" class="content-section">
                 <div class="section-header">
-                    <h2>TelcoSec Projects & Ecosystem</h2>
-                    <p class="subtitle">Open source tools, frameworks, and platform research developed by the TelcoSec community</p>
+                    <h2>TelcoSec Open-Source Projects &amp; Research Ecosystem</h2>
+                    <p class="subtitle">Tools, labs, vulnerability databases, and community resources for telecom security professionals</p>
                 </div>
 
                 <p>

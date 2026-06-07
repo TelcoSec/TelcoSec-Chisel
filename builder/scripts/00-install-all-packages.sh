@@ -167,7 +167,15 @@ update-alternatives --install /usr/bin/clang   clang   /usr/bin/clang-15   100 |
 update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-15 100 || true
 update-alternatives --install /usr/bin/lld     lld     /usr/bin/lld-15     100 || true
 
-# ─── 7. Mark phase 0 complete ───────────────────────────────────────────────
+# ─── 7. Hand typing-extensions ownership to pip ─────────────────────────────
+# Ubuntu 24.04 installs typing-extensions via apt without a pip RECORD file.
+# Any subsequent pip install that tries to upgrade it aborts with
+# "Cannot uninstall … RECORD file not found". Force-reinstalling it now
+# gives pip a proper RECORD file so later installs can upgrade it freely.
+pip3 install --break-system-packages --force-reinstall --no-deps \
+  typing-extensions || true
+
+# ─── 8. Mark phase 0 complete ───────────────────────────────────────────────
 
 touch /tmp/.packages-installed
 echo "=== [Phase 0] All packages installed successfully ==="

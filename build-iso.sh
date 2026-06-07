@@ -10,9 +10,40 @@ if [ "$EUID" -ne 0 ]; then
   exit 1
 fi
 
-WORKDIR="live-iso-work"
+# Detect if the workspace directory is on a filesystem that doesn't support debootstrap
+# (e.g. WSL's 9p mount, VirtualBox vboxsf, fuse, or Windows NTFS/vfat/msdos mounts).
+# If it is, use a local Linux directory on a native filesystem (like ext4) for the build workdir.
+FS_TYPE=$(df -T . | awk 'NR==2 {print $2}')
+if [[ "$FS_TYPE" =~ ^(9p|drvfs|vboxsf|fuse|cifs|nfs|vfat|ntfs|msdos)$ ]]; then
+  echo "--> Detected '$FS_TYPE' filesystem on current directory."
+  echo "--> 9p/drvfs/non-POSIX filesystems do not support POSIX special files (devices/symlinks)."
+  echo "--> Redirecting build WORKDIR to /var/tmp/live-iso-work..."
+  WORKDIR="/var/tmp/live-iso-work"
+else
+  WORKDIR="live-iso-work"
+fi
+
 ROOTFS="$WORKDIR/chroot"
 IMAGE_NAME="telcosec-chisel-live.iso"
+
+# Setup cleanup trap for mounts
+cleanup() {
+  echo "--> Cleaning up mounts..."
+  umount -lf "$ROOTFS/dev/pts" 2>/dev/null || true
+  umount -lf "$ROOTFS/dev" 2>/dev/null || true
+  umount -lf "$ROOTFS/sys" 2>/dev/null || true
+  umount -lf "$ROOTFS/proc" 2>/dev/null || true
+}
+trap cleanup EXIT
+
+# Run cleanup first to unmount any leftovers from previous failed builds
+cleanup
+
+# Clean up old chroot directory to ensure debootstrap starts fresh
+if [ -d "$ROOTFS" ]; then
+  echo "--> Removing old chroot directory..."
+  rm -rf "$ROOTFS"
+fi
 
 # ─── Helper: timed script runner ────────────────────────────────────────────
 run_script() {
@@ -32,27 +63,17 @@ run_script() {
   echo ">>> Finished $name in ${mins}m ${secs}s"
 }
 
-mkdir -p $ROOTFS
+mkdir -p "$ROOTFS"
 
 echo "--> Bootstrapping base Ubuntu system..."
-debootstrap --arch=amd64 noble $ROOTFS http://archive.ubuntu.com/ubuntu/
+debootstrap --arch=amd64 noble "$ROOTFS" http://archive.ubuntu.com/ubuntu/
 
 echo "--> Configuring APT repositories inside chroot..."
-cat << 'EOF' > $ROOTFS/etc/apt/sources.list
+cat << 'EOF' > "$ROOTFS/etc/apt/sources.list"
 deb http://archive.ubuntu.com/ubuntu/ noble main restricted universe multiverse
 deb http://archive.ubuntu.com/ubuntu/ noble-updates main restricted universe multiverse
 deb http://security.ubuntu.com/ubuntu/ noble-security main restricted universe multiverse
 EOF
-
-# Setup cleanup trap for mounts
-cleanup() {
-  echo "--> Cleaning up mounts..."
-  umount -lf $ROOTFS/dev/pts || true
-  umount -lf $ROOTFS/dev || true
-  umount -lf $ROOTFS/sys || true
-  umount -lf $ROOTFS/proc || true
-}
-trap cleanup EXIT
 
 echo "--> Copying builder scripts into chroot..."
 cp -r builder/scripts $ROOTFS/tmp/scripts
@@ -114,8 +135,8 @@ chroot $ROOTFS /bin/bash -ec "
   find /opt/telcosec/src -name '*.o' -delete 2>/dev/null || true
   find /opt/telcosec/src -name 'CMakeFiles' -type d -exec rm -rf {} + 2>/dev/null || true
 
-  # Documentation and man pages (saves ~100-200 MB)
-  rm -rf /usr/share/doc/*
+  # Documentation and man pages (saves ~100-200 MB, keeps our docs)
+  find /usr/share/doc -mindepth 1 -maxdepth 1 ! -name 'telcosec' -exec rm -rf {} +
   rm -rf /usr/share/man/*
 
   # Log files

@@ -33,11 +33,7 @@ cd /opt/telcosec
 (git clone --depth 1 https://github.com/FirmWire/FirmWire.git firmwire) &
 PID_FIRMWIRE=$!
 
-(git clone --depth 1 https://github.com/mobile-insight/mobileinsight-core.git mobileinsight-core) &
-PID_MOBILEINSIGHT=$!
 
-(git clone --depth 1 https://github.com/P1sec/QCSuper.git qcsuper) &
-PID_QCSUPER=$!
 
 (git clone --depth 1 https://github.com/forth32/balongflash.git balong-flash) &
 PID_BALONG_FLASH=$!
@@ -59,7 +55,7 @@ PID_SIMTRACE2=$!
 
 # Wait for all clones to complete
 echo "Waiting for all git clones to finish..."
-wait $PID_FIRMWIRE $PID_MOBILEINSIGHT $PID_QCSUPER $PID_BALONG_FLASH $PID_BALONGTOOL $PID_MTK $PID_PYSIM $PID_LPAC $PID_SIMTRACE2
+wait $PID_FIRMWIRE $PID_BALONG_FLASH $PID_BALONGTOOL $PID_MTK $PID_PYSIM $PID_LPAC $PID_SIMTRACE2
 echo "All repositories cloned successfully."
 
 # Download SIMtrace 2 firmware binaries into the newly cloned directory
@@ -100,6 +96,8 @@ cd /tmp/rocksdb-build
 /opt/telcosec/firmwire/venv/bin/pip download --no-binary :all: --no-deps rocksdb
 tar -xzf rocksdb-*.tar.gz
 cd rocksdb-*/
+
+# Patch 1: filter_policy_wrapper.hpp — add missing virtual method overrides (RocksDB 7+)
 python3 -c "
 with open('rocksdb/cpp/filter_policy_wrapper.hpp', 'r') as f:
     content = f.read()
@@ -124,6 +122,73 @@ new_content = content.replace('            virtual const char* Name() const {', 
 with open('rocksdb/cpp/filter_policy_wrapper.hpp', 'w') as f:
     f.write(new_content)
 "
+
+# Patch 2: _rocksdb.pyx & options.pxd & table_factory.pxd & filter_policy.pxd
+python3 - <<'PYEOF'
+import re, pathlib
+
+# Patch _rocksdb.pyx properties
+pyx = pathlib.Path('rocksdb/_rocksdb.pyx').read_text()
+
+# Remove properties from ColumnFamilyOptions/Options
+for prop in ['purge_redundant_kvs_while_flush', 'rate_limit_delay_max_milliseconds', 'soft_rate_limit', 'hard_rate_limit', 'max_mem_compaction_level', 'skip_log_error_on_recovery']:
+    pyx = re.sub(
+        r'\s*property ' + prop + r':\s*'
+        r'def __get__\(self\):.*?'
+        r'def __set__\(self, \w+\):.*?self\.(copts|opts)\.' + prop + r'\s*=\s*\w+\b[^\n]*\n',
+        '\n',
+        pyx,
+        flags=re.DOTALL
+    )
+
+# Comment out hash_index_allow_collision and block_cache_compressed assignments in BlockBasedTableFactory
+pyx = pyx.replace(
+    '        if hash_index_allow_collision:\n            table_options.hash_index_allow_collision = True\n        else:\n            table_options.hash_index_allow_collision = False',
+    '        # disabled hash_index_allow_collision for RocksDB 7+'
+)
+pyx = pyx.replace(
+    '        if block_cache_compressed is not None:\n            table_options.block_cache_compressed = block_cache_compressed.get_cache()',
+    '        # disabled block_cache_compressed for RocksDB 7+'
+)
+
+# Patch PyBloomFilterPolicy in _rocksdb.pyx
+pyx = pyx.replace(
+    '    def create_filter(self, keys):\n        cdef string dst\n        cdef vector[Slice] c_keys\n\n        for key in keys:\n            c_keys.push_back(bytes_to_slice(key))\n\n        self.policy.get().CreateFilter(\n            vector_data(c_keys),\n            <int>c_keys.size(),\n            cython.address(dst))\n\n        return string_to_bytes(dst)',
+    '    def create_filter(self, keys):\n        raise NotImplementedError("create_filter is not supported in RocksDB 7+")'
+)
+pyx = pyx.replace(
+    '    def key_may_match(self, key, filter_):\n        return self.policy.get().KeyMayMatch(\n            bytes_to_slice(key),\n            bytes_to_slice(filter_))',
+    '    def key_may_match(self, key, filter_):\n        raise NotImplementedError("key_may_match is not supported in RocksDB 7+")'
+)
+
+pathlib.Path('rocksdb/_rocksdb.pyx').write_text(pyx)
+print("Patched _rocksdb.pyx successfully")
+
+# Patch table_factory.pxd
+pxd = pathlib.Path('rocksdb/table_factory.pxd').read_text()
+pxd = pxd.replace('        cpp_bool hash_index_allow_collision\n', '')
+pxd = pxd.replace('        shared_ptr[Cache] block_cache_compressed\n', '')
+pathlib.Path('rocksdb/table_factory.pxd').write_text(pxd)
+print("Patched table_factory.pxd successfully")
+
+# Patch filter_policy.pxd
+f_pxd = pathlib.Path('rocksdb/filter_policy.pxd').read_text()
+f_pxd = f_pxd.replace('        void CreateFilter(const Slice*, int, string*) nogil except+\n', '')
+f_pxd = f_pxd.replace('        cpp_bool KeyMayMatch(const Slice&, const Slice&) nogil except+\n', '')
+pathlib.Path('rocksdb/filter_policy.pxd').write_text(f_pxd)
+print("Patched filter_policy.pxd successfully")
+
+# Patch setup.py to use C++17 (required by modern RocksDB headers on Ubuntu 24.04 noble)
+setup_py = pathlib.Path('setup.py').read_text()
+setup_py = setup_py.replace("'-std=c++11'", "'-std=c++17'")
+pathlib.Path('setup.py').write_text(setup_py)
+print("Patched setup.py to compile with C++17 successfully")
+PYEOF
+
+# Remove the pre-compiled C++ source file so setuptools/pip is forced
+# to run Cython to regenerate _rocksdb.cpp from our patched _rocksdb.pyx.
+rm -f rocksdb/_rocksdb.cpp
+
 /opt/telcosec/firmwire/venv/bin/pip install --no-build-isolation .
 cd /opt/telcosec/firmwire
 rm -rf /tmp/rocksdb-build
@@ -131,18 +196,11 @@ rm -rf /tmp/rocksdb-build
 ./venv/bin/pip install -r requirements.txt
 
 
-# MobileInsight (Qualcomm/MediaTek over-the-air protocol parser)
-echo "Installing MobileInsight..."
-cd /opt/telcosec/mobileinsight-core
-# Patch qt5-default package out of the installer since it is deprecated in newer Ubuntu versions
-sed -i 's/qt5-default/qtbase5-dev/g' install-ubuntu.sh
-# Run the installation
-sudo ./install-ubuntu.sh
 
 # QCSuper (Qualcomm DIAG port traffic capture and Wireshark dissection)
+# Installed from PyPI — QCSuper no longer ships a requirements.txt in the repo.
 echo "Installing QCSuper..."
-cd /opt/telcosec/qcsuper
-sudo pip3 install -r requirements.txt --break-system-packages
+pip3 install --upgrade qcsuper --break-system-packages
 
 # Balong-Flash & Balongtool (Huawei Balong modem flashing and engineering)
 echo "Compiling Huawei Balong Flashing Tools..."
@@ -155,16 +213,19 @@ make
 # MTKClient (MediaTek BootROM bypass, flashing and partitioning)
 echo "Installing MediaTek client (mtkclient)..."
 cd /opt/telcosec/mtkclient
-sudo pip3 install -r requirements.txt --break-system-packages
-python3 setup.py build
-sudo python3 setup.py install --break-system-packages
+# MTKClient's requirements.txt lists both 'keystone-engine' (the assembler, needed)
+# and bare 'keystone' (OpenStack identity service, a stale upstream mistake). The
+# OpenStack package pulls in the entire oslo.* stack which then tries to upgrade
+# apt-managed typing-extensions — causing a pip RECORD-file abort. Strip it out.
+grep -v '^keystone[[:space:]]*$' requirements.txt > /tmp/mtkclient-req.txt
+sudo pip3 install -r /tmp/mtkclient-req.txt --break-system-packages
+sudo pip3 install --break-system-packages .
 
 # pySim (SIM/USIM smartcard programming and operations)
 echo "Installing Osmocom pySim smartcard utility..."
 cd /opt/telcosec/pysim
 sudo pip3 install -r requirements.txt --break-system-packages
-python3 setup.py build
-sudo python3 setup.py install --break-system-packages
+sudo pip3 install --break-system-packages .
 
 # lpac (eSIM Local Profile Assistant tool for profile downloads & management)
 echo "Compiling and installing lpac eSIM profile manager..."
