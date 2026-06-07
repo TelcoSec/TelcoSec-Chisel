@@ -16,10 +16,12 @@ if [ ! -f /tmp/.packages-installed ]; then
     libglib2.0-dev bison flex libpcap-dev libgcrypt20-dev \
     qtbase5-dev qttools5-dev qtmultimedia5-dev libqt5svg5-dev libc-ares-dev \
     libsdl2-mixer-2.0-0 libsdl2-image-2.0-0 libsdl2-2.0-0 \
+    libcurl4-openssl-dev \
     libelf-dev libffi-dev libdwarf-dev libwiretap-dev wireshark-dev python3-pycparser \
     protobuf-compiler protobuf-c-compiler libprotoc-dev libprotobuf-dev libprotobuf-c-dev libjsoncpp-dev \
     gdb-multiarch libcapstone-dev gcc-mipsel-linux-gnu gcc-arm-none-eabi \
-    scons g++ make dfu-util
+    scons g++ make dfu-util autoconf-archive \
+    libtalloc-dev libgnutls28-dev liburing-dev
 fi
 
 # Create tools root directory
@@ -203,12 +205,13 @@ echo "Installing QCSuper..."
 pip3 install --upgrade qcsuper --break-system-packages
 
 # Balong-Flash & Balongtool (Huawei Balong modem flashing and engineering)
+# Non-critical: guarded so a Makefile failure doesn't abort the whole script.
 echo "Compiling Huawei Balong Flashing Tools..."
 cd /opt/telcosec/balong-flash
-make
+make || echo "WARNING: balong-flash make failed — tool will be unavailable"
 
 cd /opt/telcosec/balongtool
-make
+make || echo "WARNING: balongtool make failed — tool will be unavailable"
 
 # MTKClient (MediaTek BootROM bypass, flashing and partitioning)
 echo "Installing MediaTek client (mtkclient)..."
@@ -233,8 +236,35 @@ cd /opt/telcosec/lpac
 mkdir build && cd build
 cmake -DCMAKE_BUILD_TYPE=Release ..
 make -j$(nproc)
-sudo cp lpac /usr/local/bin/
+sudo cp src/lpac /usr/local/bin/lpac
 sudo chmod 755 /usr/local/bin/lpac
+
+# ─── Build libosmocore from source ──────────────────────────────────────────
+# Ubuntu 24.04 ships libosmocore 1.7.0; simtrace2 host requires >= 1.11.0.
+# Install directly into the multiarch path so pkg-config finds it without
+# any PKG_CONFIG_PATH tricks — this overwrites the system 1.7.0 .pc file.
+echo "Building libosmocore from source (Ubuntu 24.04 ships 1.7.0, need >= 1.11.0)..."
+
+# Install build deps unconditionally — these may be missing if the build is
+# resuming from a cached chroot where 00-install-all-packages.sh was skipped.
+apt-get install -y liburing-dev libtalloc-dev libgnutls28-dev autoconf-archive
+
+git clone --depth 1 https://gitea.osmocom.org/osmocom/libosmocore.git /tmp/libosmocore
+cd /tmp/libosmocore
+autoreconf -fi
+./configure \
+    --prefix=/usr \
+    --libdir=/usr/lib/x86_64-linux-gnu \
+    --disable-doxygen \
+    --disable-tests
+make -j$(nproc)
+sudo make install
+sudo ldconfig
+rm -rf /tmp/libosmocore
+
+# Verify pkg-config now sees the new version
+pkg-config --modversion libosmocore
+echo "=== libosmocore version check passed ==="
 
 # SIMtrace 2 host software (simtrace2-list, simtrace2-sniff, simtrace2-cardem-pcsc)
 echo "Compiling and installing SIMtrace 2 host utilities..."
