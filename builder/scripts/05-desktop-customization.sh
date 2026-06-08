@@ -6,19 +6,82 @@ echo "=== Customizing Desktop Environment ==="
 # 1. Custom Wallpaper & LightDM Login Background
 echo "Setting up branding directories..."
 sudo mkdir -p /usr/share/backgrounds/telcosec
-# Uncomment and replace with actual branding asset URLs when available:
-# sudo wget -qO /usr/share/backgrounds/telcosec/wallpaper.png https://example.com/telcosec-wallpaper.png
-# sudo wget -qO /usr/share/backgrounds/telcosec/logo.png https://example.com/telcosec-logo.png
 
-# Configure LightDM to use the custom background
+# Configure LightDM greeter — no background path so greeter doesn't hang
+# if the wallpaper asset is absent
 sudo mkdir -p /etc/lightdm/lightdm-gtk-greeter.conf.d/
 cat << 'EOF' | sudo tee /etc/lightdm/lightdm-gtk-greeter.conf.d/99_telcosec.conf
 [greeter]
-background = /usr/share/backgrounds/telcosec/wallpaper.png
 theme-name = Adwaita-dark
 icon-theme-name = gnome
 font-name = Sans 11
 EOF
+
+# Configure LightDM main config: autologin + explicit XFCE session.
+# Autologin is the standard approach for a live ISO — it bypasses the PAM
+# session-start path that fails when the user's home is freshly populated
+# from /etc/skel (race with xfce4-session first-run setup).
+sudo mkdir -p /etc/lightdm/lightdm.conf.d
+cat << 'EOF' | sudo tee /etc/lightdm/lightdm.conf.d/50-telcosec.conf
+[Seat:*]
+user-session=xfce
+greeter-session=lightdm-gtk-greeter
+autologin-user=telcosec
+autologin-user-timeout=0
+EOF
+
+# Tell casper which user is the live session user.
+# Without this, casper's 10adduser hook doesn't configure LightDM autologin
+# on first boot and the session never starts.
+cat << 'EOF' | sudo tee /etc/casper.conf
+export USERNAME=telcosec
+export USERFULLNAME="TelcoSec"
+export HOST=telcosec
+export BUILD_SYSTEM=TelcoSec-Chisel
+EOF
+
+# XFCE session skeleton — ensures the user gets a working failsafe desktop
+# even before xfce4-session has a chance to write its own config on first run.
+echo "Setting up XFCE skeleton configuration..."
+sudo mkdir -p /etc/skel/.config/xfce4/xfconf/xfce-perchannel-xml/
+
+cat << 'EOF' | sudo tee /etc/skel/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-session.xml
+<?xml version="1.0" encoding="UTF-8"?>
+<channel name="xfce4-session" version="1.0">
+  <property name="general" type="empty">
+    <property name="SaveOnExit" type="bool" value="false"/>
+  </property>
+  <property name="sessions" type="empty">
+    <property name="Failsafe" type="empty">
+      <property name="IsFailsafe" type="bool" value="true"/>
+      <property name="Count" type="int" value="5"/>
+      <property name="Client0_Command" type="array">
+        <value type="string" value="xfwm4"/>
+      </property>
+      <property name="Client1_Command" type="array">
+        <value type="string" value="xfce4-panel"/>
+      </property>
+      <property name="Client2_Command" type="array">
+        <value type="string" value="Thunar"/>
+        <value type="string" value="--daemon"/>
+      </property>
+      <property name="Client3_Command" type="array">
+        <value type="string" value="xfdesktop"/>
+      </property>
+      <property name="Client4_Command" type="array">
+        <value type="string" value="xfce4-screensaver"/>
+      </property>
+    </property>
+  </property>
+</channel>
+EOF
+
+# Apply the skeleton to the pre-created telcosec home directory so the
+# config is present even before casper's first-boot user setup runs.
+if [ -d /home/telcosec ]; then
+  sudo cp -rn /etc/skel/.config /home/telcosec/
+  sudo chown -R telcosec:telcosec /home/telcosec/.config
+fi
 
 # 2. Message of the Day (MOTD)
 echo "Configuring MOTD..."
@@ -47,10 +110,6 @@ cat << 'EOF' | sudo tee /etc/profile.d/telcosec_prompt.sh
 export PS1="\[\e[36;1m\][TelcoSec]\[\e[m\] \[\e[32;1m\]\u@\h\[\e[m\]:\[\e[34;1m\]\w\[\e[m\]\$ "
 EOF
 sudo chmod +x /etc/profile.d/telcosec_prompt.sh
-
-# Configure LightDM auto-login (optional, uncomment if needed)
-# sudo mkdir -p /etc/lightdm/lightdm.conf.d
-# echo -e "[Seat:*]\nautologin-user=telcosec\nautologin-user-timeout=0" | sudo tee /etc/lightdm/lightdm.conf.d/autologin.conf
 
 # 4. Deploy Local Documentation & Configure Firefox Policies
 echo "Deploying local documentation..."
