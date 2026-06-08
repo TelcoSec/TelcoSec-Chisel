@@ -46,4 +46,4 @@ echo "=== Creating Default User ==="
 sudo groupadd -g 1000 telcosec || true
 sudo useradd -m -s /bin/bash -u 1000 -g telcosec telcosec || true
 echo "telcosec:telcosec" | sudo chpasswd
-sudo usermod -aG sudo,dialout,plugdev,audio,video,docker telcosec || true
+sudo usermod -aG sudo,dialout,plugdev,audio,video,docker,netdev telcosec || true
