@@ -259,12 +259,33 @@ autoreconf -fi
     --disable-tests
 make -j$(nproc)
 sudo make install
+# git-version-gen returns UNKNOWN on shallow clones (no tag history).
+# libosmocore installs a family of .pc files (libosmocore, libosmosim,
+# libosmogsm, libosmovty, libosmocoding, libosmogb, …) — patch them all.
+echo "=== Patching all libosmo*.pc files: UNKNOWN → 1.11.0 (shallow clone has no tags) ==="
+find /usr/lib/x86_64-linux-gnu/pkgconfig/ -name 'libosmo*.pc' | while read -r pc; do
+    if grep -q 'UNKNOWN' "$pc" 2>/dev/null; then
+        sudo sed -i '/^Version:/c\Version: 1.11.0' "$pc"
+        echo "  Patched: $pc"
+    fi
+done
 sudo ldconfig
 rm -rf /tmp/libosmocore
 
-# Verify pkg-config now sees the new version
-pkg-config --modversion libosmocore
-echo "=== libosmocore version check passed ==="
+# Verify all osmocom libs that simtrace2 configure checks satisfy >= 1.11.0
+for lib in libosmocore libosmosim libosmogsm libosmovty; do
+    VER=$(pkg-config --modversion "$lib" 2>/dev/null || echo "NOT_FOUND")
+    if [ "$VER" = "NOT_FOUND" ] || [ "$VER" = "UNKNOWN" ]; then
+        echo "ERROR: $lib reports '$VER' — simtrace2 configure will fail"
+        exit 1
+    fi
+    pkg-config --atleast-version=1.11.0 "$lib" || {
+        echo "ERROR: $lib $VER is < 1.11.0"
+        exit 1
+    }
+    echo "  OK: $lib $VER"
+done
+echo "=== All osmocom libs passed version check ==="
 
 # SIMtrace 2 host software (simtrace2-list, simtrace2-sniff, simtrace2-cardem-pcsc)
 echo "Compiling and installing SIMtrace 2 host utilities..."

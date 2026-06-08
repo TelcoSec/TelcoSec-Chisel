@@ -2,71 +2,143 @@ name: Build and Release TelcoSec-Chisel
 
 on:
   push:
-    branches: [ "main" ]
-    tags:
-      - 'v*.*.*'
+    branches: [main]
+    tags: ['v*.*.*']
   pull_request:
-    branches: [ "main" ]
+    branches: [main]
   workflow_dispatch:
+
+env:
+  ISO: telcosec-chisel-live.iso
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 180
-    
+    permissions:
+      contents: write
+
     steps:
-      - name: Checkout Repository
+      - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Free Disk Space
         run: |
-          echo "=== Freeing disk space on runner ==="
-          sudo rm -rf /usr/local/lib/android || true
-          sudo rm -rf /usr/share/dotnet || true
-          sudo rm -rf /opt/ghc || true
-          sudo rm -rf /usr/local/share/boost || true
+          sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc /usr/local/share/boost
           sudo docker image prune -af || true
-          echo "=== Disk space after cleanup ==="
           df -h /
 
       - name: Install Build Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y debootstrap squashfs-tools grub-pc-bin grub-efi-amd64-bin xorriso mtools zstd
+          sudo apt-get install -y \
+            debootstrap squashfs-tools grub-pc-bin grub-efi-amd64-bin xorriso mtools zstd
 
-      - name: Build TelcoSec-Chisel Live ISO
+      - name: Build ISO
         run: sudo bash build-iso.sh
 
-      - name: Report ISO Size
+      - name: Generate Checksum & Metadata
+        id: meta
         run: |
-          echo "=== ISO Build Report ==="
-          ls -lh telcosec-chisel-live.iso
-          ISO_SIZE_BYTES=$(stat --printf='%s' telcosec-chisel-live.iso)
-          ISO_SIZE_MB=$(( ISO_SIZE_BYTES / 1024 / 1024 ))
-          echo "ISO_SIZE_MB=${ISO_SIZE_MB}" >> $GITHUB_ENV
-          echo "ISO Size: ${ISO_SIZE_MB} MB"
+          VERSION=$(git describe --tags --always 2>/dev/null || echo "dev-$(git rev-parse --short HEAD)")
+          SHA256=$(sha256sum "$ISO" | awk '{print $1}')
+          SIZE=$(du -sh "$ISO" | cut -f1)
+          DATE=$(date -u +%Y-%m-%d)
+          printf '%s  %s\n' "$SHA256" "$ISO" > "${ISO}.sha256"
+          {
+            echo "version=$VERSION"
+            echo "sha256=$SHA256"
+            echo "size=$SIZE"
+            echo "date=$DATE"
+          } >> "$GITHUB_OUTPUT"
+          echo "ISO: $SIZE | SHA256: $SHA256"
 
-      - name: Upload Artifact
+      - name: Split ISO (GitHub 2 GB release asset limit)
+        run: |
+          split -b 1900M "$ISO" "${ISO}.part-"
+          ls -lh "${ISO}.part-"*
+
+      # Pull requests: short-lived artifact for manual inspection
+      - name: Upload PR Artifact
+        if: github.event_name == 'pull_request'
         uses: actions/upload-artifact@v4
         with:
-          name: telcosec-chisel-iso
-          path: telcosec-chisel-live.iso
+          name: telcosec-chisel-iso-pr${{ github.event.pull_request.number }}
+          path: ${{ env.ISO }}
+          retention-days: 7
 
-  release:
-    needs: build
-    runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/v')
-    
-    steps:
-      - name: Download Artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: telcosec-chisel-iso
-          
-      - name: Create GitHub Release
+      # main branch: refresh rolling nightly pre-release
+      - name: Publish Nightly Release
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.meta.outputs.version }}
+          DATE:    ${{ steps.meta.outputs.date }}
+          SIZE:    ${{ steps.meta.outputs.size }}
+          SHA256:  ${{ steps.meta.outputs.sha256 }}
+        run: |
+          cat > /tmp/release-notes.md << 'NOTES'
+          ## TelcoSec-Chisel — Nightly Build
+
+          | Field | Value |
+          |---|---|
+          | **Commit** | `VERSION_PLACEHOLDER` |
+          | **Built** | DATE_PLACEHOLDER |
+          | **ISO Size** | SIZE_PLACEHOLDER |
+          | **SHA-256** | `SHA256_PLACEHOLDER` |
+
+          ### Download & Reassemble
+          Download all `.part-*` files and the `.sha256` file, then:
+          ```bash
+          cat telcosec-chisel-live.iso.part-* > telcosec-chisel-live.iso
+          sha256sum -c telcosec-chisel-live.iso.sha256
+          ```
+
+          > **Live boot credentials:** `telcosec:telcosec`
+          NOTES
+
+          sed -i \
+            -e "s/VERSION_PLACEHOLDER/${VERSION}/" \
+            -e "s/DATE_PLACEHOLDER/${DATE}/" \
+            -e "s/SIZE_PLACEHOLDER/${SIZE}/" \
+            -e "s/SHA256_PLACEHOLDER/${SHA256}/" \
+            /tmp/release-notes.md
+
+          gh release delete nightly --yes 2>/dev/null || true
+          git push origin :refs/tags/nightly 2>/dev/null || true
+          gh release create nightly \
+            ${ISO}.part-* "${ISO}.sha256" \
+            --prerelease \
+            --title "Nightly — ${DATE} (${VERSION})" \
+            --notes-file /tmp/release-notes.md
+
+      # Version tags: create permanent versioned release with auto-generated changelog
+      - name: Publish Versioned Release
+        if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
-          files: telcosec-chisel-live.iso
+          name: "TelcoSec-Chisel ${{ github.ref_name }}"
+          make_latest: true
           generate_release_notes: true
+          body: |
+            | Field | Value |
+            |-------|-------|
+            | **ISO Size** | ${{ steps.meta.outputs.size }} |
+            | **Built** | ${{ steps.meta.outputs.date }} |
+            | **SHA-256** | `${{ steps.meta.outputs.sha256 }}` |
+
+            ### Download & Verify
+            Download all `.part-*` files and the `.sha256` file, then:
+            ```bash
+            cat telcosec-chisel-live.iso.part-* > telcosec-chisel-live.iso
+            sha256sum -c telcosec-chisel-live.iso.sha256
+            ```
+
+            > **Live boot credentials:** `telcosec:telcosec`
+          files: |
+            ${{ env.ISO }}.part-*
+            ${{ env.ISO }}.sha256
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
