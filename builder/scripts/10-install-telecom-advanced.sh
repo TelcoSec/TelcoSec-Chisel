@@ -56,14 +56,19 @@ fi
 
 # ─── C. Osmocom tools (GSM/2G BTS stack) ────────────────────────────────────
 echo "  Installing Osmocom tools..."
-# Repo already added in 00-install-all-packages.sh
-apt-get update -qq 2>/dev/null || true
-apt-get install -y --no-install-recommends \
-  osmo-bts-virtual osmo-bts-trx \
-  osmo-trx-common \
-  osmo-hlr osmo-msc osmo-bsc osmo-sgsn \
-  osmocom-utils \
-  2>/dev/null || echo "  WARNING: Some Osmocom packages unavailable — check Osmocom APT repo"
+# Try the Osmocom APT repo first (added by 00-install-all-packages.sh).
+# If the repo key wasn't imported successfully the list file won't exist,
+# so we fall back to source builds / skip gracefully.
+OSMOCOM_PKGS="osmo-bts-virtual osmo-bts-trx osmo-trx-common osmo-hlr osmo-msc osmo-bsc osmo-sgsn osmocom-utils libosmocore-dev libosmovty-dev libosmosim-dev libosmogb-dev libosmo-sigtran-dev"
+if [ -f /etc/apt/sources.list.d/osmocom.list ]; then
+  apt-get update -qq 2>/dev/null || true
+  # shellcheck disable=SC2086
+  apt-get install -y --no-install-recommends $OSMOCOM_PKGS 2>/dev/null || \
+    echo "  WARNING: Some Osmocom packages unavailable — continuing without them"
+else
+  echo "  Osmocom APT repo not available — skipping binary package install."
+  echo "  Osmocom tools can be compiled from source: https://osmocom.org/projects/cellular-infrastructure/wiki"
+fi
 
 # ─── D. Kalibrate-GSM (GSM frequency calibration) ──────────────────────────
 echo "  Installing Kalibrate-GSM..."

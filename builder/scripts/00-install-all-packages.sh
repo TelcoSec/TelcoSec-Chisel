@@ -39,11 +39,20 @@ echo "deb [signed-by=/usr/share/keyrings/mongodb-server-8.0.gpg] https://repo.mo
   > /etc/apt/sources.list.d/mongodb-org-8.0.list
 
 # Osmocom official repository (OsmoBTS, OsmocomBB, osmo-trx, etc.)
-wget -qO /usr/share/keyrings/osmocom.gpg \
-  https://downloads.osmocom.org/packages/osmocom:/latest/xUbuntu_24.04/Release.key 2>/dev/null || \
-  gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 68A51413 2>/dev/null || true
-echo "deb [signed-by=/usr/share/keyrings/osmocom.gpg] https://downloads.osmocom.org/packages/osmocom:/latest/xUbuntu_24.04/ ./" \
-  > /etc/apt/sources.list.d/osmocom.list || true
+# Key must be dearmored (binary GPG) for apt signed-by= to work.
+# On failure, remove the repo file so apt-get update doesn't error out.
+OSMOCOM_KEY=/usr/share/keyrings/osmocom.gpg
+OSMOCOM_LIST=/etc/apt/sources.list.d/osmocom.list
+OSMOCOM_URL="https://downloads.osmocom.org/packages/osmocom:/latest/xUbuntu_24.04"
+if wget -qO- "${OSMOCOM_URL}/Release.key" 2>/dev/null | \
+     gpg --dearmor --yes -o "$OSMOCOM_KEY" 2>/dev/null && \
+   [ -s "$OSMOCOM_KEY" ]; then
+  echo "deb [signed-by=${OSMOCOM_KEY}] ${OSMOCOM_URL}/ ./" > "$OSMOCOM_LIST"
+  echo "  Osmocom repo added successfully."
+else
+  echo "  WARNING: Osmocom repo key import failed — skipping repo (tools will build from source in script 10)."
+  rm -f "$OSMOCOM_LIST" "$OSMOCOM_KEY"
+fi
 
 # ─── 2. Single apt-get update ───────────────────────────────────────────────
 
@@ -187,9 +196,7 @@ apt-get install -y \
   linux-headers-generic \
   libconfig++-dev \
   libliquid-dev \
-  libtalloc2 libtalloc-dev \
-  libosmocore-dev libosmovty-dev libosmosim-dev libosmogb-dev \
-  libosmo-sigtran-dev
+  libtalloc2 libtalloc-dev
 
 # ─── 5. Wireshark non-interactive config ─────────────────────────────────────
 
