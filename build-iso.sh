@@ -37,8 +37,9 @@ IMAGE_NAME="telcosec-chisel-live.iso"
 
 # ─── Mount cleanup ───────────────────────────────────────────────────────────
 cleanup() {
-  # Remove chroot service suppression files if still present
+  # Remove chroot service suppression files and undo dpkg-divert if still active
   rm -f "$ROOTFS/usr/sbin/policy-rc.d" "$ROOTFS/usr/local/sbin/udevadm" 2>/dev/null || true
+  chroot "$ROOTFS" dpkg-divert --local --rename --remove /usr/bin/udevadm 2>/dev/null || true
   umount -lf "$ROOTFS/dev/pts" 2>/dev/null || true
   umount -lf "$ROOTFS/dev"     2>/dev/null || true
   umount -lf "$ROOTFS/sys"     2>/dev/null || true
@@ -92,12 +93,17 @@ exit 101
 POLICY
 chmod +x "$ROOTFS/usr/sbin/policy-rc.d"
 
-mkdir -p "$ROOTFS/usr/local/sbin"
-cat > "$ROOTFS/usr/local/sbin/udevadm" << 'UDEVADM'
+# Use dpkg-divert so the no-op at /usr/bin/udevadm survives udev package installation.
+# Hardware postinstalls (libbladerf2, etc.) call udevadm via absolute path, bypassing PATH.
+mkdir -p "$ROOTFS/usr/bin"
+chroot "$ROOTFS" dpkg-divert --local --rename --add /usr/bin/udevadm 2>/dev/null || true
+cat > "$ROOTFS/usr/bin/udevadm" << 'UDEVADM'
 #!/bin/sh
 exit 0
 UDEVADM
-chmod +x "$ROOTFS/usr/local/sbin/udevadm"
+chmod +x "$ROOTFS/usr/bin/udevadm"
+mkdir -p "$ROOTFS/usr/local/sbin"
+cp "$ROOTFS/usr/bin/udevadm" "$ROOTFS/usr/local/sbin/udevadm"
 
 # ─── Copy builder assets ─────────────────────────────────────────────────────
 echo "--> Copying builder assets..."
@@ -151,6 +157,7 @@ _phase "11 · Device flash tools"           chroot_run 11-install-device-tools.s
 
 # ─── Remove chroot service suppression ───────────────────────────────────────
 rm -f "$ROOTFS/usr/sbin/policy-rc.d" "$ROOTFS/usr/local/sbin/udevadm"
+chroot "$ROOTFS" dpkg-divert --local --rename --remove /usr/bin/udevadm 2>/dev/null || true
 
 # ─── Cleanup inside chroot ───────────────────────────────────────────────────
 echo ""

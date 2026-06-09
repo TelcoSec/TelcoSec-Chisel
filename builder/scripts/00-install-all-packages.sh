@@ -24,12 +24,15 @@ exit 101
 POLICY
 chmod +x /usr/sbin/policy-rc.d
 
-mkdir -p /usr/local/sbin
-cat > /usr/local/sbin/udevadm << 'UDEVADM'
+# Use dpkg-divert to intercept absolute-path /usr/bin/udevadm calls from postinstalls.
+dpkg-divert --local --rename --add /usr/bin/udevadm 2>/dev/null || true
+cat > /usr/bin/udevadm << 'UDEVADM'
 #!/bin/sh
 exit 0
 UDEVADM
-chmod +x /usr/local/sbin/udevadm
+chmod +x /usr/bin/udevadm
+mkdir -p /usr/local/sbin
+cp /usr/bin/udevadm /usr/local/sbin/udevadm
 export PATH="/usr/local/sbin:$PATH"
 
 # ─── 1. Add all third-party repositories first ──────────────────────────────
@@ -125,7 +128,6 @@ apt-get install -y \
   \
   `# === SDR global packages (02-install-sdr.sh) ===` \
   gnuradio gnuradio-dev \
-  librtlsdr-dev \
   libfftw3-double3 libfftw3-dev libfftw3-bin \
   autoconf automake libtool \
   \
@@ -232,6 +234,7 @@ apt-get install -y \
 
 # ─── 5. Remove chroot service suppression ────────────────────────────────────
 rm -f /usr/sbin/policy-rc.d /usr/local/sbin/udevadm
+dpkg-divert --local --rename --remove /usr/bin/udevadm 2>/dev/null || true
 
 # ─── 6. Wireshark non-interactive config ─────────────────────────────────────
 
