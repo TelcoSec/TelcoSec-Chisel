@@ -1,6 +1,6 @@
 export default defineNuxtConfig({
   app: {
-    baseURL: '/TelcoSec-Chisel/',
+    baseURL: '/',
     head: {
       htmlAttrs: { lang: 'en' },
       link: [
