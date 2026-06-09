@@ -26,8 +26,13 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
-          cache-dependency-path: docs/package-lock.json
+
+      - name: Cache node_modules
+        uses: actions/cache@v4
+        with:
+          path: docs/node_modules
+          key: node-${{ hashFiles('docs/package-lock.json') }}
+          restore-keys: node-
 
       - name: Install dependencies
         working-directory: docs
