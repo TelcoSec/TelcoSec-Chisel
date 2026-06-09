@@ -6,8 +6,8 @@ echo "=== Installing Conda & Compiling SDR Drivers from Source ==="
 # Skip apt operations — handled by 00-install-all-packages.sh
 if [ ! -f /tmp/.packages-installed ]; then
   echo "WARNING: Running standalone (packages not pre-installed)"
-  sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
-    build-essential cmake git wget libusb-1.0-0-dev pkg-config
+  DEBIAN_FRONTEND=noninteractive apt-get install -y \
+    build-essential cmake git wget libusb-1.0-0-dev librtlsdr0 pkg-config
 fi
 
 # 1. Install Miniconda
@@ -89,7 +89,24 @@ echo "UHD images downloaded successfully."
 FIRSTRUN
 sudo chmod +x /usr/local/bin/uhd-download-images
 
-# 7. GNU Radio, GQRX, gr-osmosdr, gr-gsm already installed by 00-install-all-packages.sh
+# 7. Install GNU Radio ecosystem into conda env
+# gqrx-sdr, gr-osmosdr, gr-gsm removed from system apt (librtlsdr ABI conflict
+# between librtlsdr0/soname-0 and librtlsdr2/soname-2 in Ubuntu 24.04 Noble).
+# conda-forge packages resolve their own ABIs cleanly.
+echo "Installing GNU Radio ecosystem into conda env..."
+conda install -y --override-channels -c conda-forge \
+  gnuradio gqrx gr-osmosdr || echo "  WARNING: conda GNU Radio install failed (non-fatal)"
+
+# gr-gsm is not on conda-forge; build from source against the conda env
+git clone --depth 1 https://github.com/bkerler/gr-gsm /opt/telcosec/src/gr-gsm 2>/dev/null || true
+if [ -d /opt/telcosec/src/gr-gsm ]; then
+  cmake -S /opt/telcosec/src/gr-gsm -B /opt/telcosec/src/gr-gsm/build \
+    -DCMAKE_INSTALL_PREFIX="$CONDA_PREFIX" -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_MODULE_PATH="$CONDA_PREFIX/lib/cmake/gnuradio" >/dev/null 2>&1 || true
+  make -C /opt/telcosec/src/gr-gsm/build -j"$(nproc)" >/dev/null 2>&1 || true
+  make -C /opt/telcosec/src/gr-gsm/build install >/dev/null 2>&1 || true
+  echo "  gr-gsm installed."
+fi
 
 # 8. Compile and Install Kalibrate-RTL from Source
 echo "Compiling and installing Kalibrate-RTL..."

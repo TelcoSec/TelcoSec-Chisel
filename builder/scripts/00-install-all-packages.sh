@@ -105,8 +105,9 @@ apt-get install -y \
   wget libusb-1.0-0-dev \
   \
   `# === SDR global packages (02-install-sdr.sh) ===` \
-  gnuradio gnuradio-dev gqrx-sdr gr-osmosdr gr-gsm \
-  librtlsdr-dev libfftw3-double3 libfftw3-dev libfftw3-bin \
+  gnuradio gnuradio-dev \
+  librtlsdr0 \
+  libfftw3-double3 libfftw3-dev libfftw3-bin \
   autoconf automake libtool \
   \
   `# === Core network stack (03-install-core-network.sh) ===` \
