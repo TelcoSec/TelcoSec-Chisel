@@ -13,6 +13,25 @@ echo "=== [Phase 0] Consolidated Package Installation ==="
 
 export DEBIAN_FRONTEND=noninteractive
 
+# ─── 0. Chroot service suppression ──────────────────────────────────────────
+# Hardware package postinstalls call udevadm/invoke-rc.d which fail in a
+# chroot (no udev socket, no running init). Suppress them for the duration
+# of the install phase so dpkg doesn't abort on packages like librtlsdr2,
+# libhackrf0, etc.
+cat > /usr/sbin/policy-rc.d << 'POLICY'
+#!/bin/sh
+exit 101
+POLICY
+chmod +x /usr/sbin/policy-rc.d
+
+mkdir -p /usr/local/sbin
+cat > /usr/local/sbin/udevadm << 'UDEVADM'
+#!/bin/sh
+exit 0
+UDEVADM
+chmod +x /usr/local/sbin/udevadm
+export PATH="/usr/local/sbin:$PATH"
+
 # ─── 1. Add all third-party repositories first ──────────────────────────────
 
 echo "  Adding third-party repositories..."
@@ -106,6 +125,7 @@ apt-get install -y \
   \
   `# === SDR global packages (02-install-sdr.sh) ===` \
   gnuradio gnuradio-dev \
+  librtlsdr-dev \
   libfftw3-double3 libfftw3-dev libfftw3-bin \
   autoconf automake libtool \
   \
@@ -210,7 +230,10 @@ apt-get install -y \
   libliquid-dev \
   libtalloc2 libtalloc-dev
 
-# ─── 5. Wireshark non-interactive config ─────────────────────────────────────
+# ─── 5. Remove chroot service suppression ────────────────────────────────────
+rm -f /usr/sbin/policy-rc.d /usr/local/sbin/udevadm
+
+# ─── 6. Wireshark non-interactive config ─────────────────────────────────────
 
 echo "wireshark-common wireshark-common/install-syscap boolean true" | debconf-set-selections
 dpkg-reconfigure wireshark-common
@@ -218,7 +241,7 @@ if ! getent group wireshark >/dev/null; then
   groupadd -r wireshark
 fi
 
-# ─── 6. Clang alternatives (OAI build requires clang-15 as default) ─────────
+# ─── 7. Clang alternatives (OAI build requires clang-15 as default) ─────────
 
 update-alternatives --install /usr/bin/clang   clang   /usr/bin/clang-15   100 || true
 update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-15 100 || true
