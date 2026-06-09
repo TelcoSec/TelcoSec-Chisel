@@ -21,14 +21,16 @@ echo "  Adding third-party repositories..."
 apt-get install -y software-properties-common curl wget gnupg
 
 # Enable universe + multiverse.
-# Ubuntu 24.04 uses DEB822 format (/etc/apt/sources.list.d/ubuntu.sources).
-# add-apt-repository silently fails in a dbus-less chroot, so edit directly.
-if [ -f /etc/apt/sources.list.d/ubuntu.sources ]; then
-  sed -i 's/^Components: main$/Components: main restricted universe multiverse/' \
-    /etc/apt/sources.list.d/ubuntu.sources
-elif [ -f /etc/apt/sources.list ]; then
-  sed -i 's/ main$/ main restricted universe multiverse/g' /etc/apt/sources.list
-fi
+# Debootstrap only activates main. Write a complete sources.list directly —
+# sed-patching the debootstrap output is fragile (format varies by version).
+cat > /etc/apt/sources.list << 'APT_SOURCES'
+deb http://archive.ubuntu.com/ubuntu noble main restricted universe multiverse
+deb http://archive.ubuntu.com/ubuntu noble-updates main restricted universe multiverse
+deb http://security.ubuntu.com/ubuntu noble-security main restricted universe multiverse
+deb http://archive.ubuntu.com/ubuntu noble-backports main restricted universe multiverse
+APT_SOURCES
+# Ubuntu 24.04 DEB822 format — remove it so only sources.list is authoritative
+rm -f /etc/apt/sources.list.d/ubuntu.sources 2>/dev/null || true
 
 # Firefox PPA (native .deb, not snap)
 add-apt-repository -y ppa:mozillateam/ppa
