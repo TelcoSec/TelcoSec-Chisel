@@ -36,7 +36,7 @@ jobs:
 
       - name: Install dependencies
         working-directory: docs
-        run: npm ci
+        run: npm install
 
       - name: Generate static site
         working-directory: docs
