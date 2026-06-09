@@ -23,28 +23,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      - name: Cache node_modules
-        uses: actions/cache@v4
-        with:
-          path: docs/node_modules
-          key: node-${{ hashFiles('docs/package-lock.json') }}
-          restore-keys: node-
-
       - name: Install dependencies
         working-directory: docs
-        run: npm install
+        run: rm -rf node_modules && npm install
 
       - name: Generate static site
         working-directory: docs
         run: npm run generate
-
-      - uses: actions/configure-pages@v5
-        with:
-          static_site_generator: nuxt
 
       - uses: actions/upload-pages-artifact@v3
         with:
