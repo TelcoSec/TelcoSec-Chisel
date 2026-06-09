@@ -20,9 +20,15 @@ echo "  Adding third-party repositories..."
 # Prerequisites for add-apt-repository
 apt-get install -y software-properties-common curl wget gnupg
 
-# Enable universe + multiverse (debootstrap only activates main by default)
-add-apt-repository -y universe
-add-apt-repository -y multiverse
+# Enable universe + multiverse.
+# Ubuntu 24.04 uses DEB822 format (/etc/apt/sources.list.d/ubuntu.sources).
+# add-apt-repository silently fails in a dbus-less chroot, so edit directly.
+if [ -f /etc/apt/sources.list.d/ubuntu.sources ]; then
+  sed -i 's/^Components: main$/Components: main restricted universe multiverse/' \
+    /etc/apt/sources.list.d/ubuntu.sources
+elif [ -f /etc/apt/sources.list ]; then
+  sed -i 's/ main$/ main restricted universe multiverse/g' /etc/apt/sources.list
+fi
 
 # Firefox PPA (native .deb, not snap)
 add-apt-repository -y ppa:mozillateam/ppa
