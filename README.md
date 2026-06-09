@@ -79,8 +79,8 @@ This builds the rootfs, compiles the SDR drivers, installs the target baseband u
 ## Community and Resources
 
 Documentation and resources:
-* **Community Hub**: [community.telcosec.net](https://community.telcosec.net/)
-* **Main Website**: [www.telcosec.net](https://www.telcosec.net/)
-* **Academy**: [app.telcosec.net](https://app.telcosec.net/)
-* **Research Blog**: [blog.telcosec.net](https://blog.telcosec.net/)
+* **Community Hub**: [community.telcosec.cloud](https://community.telcosec.cloud/)
+* **Main Website**: [www.telcosec.cloud](https://www.telcosec.cloud/)
+* **Academy**: [app.telcosec.cloud](https://app.telcosec.cloud/)
+* **Research Blog**: [blog.telcosec.cloud](https://blog.telcosec.cloud/)
 * **Discord Server**: [Discord Link](https://discord.gg/RykzXTQFXF)

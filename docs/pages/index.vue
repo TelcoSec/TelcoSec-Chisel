@@ -33,7 +33,7 @@
               <span class="academy-badge">RECOMMENDED TRAINING</span>
               <h2>TelcoSec Academy Certification Program</h2>
               <p>Accelerate your career in telecom security. Access interactive sandbox labs, practice 5G Standalone core network hacking, simulate baseband firmware fuzzing, and earn the Certified Telecom Security Practitioner (CTSP) credential.</p>
-              <a href="https://app.telcosec.net/" class="academy-btn" target="_blank">Access Live Labs at app.telcosec.net &rarr;</a>
+              <a href="https://app.telcosec.cloud/" class="academy-btn" target="_blank">Access Live Labs at app.telcosec.cloud &rarr;</a>
             </div>
             <div class="academy-banner-icon">
               <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
@@ -132,15 +132,15 @@
 
           <h2>Quick Links</h2>
           <div class="grid-3" style="margin-top: 10px;">
-            <a href="https://community.telcosec.net/" class="card highlight-teal" target="_blank">
+            <a href="https://community.telcosec.cloud/" class="card highlight-teal" target="_blank">
               <div class="card-title" style="color: var(--accent-teal);">Community Hub</div>
               <p class="card-desc" style="font-size: 0.85rem;">Discuss protocols, SDR designs, and share telemetry audits with other security analysts.</p>
             </a>
-            <a href="https://app.telcosec.net/" class="card highlight-teal" target="_blank">
+            <a href="https://app.telcosec.cloud/" class="card highlight-teal" target="_blank">
               <div class="card-title" style="color: var(--accent-teal);">Academy</div>
               <p class="card-desc" style="font-size: 0.85rem;">Master telecom penetration testing from basic GSM up to 5G Standalone core exploits.</p>
             </a>
-            <a href="https://blog.telcosec.net/" class="card highlight-teal" target="_blank">
+            <a href="https://blog.telcosec.cloud/" class="card highlight-teal" target="_blank">
               <div class="card-title" style="color: var(--accent-teal);">Research Blog</div>
               <p class="card-desc" style="font-size: 0.85rem;">In-depth writeups on baseband vulnerabilities, IMS fuzzing, and rogue gNB simulations.</p>
             </a>
@@ -498,7 +498,7 @@
                 A curated CVE and hardware vulnerability database tracking baseband memory leaks, IMS signaling bypasses, and air interface flaws in production equipment.
               </p>
               <div style="font-size: 0.85rem; color: var(--text-muted);">
-                <strong>Platform:</strong> <a href="https://vulndb.telcosec.net/" target="_blank">vulndb.telcosec.net</a>
+                <strong>Platform:</strong> <a href="https://vulndb.telcosec.cloud/" target="_blank">vulndb.telcosec.cloud</a>
               </div>
             </div>
 
@@ -511,7 +511,7 @@
                 Web-based engineering calculators for telecom protocols, enabling calculations for ARFCN/EARFCN/NR-ARFCN, IMSI check-digits, diameter AVPs, and network planning.
               </p>
               <div style="font-size: 0.85rem; color: var(--text-muted);">
-                <strong>Platform:</strong> <a href="https://calculators.telcosec.net/" target="_blank">calculators.telcosec.net</a>
+                <strong>Platform:</strong> <a href="https://calculators.telcosec.cloud/" target="_blank">calculators.telcosec.cloud</a>
               </div>
             </div>
 
@@ -524,7 +524,7 @@
                 Structured security challenges focusing on mobile networking, SIGTRAN packet analysis, baseband firmware decompilation, and GSM air capture decoding.
               </p>
               <div style="font-size: 0.85rem; color: var(--text-muted);">
-                <strong>Platform:</strong> <a href="https://ctf.telcosec.net/" target="_blank">ctf.telcosec.net</a>
+                <strong>Platform:</strong> <a href="https://ctf.telcosec.cloud/" target="_blank">ctf.telcosec.cloud</a>
               </div>
             </div>
 
@@ -537,7 +537,7 @@
                 A tracker mapping standards modifications, security releases, and technical reports across releases 15 to 18 of the 3GPP standards body.
               </p>
               <div style="font-size: 0.85rem; color: var(--text-muted);">
-                <strong>Platform:</strong> <a href="https://3gpp.telcosec.net/" target="_blank">3gpp.telcosec.net</a>
+                <strong>Platform:</strong> <a href="https://3gpp.telcosec.cloud/" target="_blank">3gpp.telcosec.cloud</a>
               </div>
             </div>
 
@@ -550,7 +550,7 @@
                 A curated collection of baseband security research papers, RAN exploit walkthroughs, and technical specifications for telecom consultants.
               </p>
               <div style="font-size: 0.85rem; color: var(--text-muted);">
-                <strong>Platform:</strong> <a href="https://library.telcosec.net/" target="_blank">library.telcosec.net</a>
+                <strong>Platform:</strong> <a href="https://library.telcosec.cloud/" target="_blank">library.telcosec.cloud</a>
               </div>
             </div>
 
@@ -563,7 +563,7 @@
                 Blueprints, hardware bill of materials (BOM), and software setup instructions for deploying portable SDR-based base stations and over-the-air test labs.
               </p>
               <div style="font-size: 0.85rem; color: var(--text-muted);">
-                <strong>Platform:</strong> <a href="https://portable-bts.telcosec.net/" target="_blank">portable-bts.telcosec.net</a>
+                <strong>Platform:</strong> <a href="https://portable-bts.telcosec.cloud/" target="_blank">portable-bts.telcosec.cloud</a>
               </div>
             </div>
 
@@ -675,7 +675,7 @@ useHead({
           "publisher": {
             "@type": "Organization",
             "name": "TelcoSec",
-            "url": "https://telcosec.net/",
+            "url": "https://telcosec.cloud/",
             "sameAs": [
               "https://github.com/TelcoSec",
               "https://www.linkedin.com/company/telco-sec",
@@ -692,7 +692,7 @@ useHead({
           "publisher": {
             "@type": "Organization",
             "name": "TelcoSec",
-            "url": "https://telcosec.net/"
+            "url": "https://telcosec.cloud/"
           },
           "potentialAction": {
             "@type": "SearchAction",

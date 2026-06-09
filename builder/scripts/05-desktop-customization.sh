@@ -164,37 +164,37 @@ cat << 'EOF' | sudo tee /etc/firefox/policies/policies.json
       },
       {
         "Title": "TelcoSec Community Hub",
-        "URL": "https://community.telcosec.net/",
+        "URL": "https://community.telcosec.cloud/",
         "Placement": "toolbar"
       },
       {
         "Title": "TelcoSec Academy",
-        "URL": "https://app.telcosec.net/",
+        "URL": "https://app.telcosec.cloud/",
         "Placement": "toolbar"
       },
       {
         "Title": "TelcoSec Blog",
-        "URL": "https://blog.telcosec.net/",
+        "URL": "https://blog.telcosec.cloud/",
         "Placement": "toolbar"
       },
       {
         "Title": "TelcoSec Tools",
-        "URL": "https://tools.telcosec.net/",
+        "URL": "https://tools.telcosec.cloud/",
         "Placement": "toolbar"
       },
       {
         "Title": "TelcoSec Calculators",
-        "URL": "https://calculators.telcosec.net/",
+        "URL": "https://calculators.telcosec.cloud/",
         "Placement": "toolbar"
       },
       {
         "Title": "TelcoSec CTF Portal",
-        "URL": "https://ctf.telcosec.net/",
+        "URL": "https://ctf.telcosec.cloud/",
         "Placement": "toolbar"
       },
       {
         "Title": "TelcoSec 3GPP Tracker",
-        "URL": "https://3gpp.telcosec.net/",
+        "URL": "https://3gpp.telcosec.cloud/",
         "Placement": "toolbar"
       },
       {
