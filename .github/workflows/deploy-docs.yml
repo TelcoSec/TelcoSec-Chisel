@@ -43,6 +43,8 @@ jobs:
         run: npm run generate
 
       - uses: actions/configure-pages@v5
+        with:
+          static_site_generator: nuxt
 
       - uses: actions/upload-pages-artifact@v3
         with:
