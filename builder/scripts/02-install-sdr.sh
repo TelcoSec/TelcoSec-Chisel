@@ -7,7 +7,7 @@ echo "=== Installing Conda & Compiling SDR Drivers from Source ==="
 if [ ! -f /tmp/.packages-installed ]; then
   echo "WARNING: Running standalone (packages not pre-installed)"
   DEBIAN_FRONTEND=noninteractive apt-get install -y \
-    build-essential cmake git wget libusb-1.0-0-dev librtlsdr0 pkg-config
+    build-essential cmake git wget libusb-1.0-0-dev librtlsdr-dev pkg-config
 fi
 
 # 1. Install Miniconda
