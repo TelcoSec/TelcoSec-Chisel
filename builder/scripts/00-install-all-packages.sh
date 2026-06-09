@@ -20,6 +20,10 @@ echo "  Adding third-party repositories..."
 # Prerequisites for add-apt-repository
 apt-get install -y software-properties-common curl wget gnupg
 
+# Enable universe + multiverse (debootstrap only activates main by default)
+add-apt-repository -y universe
+add-apt-repository -y multiverse
+
 # Firefox PPA (native .deb, not snap)
 add-apt-repository -y ppa:mozillateam/ppa
 cat << 'EOF' > /etc/apt/preferences.d/99mozillateam
@@ -186,7 +190,7 @@ apt-get install -y \
   heimdall-flash adb fastboot \
   \
   `# === VoIP & SIP tools (11-install-device-tools.sh / 04) ===` \
-  sipp linphone \
+  sipp linphone-desktop \
   ppp wvdial \
   \
   `# === SNMP / BSS management ===` \
