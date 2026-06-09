@@ -20,18 +20,6 @@ echo "  Adding third-party repositories..."
 # Prerequisites for add-apt-repository
 apt-get install -y software-properties-common curl wget gnupg
 
-# Enable universe + multiverse.
-# Debootstrap only activates main. Write a complete sources.list directly —
-# sed-patching the debootstrap output is fragile (format varies by version).
-cat > /etc/apt/sources.list << 'APT_SOURCES'
-deb http://archive.ubuntu.com/ubuntu noble main restricted universe multiverse
-deb http://archive.ubuntu.com/ubuntu noble-updates main restricted universe multiverse
-deb http://security.ubuntu.com/ubuntu noble-security main restricted universe multiverse
-deb http://archive.ubuntu.com/ubuntu noble-backports main restricted universe multiverse
-APT_SOURCES
-# Ubuntu 24.04 DEB822 format — remove it so only sources.list is authoritative
-rm -f /etc/apt/sources.list.d/ubuntu.sources 2>/dev/null || true
-
 # Firefox PPA (native .deb, not snap)
 add-apt-repository -y ppa:mozillateam/ppa
 cat << 'EOF' > /etc/apt/preferences.d/99mozillateam
@@ -64,6 +52,18 @@ if wget -qO- "${OSMOCOM_URL}/Release.key" 2>/dev/null | \
 else
   echo "  WARNING: Osmocom repo key import failed — skipping repo (tools will build from source in script 10)."
   rm -f "$OSMOCOM_LIST" "$OSMOCOM_KEY"
+fi
+
+# Kismet official repo (removed from Ubuntu 24.04 official repos)
+KISMET_KEY=/usr/share/keyrings/kismet-archive-keyring.gpg
+if wget -qO- https://www.kismetwireless.net/repos/kismet-release.gpg.key 2>/dev/null | \
+     gpg --dearmor --yes -o "$KISMET_KEY" 2>/dev/null && [ -s "$KISMET_KEY" ]; then
+  echo "deb [signed-by=${KISMET_KEY}] https://www.kismetwireless.net/repos/apt/release/noble noble main" \
+    > /etc/apt/sources.list.d/kismet.list
+  echo "  Kismet repo added."
+else
+  echo "  WARNING: Kismet repo key import failed — kismet will be skipped."
+  rm -f "$KISMET_KEY" /etc/apt/sources.list.d/kismet.list
 fi
 
 # ─── 2. Single apt-get update ───────────────────────────────────────────────
@@ -192,13 +192,13 @@ apt-get install -y \
   usb-modeswitch usb-modeswitch-data \
   \
   `# === Network analysis & wireless tools ===` \
-  tcpdump iw aircrack-ng kismet \
+  tcpdump iw aircrack-ng \
   \
   `# === Device flashing tools (11-install-device-tools.sh) ===` \
   heimdall-flash adb fastboot \
   \
   `# === VoIP & SIP tools (11-install-device-tools.sh / 04) ===` \
-  sipp linphone-desktop \
+  linphone-desktop \
   ppp wvdial \
   \
   `# === SNMP / BSS management ===` \
@@ -262,7 +262,32 @@ EOF
   chmod 644 /etc/profile.d/java.sh
 fi
 
-# ─── 10. Mark phase 0 complete ───────────────────────────────────────────────
+# ─── 10. Kismet (official repo — not in Ubuntu 24.04 universe) ──────────────
+if [ -f /etc/apt/sources.list.d/kismet.list ]; then
+  apt-get update -q
+  apt-get install -y kismet || echo "  WARNING: kismet install failed"
+else
+  echo "  WARNING: Kismet repo unavailable — skipping kismet."
+fi
+
+# ─── 11. SIPp (not in Ubuntu 24.04 — build from source) ─────────────────────
+if ! command -v sipp >/dev/null 2>&1; then
+  echo "  Building sipp from source..."
+  mkdir -p /opt/telcosec/src
+  git clone --depth 1 https://github.com/SIPp/sipp /opt/telcosec/src/sipp 2>/dev/null || true
+  if [ -d /opt/telcosec/src/sipp ]; then
+    cmake -S /opt/telcosec/src/sipp -B /opt/telcosec/src/sipp/build \
+      -DCMAKE_BUILD_TYPE=Release -DUSE_SCTP=1 -DUSE_PCAP=1 \
+      -DCMAKE_INSTALL_PREFIX=/usr/local >/dev/null
+    make -C /opt/telcosec/src/sipp/build -j"$(nproc)" sipp >/dev/null
+    install -m 755 /opt/telcosec/src/sipp/build/sipp /usr/local/bin/sipp
+    echo "  sipp built and installed."
+  else
+    echo "  WARNING: sipp source clone failed — skipping."
+  fi
+fi
+
+# ─── 12. Mark phase 0 complete ───────────────────────────────────────────────
 
 touch /tmp/.packages-installed
 echo "=== [Phase 0] All packages installed successfully ==="
