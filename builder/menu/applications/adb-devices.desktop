@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=ADB Devices
+Comment=List connected Android/Samsung devices
+Exec=terminator -e "adb devices -l"
+Icon=phone
+Categories=TelcoSec-Device;
+Terminal=false

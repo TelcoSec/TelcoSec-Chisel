@@ -173,5 +173,180 @@ export const toolsCatalog = [
         desc: "Pre-loaded lists containing carrier APNs, manufacturer default console credentials, and common VoIP/SIP authentication dictionaries.",
         path: "/usr/share/wordlists/telecom/",
         cmd: "ls -l /usr/share/wordlists/telecom/"
+    },
+    // ── GSM / 2G ──────────────────────────────────────────────────────────
+    {
+        name: "YateBTS",
+        category: "gsm",
+        desc: "Open-source GSM/UMTS BTS implementation built on the Yate telephony engine. Optimized for BladeRF A4 with a dedicated hardware config.",
+        path: "/opt/telcosec/yatebts/ (helper: yatebts-install)",
+        cmd: "sudo yatebts-install"
+    },
+    {
+        name: "OpenBTS",
+        category: "gsm",
+        desc: "Pioneering open-source GSM base transceiver station. Implements the Um air interface enabling rogue GSM cell and protocol audit scenarios.",
+        path: "/opt/telcosec/openbts/ (helper: openbts-install)",
+        cmd: "sudo openbts-install"
+    },
+    {
+        name: "Osmocom GSM Stack",
+        category: "gsm",
+        desc: "Complete Osmocom GSM network stack: OsmoBSC, OsmoMSC, OsmoHLR, OsmoBTS-TRX. Supports osmo-trx-bladerf for BladeRF A4 hardware.",
+        path: "System packages",
+        cmd: "osmo-bsc --help"
+    },
+    {
+        name: "Kalibrate GSM",
+        category: "gsm",
+        desc: "GSM-band frequency offset calibration tool using broadcast channel timing from live base stations. Complements kalibrate-rtl for calibrating BladeRF.",
+        path: "/usr/local/bin/kal-gsm",
+        cmd: "kal-gsm -s GSM900 -g 40"
+    },
+    // ── LTE / 4G ──────────────────────────────────────────────────────────
+    {
+        name: "srsUE",
+        category: "lte",
+        desc: "Software-defined LTE UE (User Equipment) that connects to real or simulated eNodeBs. Used for protocol testing, attach procedures, and downlink captures.",
+        path: "System-wide",
+        cmd: "srsue /etc/srsran/ue.conf"
+    },
+    {
+        name: "srsGUI",
+        category: "lte",
+        desc: "Real-time visualization GUI for srsRAN metrics: constellation diagrams, spectrum, BER counters, and RLC/PDCP throughput graphs.",
+        path: "/opt/telcosec/srsgui/build/srsgui",
+        cmd: "srsgui"
+    },
+    {
+        name: "LTE-CellScanner",
+        category: "lte",
+        desc: "Open-source LTE cell searcher and MIB/SIB decoder. Scans a frequency range and decodes cell IDs, bandwidth, and system information blocks.",
+        path: "/opt/telcosec/lte-cellscanner/",
+        cmd: "LTE-CellSearch -s 2650e6"
+    },
+    {
+        name: "LTESniffer",
+        category: "lte",
+        desc: "Open-source LTE downlink and uplink sniffer. Decodes physical layer frames and logs RRC, NAS, and user-plane traffic to PCAP.",
+        path: "/opt/telcosec/ltesniffer/",
+        cmd: "ltesniffer -A 2 -f 2630e6 -C -m 0"
+    },
+    {
+        name: "SCAT",
+        category: "lte",
+        desc: "DIAG protocol parser for Qualcomm and Samsung modems. Decodes OTA messages from USB-connected phones to PCAP with full NAS/RRC content.",
+        path: "System-wide (pip: scat)",
+        cmd: "scat -t qc -d /dev/ttyUSB0 -o capture.pcap"
+    },
+    {
+        name: "Modmobmap",
+        category: "lte",
+        desc: "Maps 2G/3G/4G cells visible to a USB modem by issuing AT commands. Generates cell-tower geolocation data and signal reports.",
+        path: "/opt/telcosec/modmobmap/",
+        cmd: "modmobmap -m /dev/ttyUSB1"
+    },
+    // ── 5G NR ─────────────────────────────────────────────────────────────
+    {
+        name: "UERANSIM",
+        category: "5g",
+        desc: "The most complete open-source 5G SA UE and gNB simulator. Emulates full N1/N2/N3 interfaces, compatible with Open5GS. Pre-configured for test PLMN 001/01.",
+        path: "/opt/telcosec/ueransim/",
+        cmd: "nr-gnb -c /etc/telcosec/ueransim/gnb.yaml"
+    },
+    {
+        name: "GTP5G Kernel Module",
+        category: "5g",
+        desc: "Linux kernel module implementing the GTP-U encapsulation layer required by UERANSIM and free5GC for 5G user-plane forwarding.",
+        path: "/opt/telcosec/gtp5g/ (helper: gtp5g-load)",
+        cmd: "sudo gtp5g-load"
+    },
+    {
+        name: "OAI UE (OpenAirInterface)",
+        category: "5g",
+        desc: "OpenAirInterface 5G NR UE implementation from EURECOM. Full PHY/MAC/RLC stack for 5G SA and NSA testing with real radio hardware.",
+        path: "Helper: oai-install (deferred build)",
+        cmd: "sudo oai-install"
+    },
+    // ── Device Tools ──────────────────────────────────────────────────────
+    {
+        name: "Heimdall (Samsung)",
+        category: "device",
+        desc: "Open-source, cross-platform Samsung Odin replacement for flashing firmware on Samsung devices in Download Mode.",
+        path: "System-wide",
+        cmd: "heimdall detect"
+    },
+    {
+        name: "ADB & Fastboot",
+        category: "device",
+        desc: "Android Debug Bridge and Fastboot tools for communicating with Android devices in normal, recovery, and bootloader modes.",
+        path: "System-wide",
+        cmd: "adb devices -l"
+    },
+    {
+        name: "EDL (Qualcomm Emergency Download)",
+        category: "device",
+        desc: "Comprehensive Qualcomm EDL/9008 mode toolkit for reading, writing, and erasing partitions on Snapdragon devices via Sahara/Firehose protocols.",
+        path: "System-wide (pip: edl)",
+        cmd: "edl --help"
+    },
+    {
+        name: "SIMTester",
+        category: "device",
+        desc: "Java-based SIM card security audit tool from SRLabs. Tests for roaming, OTA update vulnerabilities, and SIM application exploits.",
+        path: "/opt/telcosec/simtester/ (/usr/local/bin/simtester)",
+        cmd: "simtester"
+    },
+    {
+        name: "AT Command Console",
+        category: "device",
+        desc: "Interactive AT command terminal (minicom) pre-configured for modem control. Supports querying IMEI, network registration, signal strength, and USSD.",
+        path: "/usr/local/bin/at-console",
+        cmd: "at-console /dev/ttyUSB0"
+    },
+    {
+        name: "Gammu",
+        category: "device",
+        desc: "Universal mobile device manager supporting SMS sending/receiving, USSD queries, call management, and phonebook access via AT commands.",
+        path: "System-wide",
+        cmd: "gammu --port /dev/ttyUSB0 --connection at115200 identify"
+    },
+    // ── Network Analysis ──────────────────────────────────────────────────
+    {
+        name: "Kismet",
+        category: "network",
+        desc: "Wireless network detector, sniffer, and intrusion detection system. Captures raw 802.11 frames on mon0 and logs device fingerprints.",
+        path: "System-wide",
+        cmd: "sudo kismet -c mon0"
+    },
+    {
+        name: "tcpdump",
+        category: "network",
+        desc: "CLI packet capture tool. Used in TelcoSec scripts to capture raw traffic on the monitoring interface and pipe to Wireshark.",
+        path: "System-wide",
+        cmd: "sudo tcpdump -i mon0 -w capture.pcap"
+    },
+    // ── VoIP & Messaging ──────────────────────────────────────────────────
+    {
+        name: "Zoiper5",
+        category: "voip",
+        desc: "Commercial-grade VoIP softphone supporting SIP and IAX2. Used for testing SIP registrars, call flows, and intercepted credential replays.",
+        path: "System application (zoiper5)",
+        cmd: "zoiper5"
+    },
+    {
+        name: "SIPp",
+        category: "voip",
+        desc: "SIP load tester and traffic generator. Sends scripted SIP scenarios (INVITE storms, registration floods) to audit VoIP infrastructure.",
+        path: "System-wide",
+        cmd: "sipp -h"
+    },
+    // ── TETRA & PMR ───────────────────────────────────────────────────────
+    {
+        name: "TetraEar (gr-tetra)",
+        category: "tetra",
+        desc: "GNU Radio-based TETRA protocol receiver. Decodes TETRA trunked radio voice calls and signaling using RTL-SDR or BladeRF hardware.",
+        path: "/opt/telcosec/gr-tetra/",
+        cmd: "python3 /opt/telcosec/gr-tetra/apps/tetraear.py"
     }
 ]

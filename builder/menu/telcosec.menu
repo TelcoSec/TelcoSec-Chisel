@@ -5,71 +5,114 @@
   <Menu>
     <Name>TelcoSec-Chisel</Name>
     <Directory>telcosec-chisel.directory</Directory>
-    
-    <!-- SDR Submenu -->
+
+    <!-- 01. SDR & Spectrum -->
     <Menu>
-      <Name>SDR Tools</Name>
+      <Name>SDR &amp; Spectrum</Name>
       <Directory>telcosec-sdr.directory</Directory>
       <Include>
-        <And>
-          <Category>TelcoSec-SDR</Category>
-        </And>
+        <Category>TelcoSec-SDR</Category>
       </Include>
     </Menu>
 
-    <!-- Baseband Emulation Submenu -->
+    <!-- 02. GSM / 2G -->
     <Menu>
-      <Name>Baseband Emulation</Name>
+      <Name>GSM / 2G</Name>
+      <Directory>telcosec-gsm.directory</Directory>
+      <Include>
+        <Category>TelcoSec-GSM</Category>
+      </Include>
+    </Menu>
+
+    <!-- 03. UMTS / 3G -->
+    <Menu>
+      <Name>UMTS / 3G</Name>
+      <Directory>telcosec-umts.directory</Directory>
+      <Include>
+        <Category>TelcoSec-UMTS</Category>
+      </Include>
+    </Menu>
+
+    <!-- 04. LTE / 4G -->
+    <Menu>
+      <Name>LTE / 4G</Name>
+      <Directory>telcosec-lte.directory</Directory>
+      <Include>
+        <Category>TelcoSec-LTE</Category>
+      </Include>
+    </Menu>
+
+    <!-- 05. 5G NR -->
+    <Menu>
+      <Name>5G NR</Name>
+      <Directory>telcosec-5gnr.directory</Directory>
+      <Include>
+        <Category>TelcoSec-5GNR</Category>
+      </Include>
+    </Menu>
+
+    <!-- 06. Baseband & Firmware -->
+    <Menu>
+      <Name>Baseband &amp; Firmware</Name>
       <Directory>telcosec-baseband.directory</Directory>
       <Include>
-        <And>
-          <Category>TelcoSec-Baseband</Category>
-        </And>
+        <Category>TelcoSec-Baseband</Category>
       </Include>
     </Menu>
 
-    <!-- SIM Card Auditing Submenu -->
+    <!-- 07. SIM & eSIM -->
     <Menu>
-      <Name>SIM Card Auditing</Name>
+      <Name>SIM &amp; eSIM</Name>
       <Directory>telcosec-sim.directory</Directory>
       <Include>
-        <And>
-          <Category>TelcoSec-SIM</Category>
-        </And>
+        <Category>TelcoSec-SIM</Category>
       </Include>
     </Menu>
 
-    <!-- RAN Submenu -->
-    <Menu>
-      <Name>Radio Access Network (RAN)</Name>
-      <Directory>telcosec-ran.directory</Directory>
-      <Include>
-        <And>
-          <Category>TelcoSec-RAN</Category>
-        </And>
-      </Include>
-    </Menu>
-
-    <!-- Core Signaling Submenu -->
+    <!-- 08. Core Signaling -->
     <Menu>
       <Name>Core Signaling</Name>
       <Directory>telcosec-core.directory</Directory>
       <Include>
-        <And>
-          <Category>TelcoSec-Core</Category>
-        </And>
+        <Category>TelcoSec-Core</Category>
       </Include>
     </Menu>
 
-    <!-- 5G NR Attacks (5Ghoul) Submenu -->
+    <!-- 09. Device Tools -->
     <Menu>
-      <Name>5G NR Attacks (5Ghoul)</Name>
-      <Directory>telcosec-5gnr.directory</Directory>
+      <Name>Device Tools</Name>
+      <Directory>telcosec-device.directory</Directory>
       <Include>
-        <And>
-          <Category>TelcoSec-5GNR</Category>
-        </And>
+        <Category>TelcoSec-Device</Category>
       </Include>
     </Menu>
+
+    <!-- 10. Network Analysis -->
+    <Menu>
+      <Name>Network Analysis</Name>
+      <Directory>telcosec-network.directory</Directory>
+      <Include>
+        <Category>TelcoSec-Network</Category>
+      </Include>
+    </Menu>
+
+    <!-- 11. VoIP & Messaging -->
+    <Menu>
+      <Name>VoIP &amp; Messaging</Name>
+      <Directory>telcosec-voip.directory</Directory>
+      <Include>
+        <Category>TelcoSec-VoIP</Category>
+      </Include>
+    </Menu>
+
+    <!-- 12. TETRA & PMR -->
+    <Menu>
+      <Name>TETRA &amp; PMR</Name>
+      <Directory>telcosec-tetra.directory</Directory>
+      <Include>
+        <Category>TelcoSec-TETRA</Category>
+      </Include>
+    </Menu>
+
   </Menu>
 </Menu>

@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=SIMTester
+Comment=SIM card security testing (SRLabs)
+Exec=terminator -e "simtester"
+Icon=smartcard
+Categories=TelcoSec-SIM;
+Terminal=false

@@ -103,12 +103,31 @@ echo ""
 EOF
 sudo chmod +x /etc/update-motd.d/05-telcosec-logo
 
-# 3. Custom Bash Prompt (PS1)
+# 3. Custom Rich Bash Prompt
 echo "Configuring Global Bash Prompt..."
-cat << 'EOF' | sudo tee /etc/profile.d/telcosec_prompt.sh
-# TelcoSec Custom Bash Prompt
-export PS1="\[\e[36;1m\][TelcoSec]\[\e[m\] \[\e[32;1m\]\u@\h\[\e[m\]:\[\e[34;1m\]\w\[\e[m\]\$ "
-EOF
+cat << 'PROMPTEOF' | sudo tee /etc/profile.d/telcosec_prompt.sh
+# TelcoSec multi-line rich prompt: user@host | IP | load | date | path | tmux session | mem
+__telcosec_ps1() {
+  local IP; IP=$(hostname -I 2>/dev/null | awk '{print $1}')
+  local LOAD; LOAD=$(cut -d' ' -f1-3 /proc/loadavg 2>/dev/null)
+  local MEM; MEM=$(free -m 2>/dev/null | awk '/^Mem:/{printf "%dM/%dM", $3, $2}')
+  local DT; DT=$(date '+%Y-%m-%d %H:%M:%S')
+  local SESS=""
+  [ -n "$TMUX" ] && SESS=$(tmux display-message -p '#S' 2>/dev/null)
+  local C='\[\e[38;5;208m\]'   # orange border
+  local Y='\[\e[1;33m\]'       # yellow
+  local W='\[\e[1;37m\]'       # white
+  local G='\[\e[0;32m\]'       # green
+  local CY='\[\e[0;36m\]'      # cyan
+  local M='\[\e[0;35m\]'       # magenta
+  local R='\[\e[0m\]'          # reset
+  local BL='\[\e[1;36m\]'      # bright cyan
+  PS1="\n${C}┌[${Y}TelcoSec${C}]──[${CY}\u@\h${C}]──[${G}${IP}${C}]──[${M}Load:${LOAD}${C}]──[${Y}${DT}${C}]${R}\n"
+  PS1+="${C}├[${W}\w${C}]${SESS:+──[${BL}session:${SESS}${C}]}──[mem:${G}${MEM}${C}]${R}\n"
+  PS1+="${C}└─${Y}\$${R} "
+}
+export PROMPT_COMMAND=__telcosec_ps1
+PROMPTEOF
 sudo chmod +x /etc/profile.d/telcosec_prompt.sh
 
 # 4. Deploy Local Documentation & Configure Firefox Policies
@@ -186,6 +205,208 @@ cat << 'EOF' | sudo tee /etc/firefox/policies/policies.json
     ]
   }
 }
+EOF
+
+# 5. Network: DHCP default + dedicated monitoring interface
+echo "Configuring network defaults..."
+sudo mkdir -p /etc/NetworkManager/conf.d
+cat << 'EOF' | sudo tee /etc/NetworkManager/conf.d/telcosec.conf
+[main]
+dhcp=internal
+[device]
+wifi.scan-rand-mac-address=no
+EOF
+
+# Monitoring interface setup script (creates mon0 from first available wlan)
+cat << 'EOF' | sudo tee /usr/local/bin/telcosec-mon-setup
+#!/bin/bash
+# Bring up a monitor-mode interface (mon0) from the first wireless adapter.
+# Called at boot via telcosec-mon.service.
+WLAN=$(iw dev 2>/dev/null | awk '/Interface/{print $2}' | grep -v '^mon' | head -1)
+if [ -z "$WLAN" ]; then
+  echo "telcosec-mon-setup: no wireless interface found, skipping mon0 creation"
+  exit 0
+fi
+if ip link show mon0 &>/dev/null; then
+  echo "telcosec-mon-setup: mon0 already exists"
+  exit 0
+fi
+echo "telcosec-mon-setup: creating mon0 from ${WLAN}"
+ip link set "$WLAN" down
+iw dev "$WLAN" interface add mon0 type monitor 2>/dev/null || \
+  airmon-ng start "$WLAN" 2>/dev/null || true
+ip link set mon0 up 2>/dev/null || true
+ip link set "$WLAN" up 2>/dev/null || true
+EOF
+sudo chmod +x /usr/local/bin/telcosec-mon-setup
+
+# Systemd service to start mon0 at boot
+cat << 'EOF' | sudo tee /etc/systemd/system/telcosec-mon.service
+[Unit]
+Description=TelcoSec Monitoring Interface (mon0)
+After=network.target
+Wants=network.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/telcosec-mon-setup
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
+EOF
+sudo systemctl enable telcosec-mon.service 2>/dev/null || true
+
+# Wireshark default capture interface → mon0
+sudo mkdir -p /etc/skel/.config/wireshark
+cat << 'EOF' | sudo tee /etc/skel/.config/wireshark/preferences
+# TelcoSec default: capture on monitoring interface
+capture.default_interface: mon0
+capture.prom_mode: TRUE
+gui.expert_composite_eyecandy: TRUE
+EOF
+if [ -d /home/telcosec ]; then
+  sudo mkdir -p /home/telcosec/.config/wireshark
+  sudo cp /etc/skel/.config/wireshark/preferences /home/telcosec/.config/wireshark/preferences
+  sudo chown -R telcosec:telcosec /home/telcosec/.config/wireshark
+fi
+
+# 6. Terminator — default terminal, 4-split layout, 4 profiles
+echo "Configuring Terminator as default terminal..."
+sudo update-alternatives --set x-terminal-emulator /usr/bin/terminator 2>/dev/null || true
+# Add TERMINAL env var for scripts that check $TERMINAL
+grep -q '^TERMINAL=' /etc/environment 2>/dev/null || echo 'TERMINAL=terminator' | sudo tee -a /etc/environment
+
+sudo mkdir -p /etc/skel/.config/terminator
+cat << 'TERMEOF' | sudo tee /etc/skel/.config/terminator/config
+[global_config]
+  title_use_system_font = False
+  title_font = IBM Plex Mono Medium 9
+  suppress_multiple_term_dialog = True
+
+[keybindings]
+
+[profiles]
+  [[default]]
+    background_darkness = 0.95
+    background_type = transparent
+    cursor_color = "#ffa500"
+    cursor_blink = True
+    font = IBM Plex Mono 11
+    foreground_color = "#ffb000"
+    background_color = "#0a0a0a"
+    palette = "#000000:#e60000:#00cc44:#ffa500:#0066cc:#990066:#00aacc:#bbbbbb:#555555:#ff4444:#44ff44:#ffcc00:#3399ff:#cc44cc:#33ccdd:#ffffff"
+    use_system_font = False
+    scrollback_lines = 5000
+    show_titlebar = True
+    title_transmit_fg_color = "#ffb000"
+    title_transmit_bg_color = "#1a0a00"
+    title_receive_fg_color = "#888888"
+    title_receive_bg_color = "#0a0a0a"
+    title_inactive_fg_color = "#555555"
+    title_inactive_bg_color = "#0a0a0a"
+  [[monitor]]
+    background_darkness = 0.97
+    background_type = transparent
+    cursor_color = "#00ffff"
+    font = IBM Plex Mono 11
+    foreground_color = "#00e5ff"
+    background_color = "#000a12"
+    palette = "#000000:#e60000:#00cc44:#ffa500:#0066cc:#990066:#00aacc:#bbbbbb:#555555:#ff4444:#44ff44:#ffcc00:#3399ff:#cc44cc:#33ccdd:#ffffff"
+    use_system_font = False
+    scrollback_lines = 10000
+    title_transmit_fg_color = "#00e5ff"
+    title_transmit_bg_color = "#001a2a"
+  [[analysis]]
+    background_darkness = 0.97
+    background_type = transparent
+    cursor_color = "#44ff44"
+    font = IBM Plex Mono 11
+    foreground_color = "#33dd44"
+    background_color = "#050a05"
+    palette = "#000000:#e60000:#00cc44:#ffa500:#0066cc:#990066:#00aacc:#bbbbbb:#555555:#ff4444:#44ff44:#ffcc00:#3399ff:#cc44cc:#33ccdd:#ffffff"
+    use_system_font = False
+    scrollback_lines = 10000
+    title_transmit_fg_color = "#33dd44"
+    title_transmit_bg_color = "#051005"
+  [[network]]
+    background_darkness = 0.97
+    background_type = transparent
+    cursor_color = "#ff4444"
+    font = IBM Plex Mono 11
+    foreground_color = "#ff6644"
+    background_color = "#0a0000"
+    palette = "#000000:#e60000:#00cc44:#ffa500:#0066cc:#990066:#00aacc:#bbbbbb:#555555:#ff4444:#44ff44:#ffcc00:#3399ff:#cc44cc:#33ccdd:#ffffff"
+    use_system_font = False
+    scrollback_lines = 10000
+    title_transmit_fg_color = "#ff6644"
+    title_transmit_bg_color = "#1a0000"
+
+[layouts]
+  [[default]]
+    [[[window0]]]
+      type = Window
+      parent = ""
+      title = TelcoSec Terminal
+      size = 1600, 900
+    [[[child1]]]
+      type = HPaned
+      parent = window0
+      ratio = 0.5
+    [[[child2]]]
+      type = VPaned
+      parent = child1
+      ratio = 0.5
+    [[[terminal1]]]
+      type = Terminal
+      parent = child2
+      profile = default
+      command = tmux new-session -A -s general
+      title = [1] General
+    [[[terminal2]]]
+      type = Terminal
+      parent = child2
+      profile = monitor
+      command = tmux new-session -A -s monitor
+      title = [2] Monitor
+    [[[child3]]]
+      type = VPaned
+      parent = child1
+      ratio = 0.5
+    [[[terminal3]]]
+      type = Terminal
+      parent = child3
+      profile = analysis
+      command = tmux new-session -A -s analysis
+      title = [3] Analysis
+    [[[terminal4]]]
+      type = Terminal
+      parent = child3
+      profile = network
+      command = tmux new-session -A -s network
+      title = [4] Network
+
+[plugins]
+TERMEOF
+
+# Apply Terminator config to telcosec home
+if [ -d /home/telcosec ]; then
+  sudo mkdir -p /home/telcosec/.config/terminator
+  sudo cp /etc/skel/.config/terminator/config /home/telcosec/.config/terminator/config
+  sudo chown -R telcosec:telcosec /home/telcosec/.config/terminator
+fi
+
+# Autostart Terminator with 4-split layout on desktop login
+sudo mkdir -p /etc/xdg/autostart
+cat << 'EOF' | sudo tee /etc/xdg/autostart/telcosec-terminal.desktop
+[Desktop Entry]
+Type=Application
+Name=TelcoSec Terminal
+Comment=Launch Terminator with 4-pane layout on login
+Exec=terminator --layout=default
+Terminal=false
+Categories=System;TerminalEmulator;
+X-GNOME-Autostart-enabled=true
 EOF
 
 # Cleanup deferred to build-iso.sh central cleanup phase

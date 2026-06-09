@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=srsGUI
+Comment=srsRAN signal visualizer and metrics GUI
+Exec=/opt/telcosec/srsgui/build/srsgui
+Icon=utilities-system-monitor
+Categories=TelcoSec-LTE;
+Terminal=false

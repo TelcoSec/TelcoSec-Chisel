@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Gammu SMS/USSD
+Comment=Send SMS and USSD commands via modem
+Exec=terminator -e "gammu-at --help"
+Icon=phone
+Categories=TelcoSec-VoIP;
+Terminal=false

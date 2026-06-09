@@ -2,10 +2,7 @@ name: Build and Release TelcoSec-Chisel
 
 on:
   push:
-    branches: [main]
     tags: ['v*.*.*']
-  pull_request:
-    branches: [main]
   workflow_dispatch:
 
 env:
@@ -60,16 +57,7 @@ jobs:
           split -b 1900M "$ISO" "${ISO}.part-"
           ls -lh "${ISO}.part-"*
 
-      # Pull requests: short-lived artifact for manual inspection
-      - name: Upload PR Artifact
-        if: github.event_name == 'pull_request'
-        uses: actions/upload-artifact@v4
-        with:
-          name: telcosec-chisel-iso-pr${{ github.event.pull_request.number }}
-          path: ${{ env.ISO }}
-          retention-days: 7
-
-      # main branch: refresh rolling nightly pre-release
+      # main branch (manual dispatch): refresh rolling nightly pre-release
       - name: Publish Nightly Release
         if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
         env:

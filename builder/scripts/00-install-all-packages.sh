@@ -38,6 +38,13 @@ wget -qO- https://pgp.mongodb.com/server-8.0.asc | gpg --dearmor > /usr/share/ke
 echo "deb [signed-by=/usr/share/keyrings/mongodb-server-8.0.gpg] https://repo.mongodb.org/apt/ubuntu noble/mongodb-org/8.0 multiverse" \
   > /etc/apt/sources.list.d/mongodb-org-8.0.list
 
+# Osmocom official repository (OsmoBTS, OsmocomBB, osmo-trx, etc.)
+wget -qO /usr/share/keyrings/osmocom.gpg \
+  https://downloads.osmocom.org/packages/osmocom:/latest/xUbuntu_24.04/Release.key 2>/dev/null || \
+  gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 68A51413 2>/dev/null || true
+echo "deb [signed-by=/usr/share/keyrings/osmocom.gpg] https://downloads.osmocom.org/packages/osmocom:/latest/xUbuntu_24.04/ ./" \
+  > /etc/apt/sources.list.d/osmocom.list || true
+
 # ─── 2. Single apt-get update ───────────────────────────────────────────────
 
 echo "  Updating package index (single pass)..."
@@ -153,7 +160,36 @@ apt-get install -y \
   libgflags-dev \
   libevent-dev \
   libfmt-dev \
-  libasan6 libubsan1
+  libasan6 libubsan1 \
+  \
+  `# === Developer tools & language runtimes (10/11) ===` \
+  openjdk-17-jdk maven \
+  tmux \
+  \
+  `# === Modem & AT command tools (11-install-device-tools.sh) ===` \
+  minicom picocom gammu modem-manager-gui screen \
+  usb-modeswitch usb-modeswitch-data \
+  \
+  `# === Network analysis & wireless tools ===` \
+  tcpdump iw aircrack-ng kismet \
+  \
+  `# === Device flashing tools (11-install-device-tools.sh) ===` \
+  heimdall-flash adb fastboot \
+  \
+  `# === VoIP & SIP tools (11-install-device-tools.sh / 04) ===` \
+  sipp linphone \
+  ppp wvdial \
+  \
+  `# === SNMP / BSS management ===` \
+  snmp snmp-mibs-downloader snmpd \
+  \
+  `# === Telecom tool build dependencies (10-install-telecom-advanced.sh) ===` \
+  linux-headers-generic \
+  libconfig++-dev \
+  libliquid-dev \
+  libtalloc2 libtalloc-dev \
+  libosmocore-dev libosmovty-dev libosmosim-dev libosmogb-dev \
+  libosmo-sigtran-dev
 
 # ─── 5. Wireshark non-interactive config ─────────────────────────────────────
 
@@ -177,7 +213,37 @@ update-alternatives --install /usr/bin/lld     lld     /usr/bin/lld-15     100 |
 pip3 install --break-system-packages --force-reinstall --no-deps \
   typing-extensions || true
 
-# ─── 8. Mark phase 0 complete ───────────────────────────────────────────────
+# ─── 8. Rust (via rustup, system-wide install) ──────────────────────────────
+# apt rust is too old (1.66). rustup gives current stable (≥1.72).
+echo "  Installing Rust via rustup..."
+export RUSTUP_HOME=/usr/local/rustup
+export CARGO_HOME=/usr/local/cargo
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | \
+  sh -s -- -y --no-modify-path --default-toolchain stable 2>&1 | tail -5 || true
+# System-wide environment profile
+cat > /etc/profile.d/rust.sh << 'EOF'
+export RUSTUP_HOME=/usr/local/rustup
+export CARGO_HOME=/usr/local/cargo
+export PATH="$CARGO_HOME/bin:$PATH"
+EOF
+chmod 644 /etc/profile.d/rust.sh
+# Symlink binaries for immediate use in subsequent build steps
+ln -sf /usr/local/cargo/bin/rustc /usr/local/bin/rustc || true
+ln -sf /usr/local/cargo/bin/cargo /usr/local/bin/cargo || true
+
+# ─── 9. JAVA_HOME environment ────────────────────────────────────────────────
+echo "  Setting JAVA_HOME..."
+JAVA_PATH=$(update-alternatives --list java 2>/dev/null | grep java-17 | head -1 || true)
+if [ -n "$JAVA_PATH" ]; then
+  JAVA_HOME_DIR=$(dirname "$(dirname "$JAVA_PATH")")
+  cat > /etc/profile.d/java.sh << EOF
+export JAVA_HOME=${JAVA_HOME_DIR}
+export PATH="\$JAVA_HOME/bin:\$PATH"
+EOF
+  chmod 644 /etc/profile.d/java.sh
+fi
+
+# ─── 10. Mark phase 0 complete ───────────────────────────────────────────────
 
 touch /tmp/.packages-installed
 echo "=== [Phase 0] All packages installed successfully ==="

@@ -799,12 +799,19 @@ function toggleTheme() {
 const activeFilter = ref('all')
 const searchQuery = ref('')
 const filters = [
-  { id: 'all', label: 'All Tools' },
-  { id: 'sdr', label: 'SDR' },
-  { id: 'ue', label: 'Baseband & UE' },
-  { id: 'sim', label: 'SIM/eSIM' },
-  { id: 'ran', label: 'RAN & Signaling' },
-  { id: 'sys', label: 'System Docs' }
+  { id: 'all',     label: 'All Tools' },
+  { id: 'sdr',     label: 'SDR' },
+  { id: 'gsm',     label: 'GSM / 2G' },
+  { id: 'lte',     label: 'LTE / 4G' },
+  { id: '5g',      label: '5G NR' },
+  { id: 'ue',      label: 'Baseband & UE' },
+  { id: 'sim',     label: 'SIM / eSIM' },
+  { id: 'ran',     label: 'RAN & Signaling' },
+  { id: 'device',  label: 'Device Tools' },
+  { id: 'network', label: 'Network' },
+  { id: 'voip',    label: 'VoIP' },
+  { id: 'tetra',   label: 'TETRA' },
+  { id: 'sys',     label: 'System' }
 ]
 const filteredTools = computed(() => toolsCatalog.filter(t => {
   const matchCat = activeFilter.value === 'all' || t.category === activeFilter.value
@@ -832,9 +839,35 @@ onMounted(() => {
 
 // Tag helpers
 function tagClass(cat) {
-  return { sdr: 'tag-sdr', ue: 'tag-ue', sim: 'tag-sim', ran: 'tag-ran', sys: 'tag-sys' }[cat] || ''
+  return {
+    sdr:     'tag-sdr',
+    gsm:     'tag-gsm',
+    lte:     'tag-lte',
+    '5g':    'tag-5g',
+    ue:      'tag-ue',
+    sim:     'tag-sim',
+    ran:     'tag-ran',
+    device:  'tag-device',
+    network: 'tag-network',
+    voip:    'tag-voip',
+    tetra:   'tag-tetra',
+    sys:     'tag-sys'
+  }[cat] || ''
 }
 function tagLabel(cat) {
-  return { sdr: 'SDR', ue: 'UE & Baseband', sim: 'SIM/Smartcard', ran: 'RAN & Signaling', sys: 'System & Hardening' }[cat] || cat
+  return {
+    sdr:     'SDR',
+    gsm:     'GSM / 2G',
+    lte:     'LTE / 4G',
+    '5g':    '5G NR',
+    ue:      'UE & Baseband',
+    sim:     'SIM / Smartcard',
+    ran:     'RAN & Signaling',
+    device:  'Device Tools',
+    network: 'Network',
+    voip:    'VoIP',
+    tetra:   'TETRA & PMR',
+    sys:     'System'
+  }[cat] || cat
 }
 </script>

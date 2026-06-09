@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=LTE Cell Scanner
+Comment=Scan for LTE base stations using SDR
+Exec=terminator -e "LTE-CellSearch --help"
+Icon=network-wired
+Categories=TelcoSec-LTE;
+Terminal=false

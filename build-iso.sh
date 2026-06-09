@@ -109,6 +109,8 @@ chroot $ROOTFS /bin/bash -ec "
   bash /tmp/scripts/07-install-installer.sh
   bash /tmp/scripts/08-system-optimization.sh
   bash /tmp/scripts/09-install-5ghoul.sh
+  bash /tmp/scripts/10-install-telecom-advanced.sh
+  bash /tmp/scripts/11-install-device-tools.sh
 
   # ─── Aggressive cleanup to minimize squashfs size ──────────────────────────
   echo '--> Running aggressive cleanup before squashfs...'

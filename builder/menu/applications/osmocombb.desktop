@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=OsmocomBB
+Comment=Open source GSM baseband implementation
+Exec=terminator -e "osmocon --help"
+Icon=network-wireless
+Categories=TelcoSec-GSM;
+Terminal=false

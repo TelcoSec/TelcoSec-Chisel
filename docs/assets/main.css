@@ -655,11 +655,18 @@ span.tag {
     flex-shrink: 0;
 }
 
-.tag-sdr  { color: var(--amber);   background: var(--amber-g2);              border-color: var(--amber-lo); }
-.tag-ue   { color: #a080d8;        background: rgba(160,128,216,0.06);        border-color: rgba(160,128,216,0.25); }
-.tag-sim  { color: var(--cyan);    background: rgba(0,189,180,0.06);          border-color: rgba(0,189,180,0.25); }
-.tag-ran  { color: var(--yellow);  background: rgba(232,195,26,0.06);         border-color: rgba(232,195,26,0.25); }
-.tag-sys  { color: var(--red);     background: rgba(244,63,94,0.06);          border-color: rgba(244,63,94,0.25); }
+.tag-sdr     { color: var(--amber);   background: var(--amber-g2);              border-color: var(--amber-lo); }
+.tag-ue      { color: #a080d8;        background: rgba(160,128,216,0.06);        border-color: rgba(160,128,216,0.25); }
+.tag-sim     { color: var(--cyan);    background: rgba(0,189,180,0.06);          border-color: rgba(0,189,180,0.25); }
+.tag-ran     { color: var(--yellow);  background: rgba(232,195,26,0.06);         border-color: rgba(232,195,26,0.25); }
+.tag-sys     { color: var(--red);     background: rgba(244,63,94,0.06);          border-color: rgba(244,63,94,0.25); }
+.tag-gsm     { color: #44dd88;        background: rgba(68,221,136,0.06);         border-color: rgba(68,221,136,0.25); }
+.tag-lte     { color: #22aaff;        background: rgba(34,170,255,0.06);         border-color: rgba(34,170,255,0.25); }
+.tag-5g      { color: #ff88cc;        background: rgba(255,136,204,0.06);        border-color: rgba(255,136,204,0.25); }
+.tag-device  { color: #ffaa44;        background: rgba(255,170,68,0.06);         border-color: rgba(255,170,68,0.25); }
+.tag-network { color: #55ddff;        background: rgba(85,221,255,0.06);         border-color: rgba(85,221,255,0.25); }
+.tag-voip    { color: #bb88ff;        background: rgba(187,136,255,0.06);        border-color: rgba(187,136,255,0.25); }
+.tag-tetra   { color: #ff7755;        background: rgba(255,119,85,0.06);         border-color: rgba(255,119,85,0.25); }
 
 /* ─── 19. Callouts ──────────────────────────────────────────────────────── */
 .callout {
