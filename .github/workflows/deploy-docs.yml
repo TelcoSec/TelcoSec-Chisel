@@ -20,6 +20,8 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      NODE_ENV: production
     steps:
       - uses: actions/checkout@v4
 
@@ -29,7 +31,7 @@ jobs:
 
       - name: Generate static site
         working-directory: docs
-        run: npm install && npm run generate
+        run: npm run generate
 
       - uses: actions/upload-pages-artifact@v3
         with:
