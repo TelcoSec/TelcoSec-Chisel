@@ -29,7 +29,7 @@ jobs:
 
       - name: Generate static site
         working-directory: docs
-        run: npm run generate
+        run: mpm install && npm run generate
 
       - uses: actions/upload-pages-artifact@v3
         with:
