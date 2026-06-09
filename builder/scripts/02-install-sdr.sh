@@ -7,7 +7,7 @@ echo "=== Installing Conda & Compiling SDR Drivers from Source ==="
 if [ ! -f /tmp/.packages-installed ]; then
   echo "WARNING: Running standalone (packages not pre-installed)"
   DEBIAN_FRONTEND=noninteractive apt-get install -y \
-    build-essential cmake git wget libusb-1.0-0-dev librtlsdr-dev pkg-config
+    build-essential cmake git wget libusb-1.0-0-dev pkg-config
 fi
 
 # 1. Install Miniconda
@@ -95,7 +95,7 @@ sudo chmod +x /usr/local/bin/uhd-download-images
 # conda-forge packages resolve their own ABIs cleanly.
 echo "Installing GNU Radio ecosystem into conda env..."
 conda install -y --override-channels -c conda-forge \
-  gnuradio gqrx gr-osmosdr || echo "  WARNING: conda GNU Radio install failed (non-fatal)"
+  rtl-sdr gnuradio gqrx gr-osmosdr || echo "  WARNING: conda GNU Radio install failed (non-fatal)"
 
 # gr-gsm is not on conda-forge; build from source against the conda env
 git clone --depth 1 https://github.com/bkerler/gr-gsm /opt/telcosec/src/gr-gsm 2>/dev/null || true

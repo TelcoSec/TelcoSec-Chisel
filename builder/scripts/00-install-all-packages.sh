@@ -106,7 +106,6 @@ apt-get install -y \
   \
   `# === SDR global packages (02-install-sdr.sh) ===` \
   gnuradio gnuradio-dev \
-  librtlsdr-dev \
   libfftw3-double3 libfftw3-dev libfftw3-bin \
   autoconf automake libtool \
   \
