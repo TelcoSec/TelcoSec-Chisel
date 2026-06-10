@@ -304,6 +304,7 @@ if ! command -v sipp >/dev/null 2>&1; then
   if [ -d /opt/telcosec/src/sipp ]; then
     cmake -S /opt/telcosec/src/sipp -B /opt/telcosec/src/sipp/build \
       -DCMAKE_BUILD_TYPE=Release -DUSE_SCTP=1 -DUSE_PCAP=1 \
+      -DBUILD_TESTING=OFF \
       -DCMAKE_INSTALL_PREFIX=/usr/local >/dev/null
     make -C /opt/telcosec/src/sipp/build -j"$(nproc)" sipp >/dev/null
     install -m 755 /opt/telcosec/src/sipp/build/sipp /usr/local/bin/sipp
