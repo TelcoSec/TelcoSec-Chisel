@@ -112,7 +112,10 @@ fi
 echo "Compiling and installing Kalibrate-RTL..."
 cd /opt/telcosec/src/kalibrate-rtl
 ./bootstrap
-PKG_CONFIG=/usr/bin/pkg-config ./configure
+# conda-forge rtl-sdr doesn't ship a .pc file; bypass pkg-config for it directly
+LIBRTLSDR_CFLAGS="-I${CONDA_PREFIX}/include" \
+LIBRTLSDR_LIBS="-L${CONDA_PREFIX}/lib -lrtlsdr" \
+  ./configure
 make -j$(nproc)
 sudo make install
 cd -
