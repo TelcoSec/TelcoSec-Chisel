@@ -1,86 +1,201 @@
+<div align="center">
+
 # TelcoSec-Chisel
 
-TelcoSec-Chisel is an open-source Linux distribution for telecommunications security research, baseband analysis, and radio frequency penetration testing. Built on Ubuntu 24.04 LTS (Noble Numbat) with a lightweight XFCE desktop environment, it provides pre-installed drivers, compilers, and tools for Software Defined Radio (SDR) hardware, baseband firmware emulation, smartcard/SIM auditing, and core network signaling assessment.
+**Bootable Linux distribution for 5G/4G telecom security research, SDR analysis, and baseband auditing**
 
-## Repository and Desktop Structure
-wsl -d kali-linux -u root -- bash -c "cd //mnt//m//TelcoSec-Chisel && ./build-iso.sh"
+[![Build ISO](https://github.com/TelcoSec/TelcoSec-Chisel/actions/workflows/release.yml/badge.svg)](https://github.com/TelcoSec/TelcoSec-Chisel/actions/workflows/release.yml)
+[![Docs](https://github.com/TelcoSec/TelcoSec-Chisel/actions/workflows/deploy-docs.yml/badge.svg)](https://tschisel.telcosec.net)
+[![Ubuntu 24.04](https://img.shields.io/badge/Ubuntu-24.04_LTS-E95420?logo=ubuntu&logoColor=white)](https://ubuntu.com)
+[![License: MIT](https://img.shields.io/badge/License-MIT-00ffd5.svg)](LICENSE)
 
+[**Documentation →**](https://tschisel.telcosec.net) · [**Download ISO**](https://github.com/TelcoSec/TelcoSec-Chisel/releases) · [**Community**](https://community.telcosec.cloud) · [**Academy**](https://app.telcosec.cloud)
 
+</div>
 
-TelcoSec-Chisel organizes security auditing capabilities into dedicated submenus within the application manager and directories under `/opt/telcosec/`:
+---
 
-### 1. Software Defined Radio (SDR)
-Radio hardware drivers are sandboxed inside a dedicated Conda virtual environment to ensure library isolation and avoid conflicts with system-wide Python dependencies.
-* **Drivers (Source-Compiled)**: UHD (USRP), HackRF, BladeRF, LimeSDR, and RTL-SDR.
-* **Abstraction Layer**: SoapySDR.
-* **DSP Framework**: GNU Radio 3.10 and GQRX spectrum analyzer.
-* **GSM Auditing and Calibration**: `gr-gsm` tools (`grgsm_livemon`, `grgsm_scanner`) for air-interface sniffing and decoding, and `kalibrate-rtl` (`kal`) for RTL-SDR frequency offset calibration against GSM base stations.
+TelcoSec-Chisel is a free, bootable live Linux OS purpose-built for cellular security researchers, SDR engineers, and hardware pentesters. Based on **Ubuntu 24.04 LTS (Noble Numbat)** with a lightweight XFCE desktop, it ships with 48 pre-configured tools for SDR transceiver operation, 5G/4G core network simulation, baseband firmware emulation, SIM/eSIM auditing, and telecom protocol exploitation — ready to use without installation.
 
-### 2. Baseband Emulation and User Equipment (UE) Analysis
-Tools for auditing proprietary baseband microcode and analyzing diagnostic logs from User Equipment (UE):
-* **FirmWire**: Baseband emulation and fuzzing platform supporting Samsung Shannon and MediaTek MTK baseband images.
-* **QCSuper**: Qualcomm diagnostic protocol logger for capturing air-interface packets directly to PCAP files via the Qualcomm DIAG USB interface.
-* **MTKClient**: BROM bypass, partitioning, flashing, and dumping tool for MediaTek chipsets.
-* **Balong-Flash and Balongtool**: Huawei Balong modem flasher and firmware modifier.
+**Live boot credentials:** `telcosec` / `telcosec`
 
-### 3. SIM and eSIM Auditing
-Dedicated smartcard interface inspection toolchain:
-* **Osmocom SIMtrace 2**: Host utilities (`simtrace2-sniff`, `simtrace2-rext`) and PCSC daemon interfaces to capture ISO 7816 communication between modems and SIM cards.
-* **Osmocom pySim**: Interactive smartcard shell (`pySim-shell`) to read, edit, and configure SIM/USIM card profiles.
-* **lpac**: eSIM Local Profile Assistant (LPA) command-line tool for eSIM profile downloading and management via PC/SC card readers.
-* **Smartcard Stack**: Complete PC/SC daemon (`pcscd`) and smartcard readers suite.
+---
 
-### 4. Radio Access Network (RAN) and Core Signaling
-* **srsRAN**: 4G and 5G software radio RAN simulator for executing local virtual cells.
-* **Wireshark and TShark**: Configured with custom column profiles displaying GSMTAP channels, 5G NAS message types, GTP TEIDs, MAP MSISDN, MAP Opcode, and Diameter Command Codes natively in the packet pane.
-* **SIPVicious**: SIP auditing scanner for VoIP and IMS signaling infrastructure.
-* **sctpscan**: SCTP port scanner to discover SIGTRAN/M3UA, Diameter, and S1AP/NGAP endpoints.
-* **SigPloit**: SS7/Diameter/GTP signaling exploitation framework.
-* **Diafuzzer**: Orange's Diameter protocol fuzzer to stress test core S6a, Gx, and Gy interfaces.
-* **Scapy**: Integrated with built-in modules for crafting raw M3UA, TCAP, MAP, and Diameter signaling packets.
-* **VPN and Softphones**: WireGuard client, Twinkle (GUI) and Baresip (CLI) SIP softphones.
-* **Wordlists**: Dedicated folder at `/usr/share/wordlists/telecom` containing default SIP usernames, passwords, carrier APNs, and default device credentials.
+## What's Included
 
-## OS Customizations and Optimizations
+### Software Defined Radio (SDR)
 
-* **Non-Root Hardware Access**: Custom udev rules (`/etc/udev/rules.d/50-telcosec-hw.rules`) grant users in the `plugdev` group direct access to HackRF, USRP, LimeSDR, and SIMtrace 2 USB interfaces.
-* **Real-time Scheduling**: Configured PAM security limits (`/etc/security/limits.d/99-realtime.conf`) and a `realtime` system group, enabling threads to request low-latency scheduling (priority 99) and lock physical memory to prevent RF sample drops.
-* **SCTP Stack Tuning**: Pre-loads the `sctp` kernel module at boot and configures `/etc/sysctl.d/99-sctp-tuning.conf` to optimize socket memory buffers, increase queue capacities, reduce RTO floor limits to 200ms, and lower retransmission bounds to prevent scanner hangs.
-* **Kernel Security Hardening**: Configures `/etc/sysctl.d/99-security-hardening.conf` with protected hardlinks/symlinks, VA space randomization (ASLR), dmesg restrictions, and disabled ICMP redirects/source routing.
-* **Firewall Configuration**: UFW (Uncomplicated Firewall) enabled by default with rules configured to block incoming traffic and allow outgoing traffic.
-* **Virtualization and Containers**: Docker and Docker Compose pre-installed, with the default user `telcosec` added to the `docker` group for passwordless container management.
-* **Pre-configured Firefox**: Preloaded with a custom-styled local documentation start page (`/usr/share/doc/telcosec/index.html`) explaining how to run baseband and signaling utilities. The bookmarks toolbar includes direct links to TelcoSec resources and automatically trusts custom CA certificates, including Cloudflare's Origin CAs.
-* **Calamares Installer**: Booting the Live ISO loads a live environment and includes a desktop shortcut to install the OS permanently to disk.
+Radio drivers are sandboxed in a dedicated Conda environment (`telcosec-sdr`) to isolate them from system Python and prevent ABI conflicts between hardware library versions.
 
-## Live Boot Credentials
+| Tool | Purpose |
+|------|---------|
+| **GNU Radio 3.10** | Primary DSP framework and flowchart design suite |
+| **SoapySDR** | Vendor-neutral SDR hardware abstraction layer |
+| **UHD (USRP Hardware Driver)** | Ettus Research USRP B210/X310 driver, compiled from source |
+| **HackRF Host Tools** | HackRF One firmware, configuration, and RX/TX utilities |
+| **gr-gsm** | GNU Radio blocks for receiving and decoding GSM air interfaces |
+| **Kalibrate-RTL** | RTL-SDR local oscillator calibration against live GSM cells |
+| **GQRX** | Spectrum analyzer and SDR receiver GUI |
 
-When booting the Live ISO, the system is configured to autologin. If prompted, the default credentials are:
-* **Username**: `telcosec`
-* **Password**: `telcosec`
+**Supported hardware:** USRP B210, HackRF One, BladeRF 2.0 xA4, LimeSDR, RTL-SDR
 
-## Building the Live ISO (Developers)
+### 5G / 4G RAN Simulation
 
-The bootable ISO file can be built locally on an Ubuntu/Debian host (or inside a WSL2 container):
+| Tool | Purpose |
+|------|---------|
+| **srsRAN** | Open-source 4G eNB/5G gNB and UE RAN simulator |
+| **Open5GS** | Complete 5G SA core (AMF, SMF, UPF, UDM, HSS) + 4G EPC |
+| **UERANSIM** | 5G SA UE and gNB simulator; pre-configured for test PLMN 001/01 |
+| **OAI UE** | OpenAirInterface 5G NR UE with full PHY/MAC/RLC stack |
+| **srsUE** | Software UE for LTE attach procedure and downlink capture testing |
+| **5Ghoul Fuzzer** | 5G NR baseband fuzzer over OAI rogue gNodeB (deferred compile) |
+
+### Baseband & UE Analysis
+
+| Tool | Purpose |
+|------|---------|
+| **FirmWire** | Samsung Shannon and MediaTek baseband emulation and fuzzing |
+| **QCSuper** | Qualcomm DIAG USB protocol logger → PCAP (OTA messages) |
+| **SCAT** | Qualcomm/Samsung modem diagnostic parser → PCAP with NAS/RRC |
+| **MTKClient** | BROM bypass, partition editor, and flasher for MediaTek devices |
+| **Balong-Flash** | Huawei Balong LTE modem firmware tool |
+| **MobileInsight** | Android diagnostic log parser and analyzer |
+
+### SIM & eSIM Auditing
+
+| Tool | Purpose |
+|------|---------|
+| **Osmocom SIMtrace 2** | ISO 7816 sniffer between modem and SIM card |
+| **pySim-shell** | Interactive SIM/USIM management and scripting shell |
+| **lpac** | eSIM Local Profile Assistant (GSMA SGP.22 LPA) |
+| **pcscd** | PC/SC smartcard interface daemon |
+
+### Signaling & Protocol Tools
+
+| Tool | Purpose |
+|------|---------|
+| **Wireshark / TShark** | Custom profiles: GSMTAP, 5G NAS, Diameter, GTP column views |
+| **SigPloit** | SS7, Diameter, and GTP exploitation framework |
+| **Diafuzzer** | Orange Security Diameter fuzzer (S6a, Gx, Gy interfaces) |
+| **sctpscan** | SCTP port scanner for SIGTRAN/S1AP/NGAP/Diameter endpoints |
+| **SIPVicious** | SIP/VoIP auditing toolkit (svmap, svwar, svcrack) |
+| **Scapy** | Packet crafting with M3UA, TCAP, MAP, and Diameter modules |
+| **SIPp** | SIP load tester and traffic generator |
+
+### Device Flashing & AT Tools
+
+ADB, Fastboot, Heimdall (Samsung), EDL (Qualcomm 9008), Gammu, Minicom, AT Command Console, ModMobMap, LTESniffer, LTE-CellScanner
+
+---
+
+## OS Optimizations
+
+TelcoSec-Chisel applies kernel-level tuning required by telecom tools out of the box:
+
+- **Real-time scheduling** — PAM limits and `realtime` group allow GNU Radio and srsRAN threads to lock memory and run at SCHED_RR priority 99 (prevents RF sample drops)
+- **SCTP stack tuning** — Pre-loaded `sctp` module; socket buffer sizes and RTO limits tuned for SIGTRAN/Diameter scanning
+- **Low-latency USB** — udev rules disable autosuspend on USRP, HackRF, and BladeRF devices
+- **Kernel security hardening** — ASLR, protected hardlinks/symlinks, dmesg restrictions, disabled ICMP redirects
+- **Non-root hardware access** — `/etc/udev/rules.d/50-telcosec-hw.rules` maps USB IDs for HackRF, USRP, LimeSDR, BladeRF, and SIMtrace 2 to the `plugdev` group
+- **UFW firewall** — Enabled by default; blocks incoming, allows outgoing
+
+---
+
+## Building the ISO
+
+The build requires an Ubuntu or Debian host (or WSL2). Allow **30–60 minutes** and **~20 GB** free disk space.
 
 ### Prerequisites
-Install the required builder packages on the host machine:
+
 ```bash
-sudo apt-get update
 sudo apt-get install -y debootstrap squashfs-tools grub-pc-bin grub-efi-amd64-bin xorriso mtools
 ```
 
-### Build Command
-Compile the live image:
+### Build
+
 ```bash
 sudo ./build-iso.sh
 ```
-This builds the rootfs, compiles the SDR drivers, installs the target baseband utilities, and outputs `telcosec-chisel-live.iso`.
 
-## Community and Resources
+Output: `telcosec-chisel-live.iso`
 
-Documentation and resources:
-* **Community Hub**: [community.telcosec.cloud](https://community.telcosec.cloud/)
-* **Main Website**: [www.telcosec.cloud](https://www.telcosec.cloud/)
-* **Academy**: [app.telcosec.cloud](https://app.telcosec.cloud/)
-* **Research Blog**: [blog.telcosec.cloud](https://blog.telcosec.cloud/)
-* **Discord Server**: [Discord Link](https://discord.gg/RykzXTQFXF)
+### Build on Windows (WSL2)
+
+```bash
+wsl -d kali-linux -u root -- bash -c "cd //mnt//m//TelcoSec-Chisel && ./build-iso.sh"
+```
+
+### CI/CD
+
+Every push to `main` triggers an automated build via GitHub Actions (`.github/workflows/release.yml`). Tagged releases (`v*.*.*`) produce a GitHub Release with the ISO attached as a downloadable artifact.
+
+---
+
+## 5Ghoul — 5G NR Baseband Fuzzer
+
+5Ghoul is not compiled during ISO build (OAI compilation takes 30+ minutes and would inflate the image). All build dependencies are pre-installed. On first use:
+
+```bash
+# USRP B210
+sudo 5ghoul-install
+
+# BladeRF 2.0 xA4
+sudo 5ghoul-install --radio BLADERF
+```
+
+Then run a fuzzing attack:
+
+```bash
+sudo 5ghoul-run --Attack.Name=NAS_5GS_Fuzz
+```
+
+See the [5Ghoul setup guide](https://tschisel.telcosec.net/#fuzzer) for full configuration.
+
+---
+
+## Documentation
+
+Full documentation at **[tschisel.telcosec.net](https://tschisel.telcosec.net)** — tool catalog, OS tuning details, hardware setup, and the ISO build pipeline reference.
+
+Offline documentation is bundled in the live ISO at `/usr/share/doc/telcosec/index.html` (accessible from the Firefox home page without network).
+
+---
+
+## Architecture
+
+```
+build-iso.sh                  # Orchestrates the entire build
+builder/
+  scripts/
+    00-install-all-packages.sh  # Single consolidated apt transaction
+    01-install-base.sh          # XFCE desktop, users, SSH
+    02-install-sdr.sh           # Conda env + SDR drivers from source
+    03-install-core-network.sh  # srsRAN + Open5GS
+    04-install-tools.sh         # Wireshark, SigPloit, Diafuzzer, Scapy
+    05-desktop-customization.sh # Wallpaper, MOTD, Firefox policies
+    06-install-ue-analysis.sh   # FirmWire, QCSuper, pySim, SIMtrace 2
+    07-install-installer.sh     # Calamares live-to-disk installer
+    08-system-optimization.sh   # udev rules, PAM limits, SCTP tuning
+    09-install-5ghoul.sh        # 5Ghoul build deps + helper scripts
+  calamares/                    # Installer branding and module config
+  docs/                         # Offline docs bundled in the ISO
+  menu/                         # XFCE application menu + .desktop files
+  udev/                         # USB hardware access rules
+docs/                           # GitHub Pages documentation portal (Nuxt 3)
+```
+
+---
+
+## Community
+
+| | |
+|---|---|
+| **Documentation** | [tschisel.telcosec.net](https://tschisel.telcosec.net) |
+| **Academy** | [app.telcosec.cloud](https://app.telcosec.cloud) |
+| **Community Hub** | [community.telcosec.cloud](https://community.telcosec.cloud) |
+| **Research Blog** | [blog.telcosec.cloud](https://blog.telcosec.cloud) |
+| **Discord** | [discord.gg/RykzXTQFXF](https://discord.gg/RykzXTQFXF) |
+
+---
+
+> **Legal notice:** TelcoSec-Chisel is intended for authorized security research, penetration testing engagements, and educational use in controlled lab environments. Users are responsible for ensuring their use complies with applicable laws and regulations. Unauthorized interception of cellular communications is illegal in most jurisdictions.
