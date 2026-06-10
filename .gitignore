@@ -5,5 +5,5 @@ docs/node_modules/
 docs/.nuxt/
 docs/.output/
 docs/dist/
-.claude/worktrees/
+.claude/
 live-iso-work/
