@@ -112,9 +112,12 @@ fi
 echo "Compiling and installing Kalibrate-RTL..."
 cd /opt/telcosec/src/kalibrate-rtl
 ./bootstrap
-# conda-forge rtl-sdr doesn't ship a .pc file; bypass pkg-config for it directly
+# Bypass pkg-config for both librtlsdr (conda, no .pc file) and fftw3 (system,
+# hidden when conda sets PKG_CONFIG_LIBDIR and overrides default search paths).
 LIBRTLSDR_CFLAGS="-I${CONDA_PREFIX}/include" \
 LIBRTLSDR_LIBS="-L${CONDA_PREFIX}/lib -lrtlsdr" \
+FFTW3_CFLAGS="-I/usr/include" \
+FFTW3_LIBS="-lfftw3 -lm" \
   ./configure
 make -j$(nproc)
 sudo make install
