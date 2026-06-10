@@ -94,8 +94,12 @@ sudo chmod +x /usr/local/bin/uhd-download-images
 # between librtlsdr0/soname-0 and librtlsdr2/soname-2 in Ubuntu 24.04 Noble).
 # conda-forge packages resolve their own ABIs cleanly.
 echo "Installing GNU Radio ecosystem into conda env..."
+# gr-osmosdr is not on conda-forge; install it separately so its absence does not
+# abort the whole transaction and leave rtl-sdr / gnuradio uninstalled.
 conda install -y --override-channels -c conda-forge \
-  rtl-sdr gnuradio gqrx gr-osmosdr || echo "  WARNING: conda GNU Radio install failed (non-fatal)"
+  rtl-sdr gnuradio gqrx || echo "  WARNING: conda GNU Radio base install failed (non-fatal)"
+conda install -y --override-channels -c conda-forge gr-osmosdr 2>/dev/null || \
+  echo "  INFO: gr-osmosdr not on conda-forge — skipping (gr-gsm built from source below)"
 
 # gr-gsm is not on conda-forge; build from source against the conda env
 git clone --depth 1 https://github.com/bkerler/gr-gsm /opt/telcosec/src/gr-gsm 2>/dev/null || true
