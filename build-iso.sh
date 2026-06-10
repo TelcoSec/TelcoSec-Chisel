@@ -84,6 +84,14 @@ HOSTS
 # Carry the host's DNS resolver into the chroot so wget/curl work
 cp /etc/resolv.conf "$ROOTFS/etc/resolv.conf" 2>/dev/null || true
 
+# ─── Locale generation ───────────────────────────────────────────────────────
+# debootstrap includes the locales package (--include=locales) but doesn't
+# generate any locale files. Package postinstalls (kismet, etc.) fail with
+# "Cannot set LC_ALL to default locale" until at least one locale exists.
+echo "en_US.UTF-8 UTF-8" > "$ROOTFS/etc/locale.gen"
+chroot "$ROOTFS" locale-gen
+chroot "$ROOTFS" update-locale LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 LC_CTYPE=en_US.UTF-8
+
 # ─── Chroot service suppression ──────────────────────────────────────────────
 # Hardware package postinstalls call udevadm/invoke-rc.d which fail inside
 # a chroot. Suppress them for the entire provisioning phase.

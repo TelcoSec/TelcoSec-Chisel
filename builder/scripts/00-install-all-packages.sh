@@ -164,7 +164,7 @@ apt-get install -y \
   libosmocore-dev libmd-dev librocksdb-dev \
   unzip \
   qemu-system-arm qemu-system-mips qemu-system-x86 qemu-utils \
-  bison flex libpcap-dev libgcrypt20-dev \
+  bison flex libpcap-dev libgcrypt20-dev libpugixml-dev \
   qtbase5-dev qttools5-dev qtmultimedia5-dev libqt5svg5-dev libc-ares-dev \
   libsdl2-mixer-2.0-0 libsdl2-image-2.0-0 libsdl2-2.0-0 \
   libcurl4-openssl-dev \
