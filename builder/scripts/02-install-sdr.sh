@@ -94,13 +94,28 @@ sudo chmod +x /usr/local/bin/uhd-download-images
 # between librtlsdr0/soname-0 and librtlsdr2/soname-2 in Ubuntu 24.04 Noble).
 # conda-forge packages resolve their own ABIs cleanly.
 echo "Installing GNU Radio ecosystem into conda env..."
-# Install rtl-sdr alone first — it is required for kalibrate-rtl to compile.
-# Bundling it with gnuradio/gqrx risks the whole transaction failing due to
-# solver conflicts, leaving rtl-sdr.h absent and breaking the kalibrate-rtl build.
-conda install -y --override-channels -c conda-forge rtl-sdr || \
-  echo "  WARNING: rtl-sdr conda install failed — kalibrate-rtl will be skipped"
+# Install rtl-sdr alone first — required for kalibrate-rtl headers.
+conda install -y --override-channels -c conda-forge rtl-sdr 2>/dev/null || \
+  echo "  WARNING: rtl-sdr conda install failed — will try source build below"
 
-# gnuradio and gqrx are large and their solver constraints can fail independently.
+# If conda install of rtl-sdr failed (headers absent), build librtlsdr from source
+# directly into the conda env. This is the guaranteed fallback that always works.
+if [ ! -f "${CONDA_PREFIX}/include/rtl-sdr.h" ]; then
+  echo "  Building librtlsdr from source into conda env..."
+  git clone --depth 1 https://github.com/osmocom/rtl-sdr \
+    /opt/telcosec/src/librtlsdr 2>/dev/null || true
+  if [ -d /opt/telcosec/src/librtlsdr ]; then
+    cmake -S /opt/telcosec/src/librtlsdr -B /opt/telcosec/src/librtlsdr/build \
+      -DCMAKE_INSTALL_PREFIX="${CONDA_PREFIX}" \
+      -DDETACH_KERNEL_DRIVER=ON \
+      -DCMAKE_BUILD_TYPE=Release >/dev/null 2>&1
+    make -C /opt/telcosec/src/librtlsdr/build -j"$(nproc)" >/dev/null 2>&1
+    make -C /opt/telcosec/src/librtlsdr/build install >/dev/null 2>&1 && \
+      echo "  librtlsdr source build complete — rtl-sdr.h now available"
+  fi
+fi
+
+# gnuradio and gqrx — large; non-fatal if solver fails.
 conda install -y --override-channels -c conda-forge gnuradio gqrx 2>/dev/null || \
   echo "  WARNING: conda gnuradio/gqrx install failed (non-fatal)"
 
