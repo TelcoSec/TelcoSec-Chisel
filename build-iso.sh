@@ -405,7 +405,24 @@ GRUB
 
 # ─── Build ISO ────────────────────────────────────────────────────────────────
 echo "--> Building ISO with grub-mkrescue..."
-grub-mkrescue -o "$IMAGE_NAME" "$WORKDIR/image/" -- -iso-level 3
+# grub-mkrescue pipes args to xorriso via its own "--" (interpreter/stdin mode).
+# In that context "-iso-level 3" is not a recognized interpreter command, only a
+# command-line flag. Intercept xorriso via PATH and inject the flag right after
+# "-as mkisofs" before xorriso sees any content args.
+mkdir -p /tmp/xorriso-wrap
+cat > /tmp/xorriso-wrap/xorriso << 'XWRAP'
+#!/bin/bash
+args=("$@")
+for i in "${!args[@]}"; do
+  if [ "${args[$i]}" = "mkisofs" ] && [ "${args[$((i-1))]:-}" = "-as" ]; then
+    args=("${args[@]:0:$((i+1))}" "-iso-level" "3" "${args[@]:$((i+1))}")
+    break
+  fi
+done
+exec /usr/bin/xorriso "${args[@]}"
+XWRAP
+chmod +x /tmp/xorriso-wrap/xorriso
+PATH="/tmp/xorriso-wrap:$PATH" grub-mkrescue -o "$IMAGE_NAME" "$WORKDIR/image/"
 
 # ─── Summary ──────────────────────────────────────────────────────────────────
 ELAPSED=$(( $(date +%s) - BUILD_START ))
