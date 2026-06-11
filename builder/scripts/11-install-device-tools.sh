@@ -3,6 +3,10 @@ set -e
 
 echo "=== Installing Device & Driver Tools ==="
 
+export GIT_TERMINAL_PROMPT=0
+export GIT_ASKPASS=/bin/false
+git config --global credential.helper ''
+
 TELCOSEC_OPT=/opt/telcosec
 mkdir -p "$TELCOSEC_OPT"
 
@@ -54,8 +58,7 @@ chmod +x /usr/local/bin/spflashtool-install
 echo "  Installing Qualcomm EDL tools..."
 # Try pip install first, fall back to source
 pip3 install edl --break-system-packages 2>/dev/null || {
-  git clone --depth 1 https://github.com/bkerler/edl "${TELCOSEC_OPT}/edl" 2>/dev/null || \
-    (cd "${TELCOSEC_OPT}/edl" && git pull) || true
+  git clone --depth 1 https://github.com/bkerler/edl "${TELCOSEC_OPT}/edl" 2>/dev/null || true
   if [ -d "${TELCOSEC_OPT}/edl" ]; then
     pip3 install -e "${TELCOSEC_OPT}/edl" --break-system-packages 2>/dev/null || true
   fi
