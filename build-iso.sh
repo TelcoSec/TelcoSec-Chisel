@@ -375,7 +375,7 @@ GRUB
 
 # ─── Build ISO ────────────────────────────────────────────────────────────────
 echo "--> Building ISO with grub-mkrescue..."
-grub-mkrescue -o "$IMAGE_NAME" "$WORKDIR/image/"
+grub-mkrescue -o "$IMAGE_NAME" "$WORKDIR/image/" -- -iso-level 3
 
 # ─── Summary ──────────────────────────────────────────────────────────────────
 ELAPSED=$(( $(date +%s) - BUILD_START ))

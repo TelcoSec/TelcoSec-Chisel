@@ -3,6 +3,9 @@ set -e
 
 echo "=== Installing Advanced Telecom Tools ==="
 
+# Prevent git from prompting for credentials in non-interactive CI/chroot builds
+export GIT_TERMINAL_PROMPT=0
+
 TELCOSEC_OPT=/opt/telcosec
 mkdir -p "$TELCOSEC_OPT"
 
@@ -182,7 +185,7 @@ git clone --depth 1 https://github.com/srsran/srsgui "${TELCOSEC_OPT}/srsgui" 2>
 if [ -d "${TELCOSEC_OPT}/srsgui" ]; then
   cd "${TELCOSEC_OPT}/srsgui"
   mkdir -p build && cd build
-  cmake .. -DCMAKE_BUILD_TYPE=Release 2>&1 | tail -3
+  cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF 2>&1 | tail -3
   make -j"$(nproc)" 2>&1 | tail -5 || true
   [ -f srsgui ] && ln -sf "${TELCOSEC_OPT}/srsgui/build/srsgui" /usr/local/bin/srsgui || true
   chown -R telcosec:telcosec "${TELCOSEC_OPT}/srsgui"
@@ -240,8 +243,8 @@ echo "  Installing gtp5g kernel module..."
 git clone --depth 1 https://github.com/free5gc/gtp5g "${TELCOSEC_OPT}/gtp5g" \
   2>/dev/null || (cd "${TELCOSEC_OPT}/gtp5g" && git pull) || true
 if [ -d "${TELCOSEC_OPT}/gtp5g" ]; then
-  cd "${TELCOSEC_OPT}/gtp5g"
-  make -j"$(nproc)" 2>&1 | tail -5 || true
+  # Kernel module cannot be compiled inside the chroot (no kernel headers).
+  # gtp5g-load compiles and inserts it at first run on the live system.
   cat > /usr/local/bin/gtp5g-load << 'GSCRIPT'
 #!/bin/bash
 # Build (if needed) and load the 5G GTP kernel module
