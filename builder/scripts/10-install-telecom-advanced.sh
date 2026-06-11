@@ -3,8 +3,13 @@ set -e
 
 echo "=== Installing Advanced Telecom Tools ==="
 
-# Prevent git from prompting for credentials in non-interactive CI/chroot builds
+# Prevent git from blocking on credential prompts in non-interactive CI/chroot builds.
+# GIT_TERMINAL_PROMPT=0 stops the terminal askpass; credential.helper='' disables
+# the credential manager (which can auto-fill username and then hang waiting for password);
+# GIT_ASKPASS=/bin/false makes any remaining askpass call return immediately with failure.
 export GIT_TERMINAL_PROMPT=0
+export GIT_ASKPASS=/bin/false
+git config --global credential.helper ''
 
 TELCOSEC_OPT=/opt/telcosec
 mkdir -p "$TELCOSEC_OPT"
@@ -75,8 +80,7 @@ fi
 
 # ─── D. Kalibrate-GSM (GSM frequency calibration) ──────────────────────────
 echo "  Installing Kalibrate-GSM..."
-git clone --depth 1 https://github.com/steve-m/kalibrate-gsm "${TELCOSEC_OPT}/kalibrate-gsm" || \
-  (cd "${TELCOSEC_OPT}/kalibrate-gsm" && git pull) || true
+git clone --depth 1 https://github.com/steve-m/kalibrate-gsm "${TELCOSEC_OPT}/kalibrate-gsm" 2>/dev/null || true
 if [ -d "${TELCOSEC_OPT}/kalibrate-gsm" ]; then
   cd "${TELCOSEC_OPT}/kalibrate-gsm"
   ./bootstrap.sh 2>/dev/null || autoreconf -fi
@@ -88,8 +92,7 @@ fi
 
 # ─── E. Modmobmap (cell mapping via AT commands) ────────────────────────────
 echo "  Installing Modmobmap..."
-git clone --depth 1 https://github.com/S3cur1ty-fr/modmobmap "${TELCOSEC_OPT}/modmobmap" || \
-  (cd "${TELCOSEC_OPT}/modmobmap" && git pull) || true
+git clone --depth 1 https://github.com/S3cur1ty-fr/modmobmap "${TELCOSEC_OPT}/modmobmap" 2>/dev/null || true
 if [ -d "${TELCOSEC_OPT}/modmobmap" ]; then
   pip3 install -r "${TELCOSEC_OPT}/modmobmap/requirements.txt" \
     --break-system-packages 2>/dev/null || true
@@ -185,8 +188,11 @@ git clone --depth 1 https://github.com/srsran/srsgui "${TELCOSEC_OPT}/srsgui" 2>
 if [ -d "${TELCOSEC_OPT}/srsgui" ]; then
   cd "${TELCOSEC_OPT}/srsgui"
   mkdir -p build && cd build
-  cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF 2>&1 | tail -3
-  make -j"$(nproc)" 2>&1 | tail -5 || true
+  cmake .. -DCMAKE_BUILD_TYPE=Release 2>&1 | tail -3
+  # srsGUI CMakeLists.txt adds test subdirs unconditionally; build only the main target
+  # to avoid test compilation failures (missing Qt test harness).
+  make -j"$(nproc)" srsgui 2>&1 | tail -5 || \
+    make -j"$(nproc)" 2>&1 | tail -5 || true
   [ -f srsgui ] && ln -sf "${TELCOSEC_OPT}/srsgui/build/srsgui" /usr/local/bin/srsgui || true
   chown -R telcosec:telcosec "${TELCOSEC_OPT}/srsgui"
   cd /
