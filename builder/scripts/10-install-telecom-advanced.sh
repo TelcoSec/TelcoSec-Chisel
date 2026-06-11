@@ -119,18 +119,26 @@ fi
 # ─── F. SIMTester (Java SIM card security testing) ──────────────────────────
 echo "  Installing SIMTester..."
 if [ -d "${TELCOSEC_OPT}/simtester" ] && command -v mvn &>/dev/null; then
-  cd "${TELCOSEC_OPT}/simtester"
-  mvn package -DskipTests -q 2>&1 | tail -5 || true
-  JAR=$(find . -name "SIMtester*.jar" -not -path "*/original*" 2>/dev/null | head -1)
-  if [ -n "$JAR" ]; then
-    cat > /usr/local/bin/simtester << EOF
+  # srlabs/SIMtester has the Java project nested under a SIMtester/ subdirectory,
+  # not at the repo root. Find the pom.xml rather than assuming the layout.
+  SIMTESTER_POM=$(find "${TELCOSEC_OPT}/simtester" -name "pom.xml" -maxdepth 3 2>/dev/null | head -1)
+  if [ -n "$SIMTESTER_POM" ]; then
+    SIMTESTER_BUILD=$(dirname "$SIMTESTER_POM")
+    cd "$SIMTESTER_BUILD"
+    mvn package -DskipTests -q 2>&1 | tail -5 || true
+    JAR=$(find "$SIMTESTER_BUILD" -name "SIMtester*.jar" -not -path "*/original*" 2>/dev/null | head -1)
+    if [ -n "$JAR" ]; then
+      cat > /usr/local/bin/simtester << EOF
 #!/bin/bash
-exec java -jar ${TELCOSEC_OPT}/simtester/${JAR} "\$@"
+exec java -jar ${JAR} "\$@"
 EOF
-    chmod +x /usr/local/bin/simtester
+      chmod +x /usr/local/bin/simtester
+    fi
+    cd /
+  else
+    echo "  WARNING: SIMtester pom.xml not found — skipping Maven build"
   fi
   chown -R telcosec:telcosec "${TELCOSEC_OPT}/simtester"
-  cd /
 fi
 
 # ─── G. YateBTS + Yate (GSM/UMTS BTS with BladeRF support) ─────────────────
