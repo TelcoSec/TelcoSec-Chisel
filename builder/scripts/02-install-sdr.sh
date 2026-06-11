@@ -94,10 +94,17 @@ sudo chmod +x /usr/local/bin/uhd-download-images
 # between librtlsdr0/soname-0 and librtlsdr2/soname-2 in Ubuntu 24.04 Noble).
 # conda-forge packages resolve their own ABIs cleanly.
 echo "Installing GNU Radio ecosystem into conda env..."
-# gr-osmosdr is not on conda-forge; install it separately so its absence does not
-# abort the whole transaction and leave rtl-sdr / gnuradio uninstalled.
-conda install -y --override-channels -c conda-forge \
-  rtl-sdr gnuradio gqrx || echo "  WARNING: conda GNU Radio base install failed (non-fatal)"
+# Install rtl-sdr alone first — it is required for kalibrate-rtl to compile.
+# Bundling it with gnuradio/gqrx risks the whole transaction failing due to
+# solver conflicts, leaving rtl-sdr.h absent and breaking the kalibrate-rtl build.
+conda install -y --override-channels -c conda-forge rtl-sdr || \
+  echo "  WARNING: rtl-sdr conda install failed — kalibrate-rtl will be skipped"
+
+# gnuradio and gqrx are large and their solver constraints can fail independently.
+conda install -y --override-channels -c conda-forge gnuradio gqrx 2>/dev/null || \
+  echo "  WARNING: conda gnuradio/gqrx install failed (non-fatal)"
+
+# gr-osmosdr is not on conda-forge — attempt separately, failure expected.
 conda install -y --override-channels -c conda-forge gr-osmosdr 2>/dev/null || \
   echo "  INFO: gr-osmosdr not on conda-forge — skipping (gr-gsm built from source below)"
 
@@ -114,18 +121,22 @@ fi
 
 # 8. Compile and Install Kalibrate-RTL from Source
 echo "Compiling and installing Kalibrate-RTL..."
-cd /opt/telcosec/src/kalibrate-rtl
-./bootstrap
-# Bypass pkg-config for both librtlsdr (conda, no .pc file) and fftw3 (system,
-# hidden when conda sets PKG_CONFIG_LIBDIR and overrides default search paths).
-LIBRTLSDR_CFLAGS="-I${CONDA_PREFIX}/include" \
-LIBRTLSDR_LIBS="-L${CONDA_PREFIX}/lib -lrtlsdr" \
-FFTW3_CFLAGS="-I/usr/include" \
-FFTW3_LIBS="-lfftw3 -lm" \
-  ./configure
-make -j$(nproc)
-sudo make install
-cd -
+if [ ! -f "${CONDA_PREFIX}/include/rtl-sdr.h" ]; then
+  echo "  WARNING: rtl-sdr.h not found in conda env — skipping kalibrate-rtl build"
+else
+  cd /opt/telcosec/src/kalibrate-rtl
+  ./bootstrap
+  # Bypass pkg-config for both librtlsdr (conda, no .pc file) and fftw3 (system,
+  # hidden when conda sets PKG_CONFIG_LIBDIR and overrides default search paths).
+  LIBRTLSDR_CFLAGS="-I${CONDA_PREFIX}/include" \
+  LIBRTLSDR_LIBS="-L${CONDA_PREFIX}/lib -lrtlsdr" \
+  FFTW3_CFLAGS="-I/usr/include" \
+  FFTW3_LIBS="-lfftw3 -lm" \
+    ./configure
+  make -j$(nproc)
+  sudo make install
+  cd -
+fi
 
 # Set permissions
 sudo chown -R telcosec:telcosec /opt/telcosec
