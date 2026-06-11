@@ -14,6 +14,24 @@ git config --global credential.helper ''
 TELCOSEC_OPT=/opt/telcosec
 mkdir -p "$TELCOSEC_OPT"
 
+# ─── Pre-clone all repos in parallel before starting any builds ──────────────
+echo "  Cloning repositories in parallel..."
+mkdir -p "$TELCOSEC_OPT"
+git clone --depth 1 https://github.com/aligungr/UERANSIM        "${TELCOSEC_OPT}/ueransim"        2>/dev/null || true &
+git clone --depth 1 https://github.com/fgsect/scat              "${TELCOSEC_OPT}/scat"            2>/dev/null || true &
+git clone --depth 1 https://github.com/steve-m/kalibrate-gsm   "${TELCOSEC_OPT}/kalibrate-gsm"   2>/dev/null || true &
+git clone --depth 1 https://github.com/S3cur1ty-fr/modmobmap   "${TELCOSEC_OPT}/modmobmap"       2>/dev/null || true &
+git clone --depth 1 https://github.com/srlabs/SIMtester         "${TELCOSEC_OPT}/simtester"       2>/dev/null || true &
+git clone --depth 1 https://github.com/yatebts/yatebts          "${TELCOSEC_OPT}/yatebts"         2>/dev/null || true &
+git clone --depth 1 https://github.com/RangeNetworks/openbts    "${TELCOSEC_OPT}/openbts"         2>/dev/null || true &
+git clone --depth 1 https://github.com/srsran/srsgui            "${TELCOSEC_OPT}/srsgui"          2>/dev/null || true &
+git clone --depth 1 https://github.com/Evrytania/LTE-Cell-Scanner "${TELCOSEC_OPT}/lte-cellscanner" 2>/dev/null || true &
+git clone --depth 1 https://github.com/SysSec-KAIST/LTESniffer  "${TELCOSEC_OPT}/ltesniffer"      2>/dev/null || true &
+git clone --depth 1 https://github.com/ninjachris81/gr-tetra    "${TELCOSEC_OPT}/gr-tetra"        2>/dev/null || true &
+git clone --depth 1 https://github.com/free5gc/gtp5g            "${TELCOSEC_OPT}/gtp5g"           2>/dev/null || true &
+wait
+echo "  Parallel clone complete."
+
 # Test PLMN constants (ITU-T standard test network)
 MCC=001
 MNC=01
@@ -30,9 +48,6 @@ EOF
 
 # ─── A. UERANSIM (5G UE/gNB simulator) ─────────────────────────────────────
 echo "  Installing UERANSIM..."
-git clone --depth 1 https://github.com/aligungr/UERANSIM "${TELCOSEC_OPT}/ueransim" || \
-  (cd "${TELCOSEC_OPT}/ueransim" && git pull) || true
-
 if [ -d "${TELCOSEC_OPT}/ueransim" ]; then
   cd "${TELCOSEC_OPT}/ueransim"
   cmake -DCMAKE_BUILD_TYPE=Release . 2>&1 | tail -3
@@ -56,8 +71,7 @@ fi
 
 # ─── B. SCAT (Diag protocol / Samsung/Qualcomm log decoder) ─────────────────
 echo "  Installing SCAT..."
-pip3 install scat --break-system-packages 2>/dev/null || \
-  git clone --depth 1 https://github.com/fgsect/scat "${TELCOSEC_OPT}/scat" || true
+pip3 install scat --break-system-packages 2>/dev/null || true
 if [ -d "${TELCOSEC_OPT}/scat" ]; then
   pip3 install -e "${TELCOSEC_OPT}/scat" --break-system-packages 2>/dev/null || true
 fi
@@ -80,7 +94,6 @@ fi
 
 # ─── D. Kalibrate-GSM (GSM frequency calibration) ──────────────────────────
 echo "  Installing Kalibrate-GSM..."
-git clone --depth 1 https://github.com/steve-m/kalibrate-gsm "${TELCOSEC_OPT}/kalibrate-gsm" 2>/dev/null || true
 if [ -d "${TELCOSEC_OPT}/kalibrate-gsm" ]; then
   cd "${TELCOSEC_OPT}/kalibrate-gsm"
   ./bootstrap.sh 2>/dev/null || autoreconf -fi
@@ -92,7 +105,6 @@ fi
 
 # ─── E. Modmobmap (cell mapping via AT commands) ────────────────────────────
 echo "  Installing Modmobmap..."
-git clone --depth 1 https://github.com/S3cur1ty-fr/modmobmap "${TELCOSEC_OPT}/modmobmap" 2>/dev/null || true
 if [ -d "${TELCOSEC_OPT}/modmobmap" ]; then
   pip3 install -r "${TELCOSEC_OPT}/modmobmap/requirements.txt" \
     --break-system-packages 2>/dev/null || true
@@ -106,8 +118,6 @@ fi
 
 # ─── F. SIMTester (Java SIM card security testing) ──────────────────────────
 echo "  Installing SIMTester..."
-git clone --depth 1 https://github.com/srlabs/SIMtester "${TELCOSEC_OPT}/simtester" || \
-  (cd "${TELCOSEC_OPT}/simtester" && git pull) || true
 if [ -d "${TELCOSEC_OPT}/simtester" ] && command -v mvn &>/dev/null; then
   cd "${TELCOSEC_OPT}/simtester"
   mvn package -DskipTests -q 2>&1 | tail -5 || true
@@ -125,8 +135,6 @@ fi
 
 # ─── G. YateBTS + Yate (GSM/UMTS BTS with BladeRF support) ─────────────────
 echo "  Installing YateBTS (deferred compile — providing installer helper)..."
-# YateBTS is a large autotools build. Like 5Ghoul, compile at first run.
-git clone --depth 1 https://github.com/yatebts/yatebts "${TELCOSEC_OPT}/yatebts" 2>/dev/null || true
 
 cat > /usr/local/bin/yatebts-install << 'SCRIPT'
 #!/bin/bash
@@ -166,7 +174,6 @@ chown -R telcosec:telcosec "${TELCOSEC_OPT}/yatebts" 2>/dev/null || true
 
 # ─── H. OpenBTS (GSM BTS, deferred compile) ─────────────────────────────────
 echo "  Installing OpenBTS helper..."
-git clone --depth 1 https://github.com/RangeNetworks/openbts "${TELCOSEC_OPT}/openbts" 2>/dev/null || true
 
 cat > /usr/local/bin/openbts-install << 'SCRIPT'
 #!/bin/bash
@@ -183,8 +190,6 @@ chown -R telcosec:telcosec "${TELCOSEC_OPT}/openbts" 2>/dev/null || true
 
 # ─── I. srsGUI (visualization for srsRAN metrics) ───────────────────────────
 echo "  Installing srsGUI..."
-git clone --depth 1 https://github.com/srsran/srsgui "${TELCOSEC_OPT}/srsgui" 2>/dev/null || \
-  (cd "${TELCOSEC_OPT}/srsgui" && git pull) || true
 if [ -d "${TELCOSEC_OPT}/srsgui" ]; then
   cd "${TELCOSEC_OPT}/srsgui"
   mkdir -p build && cd build
@@ -200,9 +205,6 @@ fi
 
 # ─── J. LTE-CellScanner ──────────────────────────────────────────────────────
 echo "  Installing LTE-CellScanner..."
-git clone --depth 1 https://github.com/Evrytania/LTE-Cell-Scanner \
-  "${TELCOSEC_OPT}/lte-cellscanner" 2>/dev/null || \
-  (cd "${TELCOSEC_OPT}/lte-cellscanner" && git pull) || true
 if [ -d "${TELCOSEC_OPT}/lte-cellscanner" ]; then
   cd "${TELCOSEC_OPT}/lte-cellscanner"
   mkdir -p build && cd build
@@ -216,8 +218,6 @@ fi
 
 # ─── K. LTESniffer ───────────────────────────────────────────────────────────
 echo "  Installing LTESniffer..."
-git clone --depth 1 https://github.com/SysSec-KAIST/LTESniffer "${TELCOSEC_OPT}/ltesniffer" \
-  2>/dev/null || (cd "${TELCOSEC_OPT}/ltesniffer" && git pull) || true
 if [ -d "${TELCOSEC_OPT}/ltesniffer" ]; then
   cd "${TELCOSEC_OPT}/ltesniffer"
   mkdir -p build && cd build
@@ -232,8 +232,6 @@ fi
 
 # ─── L. TetraEar / gr-tetra (TETRA protocol receiver) ───────────────────────
 echo "  Installing gr-tetra (TetraEar)..."
-git clone --depth 1 https://github.com/ninjachris81/gr-tetra "${TELCOSEC_OPT}/gr-tetra" \
-  2>/dev/null || (cd "${TELCOSEC_OPT}/gr-tetra" && git pull) || true
 if [ -d "${TELCOSEC_OPT}/gr-tetra" ]; then
   cd "${TELCOSEC_OPT}/gr-tetra"
   mkdir -p build && cd build
@@ -246,8 +244,6 @@ fi
 
 # ─── M. 5G GTP kernel module (gtp5g) ─────────────────────────────────────────
 echo "  Installing gtp5g kernel module..."
-git clone --depth 1 https://github.com/free5gc/gtp5g "${TELCOSEC_OPT}/gtp5g" \
-  2>/dev/null || (cd "${TELCOSEC_OPT}/gtp5g" && git pull) || true
 if [ -d "${TELCOSEC_OPT}/gtp5g" ]; then
   # Kernel module cannot be compiled inside the chroot (no kernel headers).
   # gtp5g-load compiles and inserts it at first run on the live system.

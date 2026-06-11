@@ -6,6 +6,15 @@ RESUME=false
 RESUME_FROM=0
 PACK_ONLY=false
 
+# ─── Build tuning (override via env) ──────────────────────────────────────────
+# SQUASHFS_LEVEL: zstd compression level (1-15). 3=fast/CI, 6=balanced, 15=max.
+SQUASHFS_LEVEL="${SQUASHFS_LEVEL:-6}"
+# USE_CCACHE=1: bind-mount host ccache into chroot; speeds up repeated C++ builds.
+USE_CCACHE="${USE_CCACHE:-0}"
+CCACHE_DIR_HOST="${CCACHE_DIR:-/root/.ccache}"
+# APT_PROXY: apt-cacher-ng proxy URL, e.g. http://localhost:3142
+APT_PROXY="${APT_PROXY:-}"
+
 for arg in "$@"; do
   case "$arg" in
     --resume)
@@ -96,6 +105,7 @@ IMAGE_NAME="telcosec-chisel-live.iso"
 cleanup() {
   rm -f "$ROOTFS/usr/sbin/policy-rc.d" "$ROOTFS/usr/local/sbin/udevadm" 2>/dev/null || true
   chroot "$ROOTFS" dpkg-divert --local --rename --remove /usr/bin/udevadm 2>/dev/null || true
+  umount -lf "$ROOTFS/root/.ccache" 2>/dev/null || true
   umount -lf "$ROOTFS/dev/pts" 2>/dev/null || true
   umount -lf "$ROOTFS/dev"     2>/dev/null || true
   umount -lf "$ROOTFS/sys"     2>/dev/null || true
@@ -250,6 +260,23 @@ fi
 if ! $PACK_ONLY; then
   echo "--> Running provisioning scripts..."
 
+  # ── APT proxy (apt-cacher-ng) ────────────────────────────────────────────────
+  if [ -n "$APT_PROXY" ]; then
+    echo "Acquire::http::Proxy \"$APT_PROXY\";" > "$ROOTFS/etc/apt/apt.conf.d/00proxy"
+    echo "--> APT proxy: $APT_PROXY"
+  fi
+
+  # ── ccache: inject via PATH so all gcc/g++ calls go through ccache wrappers ──
+  # /usr/lib/ccache/ contains symlinks: gcc→ccache, g++→ccache, clang→ccache, etc.
+  # No cmake flag changes needed — any compiler invocation is transparently cached.
+  CHROOT_PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+  if [ "${USE_CCACHE:-0}" = "1" ]; then
+    mkdir -p "$CCACHE_DIR_HOST" "$ROOTFS/root/.ccache"
+    mount --bind "$CCACHE_DIR_HOST" "$ROOTFS/root/.ccache"
+    CHROOT_PATH="/usr/lib/ccache:$CHROOT_PATH"
+    echo "--> ccache enabled (cache dir: $CCACHE_DIR_HOST)"
+  fi
+
   _phase() {
     local num="$1"; local label="$2"; shift 2
     if $RESUME && [ "$num" -lt "$RESUME_FROM" ]; then
@@ -264,7 +291,10 @@ if ! $PACK_ONLY; then
   }
 
   chroot_run() {
-    chroot "$ROOTFS" /bin/bash -e "/tmp/scripts/$1"
+    chroot "$ROOTFS" env \
+      PATH="$CHROOT_PATH" \
+      CCACHE_DIR=/root/.ccache \
+      /bin/bash -e "/tmp/scripts/$1"
   }
 
   _phase  0 "00 · Consolidated package install"    chroot "$ROOTFS" /bin/bash -e /tmp/scripts/00-install-all-packages.sh
@@ -315,10 +345,10 @@ cleanup
 trap - EXIT
 
 # ─── Squashfs ─────────────────────────────────────────────────────────────────
-echo "--> Packing filesystem into squashfs (zstd-15)..."
 mkdir -p "$WORKDIR/image/casper"
+echo "--> Packing filesystem into squashfs (zstd-${SQUASHFS_LEVEL})..."
 mksquashfs "$ROOTFS" "$WORKDIR/image/casper/filesystem.squashfs" \
-  -comp zstd -Xcompression-level 15 \
+  -comp zstd -Xcompression-level "${SQUASHFS_LEVEL}" \
   -b 1M \
   -processors "$(nproc)" \
   -no-exports \

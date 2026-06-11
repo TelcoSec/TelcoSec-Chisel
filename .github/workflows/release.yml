@@ -23,18 +23,47 @@ jobs:
 
       - name: Free Disk Space
         run: |
-          sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc /usr/local/share/boost
+          sudo rm -rf \
+            /usr/local/lib/android /usr/share/dotnet /opt/ghc /usr/local/share/boost \
+            /usr/lib/jvm /usr/share/swift /usr/local/lib/node_modules \
+            /opt/hostedtoolcache /imagegeneration
           sudo docker image prune -af || true
           df -h /
 
       - name: Install Build Dependencies
         run: |
-          sudo apt-get update
+          sudo apt-get update -q
           sudo apt-get install -y \
-            debootstrap squashfs-tools grub-pc-bin grub-efi-amd64-bin xorriso mtools zstd
+            debootstrap squashfs-tools grub-pc-bin grub-efi-amd64-bin xorriso mtools zstd \
+            apt-cacher-ng ccache
+          sudo ccache --max-size=4G
+
+      - name: Configure apt-cacher-ng
+        run: |
+          sudo sed -i 's/^# PassThroughPattern:.*/PassThroughPattern: .*/' /etc/apt-cacher-ng/acng.conf || true
+          sudo systemctl restart apt-cacher-ng
+
+      - name: Restore apt-cacher-ng cache
+        uses: actions/cache@v4
+        with:
+          path: /var/cache/apt-cacher-ng
+          key: acng-noble-${{ hashFiles('builder/scripts/00-install-all-packages.sh') }}
+          restore-keys: acng-noble-
+
+      - name: Restore ccache
+        uses: actions/cache@v4
+        with:
+          path: /root/.ccache
+          key: ccache-${{ hashFiles('builder/scripts/*.sh') }}
+          restore-keys: ccache-
 
       - name: Build ISO
-        run: sudo bash build-iso.sh
+        env:
+          APT_PROXY: http://localhost:3142
+          USE_CCACHE: "1"
+          CCACHE_DIR: /root/.ccache
+          SQUASHFS_LEVEL: "3"
+        run: sudo -E bash build-iso.sh
 
       - name: Generate Checksum & Metadata
         id: meta

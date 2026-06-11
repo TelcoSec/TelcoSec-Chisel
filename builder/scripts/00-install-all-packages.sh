@@ -13,6 +13,13 @@ echo "=== [Phase 0] Consolidated Package Installation ==="
 
 export DEBIAN_FRONTEND=noninteractive
 
+# Speed up apt downloads: parallel host-based queue, pipelining, auto-retry
+cat > /etc/apt/apt.conf.d/99fast-dl << 'APT_FAST'
+Acquire::Queue-Mode "host";
+Acquire::http::Pipeline-Depth 5;
+Acquire::Retries 3;
+APT_FAST
+
 # ─── 0. Chroot service suppression ──────────────────────────────────────────
 # Hardware package postinstalls call udevadm/invoke-rc.d which fail in a
 # chroot (no udev socket, no running init). Suppress them for the duration
@@ -207,6 +214,7 @@ apt-get install -y \
   \
   `# === Developer tools & language runtimes (10/11) ===` \
   openjdk-17-jdk maven \
+  ccache \
   tmux \
   \
   `# === Modem & AT command tools (11-install-device-tools.sh) ===` \
