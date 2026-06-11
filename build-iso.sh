@@ -314,6 +314,24 @@ if ! $PACK_ONLY; then
   rm -f "$ROOTFS/usr/sbin/policy-rc.d" "$ROOTFS/usr/local/sbin/udevadm"
   chroot "$ROOTFS" dpkg-divert --local --rename --remove /usr/bin/udevadm 2>/dev/null || true
 
+  # ── Live-boot fixups ───────────────────────────────────────────────────────
+  # casper.conf: anchors the live session identity used by casper initrd scripts
+  cat > "$ROOTFS/etc/casper.conf" << 'CASPER_CONF'
+USERNAME="telcosec"
+USERFULLNAME="TelcoSec Researcher"
+HOST="telcosec-chisel"
+BUILD_SYSTEM="TelcoSec"
+FLAVOUR="telcosec-chisel"
+CASPER_CONF
+
+  # Regenerate initrd AFTER all provisioning scripts have run so every initramfs
+  # hook (casper, resume, etc.) is present. The kernel postinstall runs
+  # update-initramfs during apt-get install; at that point casper hooks may not
+  # yet be on disk in the right state, producing an initrd that can't find the
+  # squashfs medium ("Unable to find a medium containing a live file system").
+  echo "--> Regenerating initrd with all hooks..."
+  chroot "$ROOTFS" update-initramfs -u -k all 2>&1 | grep -v "^update-initramfs:" || true
+
   # Cleanup inside chroot to reduce squashfs size
   echo ""
   echo "--> Cleaning up chroot..."
@@ -354,9 +372,14 @@ mksquashfs "$ROOTFS" "$WORKDIR/image/casper/filesystem.squashfs" \
   -no-exports \
   -noappend
 
-# filesystem.size required by casper/live-boot for install size estimation
+# filesystem.size — casper/live-boot uses this for install size estimation
 printf '%s' "$(du -sx --block-size=1 "$ROOTFS" | cut -f1)" \
   > "$WORKDIR/image/casper/filesystem.size"
+
+# filesystem.manifest — package list used by casper to validate the medium
+# and by the installer to compute what to remove from the installed system.
+chroot "$ROOTFS" dpkg-query -W --showformat='${Package}\t${Version}\n' \
+  > "$WORKDIR/image/casper/filesystem.manifest" 2>/dev/null || true
 
 # ─── Kernel + initrd ──────────────────────────────────────────────────────────
 echo "--> Copying kernel and initrd..."
