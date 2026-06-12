@@ -24,6 +24,30 @@ if [ ! -f /tmp/.packages-installed ]; then
     libtalloc-dev libgnutls28-dev liburing-dev
 fi
 
+# pip_retry: shell-level retry wrapper for pip installs that download large wheels.
+# pip's built-in --retries does NOT catch SSL DECRYPTION_FAILED errors (urllib3
+# treats them as non-retriable), so we retry at the shell level.
+pip_retry() {
+  local attempt
+  for attempt in 1 2 3; do
+    pip3 "$@" && return 0
+    echo "  pip attempt $attempt/3 failed — retrying in 15s..."
+    sleep 15
+  done
+  echo "  WARNING: pip install failed after 3 attempts (non-fatal)" >&2
+  return 0
+}
+sudo_pip_retry() {
+  local attempt
+  for attempt in 1 2 3; do
+    sudo pip3 "$@" && return 0
+    echo "  pip attempt $attempt/3 failed — retrying in 15s..."
+    sleep 15
+  done
+  echo "  WARNING: pip install failed after 3 attempts (non-fatal)" >&2
+  return 0
+}
+
 # Create tools root directory
 sudo mkdir -p /opt/telcosec
 sudo chown -R telcosec:telcosec /opt/telcosec
@@ -221,14 +245,14 @@ cd /opt/telcosec/mtkclient
 # OpenStack package pulls in the entire oslo.* stack which then tries to upgrade
 # apt-managed typing-extensions — causing a pip RECORD-file abort. Strip it out.
 grep -v '^keystone[[:space:]]*$' requirements.txt > /tmp/mtkclient-req.txt
-sudo pip3 install -r /tmp/mtkclient-req.txt --break-system-packages
-sudo pip3 install --break-system-packages .
+sudo_pip_retry install -r /tmp/mtkclient-req.txt --break-system-packages
+sudo_pip_retry install --break-system-packages .
 
 # pySim (SIM/USIM smartcard programming and operations)
 echo "Installing Osmocom pySim smartcard utility..."
 cd /opt/telcosec/pysim
-sudo pip3 install -r requirements.txt --break-system-packages
-sudo pip3 install --break-system-packages .
+sudo_pip_retry install -r requirements.txt --break-system-packages
+sudo_pip_retry install --break-system-packages .
 
 # lpac (eSIM Local Profile Assistant tool for profile downloads & management)
 echo "Compiling and installing lpac eSIM profile manager..."

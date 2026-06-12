@@ -35,9 +35,10 @@ EOF
 # on first boot and the session never starts.
 cat << 'EOF' | sudo tee /etc/casper.conf
 export USERNAME=telcosec
-export USERFULLNAME="TelcoSec"
-export HOST=telcosec
-export BUILD_SYSTEM=TelcoSec-Chisel
+export USERFULLNAME="TelcoSec Researcher"
+export HOST=telcosec-chisel
+export BUILD_SYSTEM=Ubuntu
+export FLAVOUR=ubuntu
 EOF
 
 # XFCE session skeleton — ensures the user gets a working failsafe desktop

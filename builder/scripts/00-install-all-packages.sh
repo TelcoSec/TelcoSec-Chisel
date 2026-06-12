@@ -163,7 +163,7 @@ apt-get install -y \
   libglib2.0-dev libsctp-dev \
   sipsak \
   python3-pip python3-venv \
-  wireguard twinkle baresip \
+  wireguard \
   \
   `# === UE analysis & baseband deps (06-install-ue-analysis.sh) ===` \
   pcscd pcsc-tools libpcsclite-dev \
@@ -218,7 +218,7 @@ apt-get install -y \
   tmux \
   \
   `# === Modem & AT command tools (11-install-device-tools.sh) ===` \
-  minicom picocom gammu modem-manager-gui screen \
+  minicom gammu modem-manager-gui screen \
   usb-modeswitch usb-modeswitch-data \
   \
   `# === Network analysis & wireless tools ===` \
@@ -258,6 +258,18 @@ update-alternatives --install /usr/bin/clang   clang   /usr/bin/clang-15   100 |
 update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-15 100 || true
 update-alternatives --install /usr/bin/lld     lld     /usr/bin/lld-15     100 || true
 
+# ─── 6b. Global pip config — extend timeout for large wheel downloads ────────
+# SSL DECRYPTION_FAILED on large wheels (>20 MB) is a transient network error.
+# pip's --retries does not catch it (urllib3 marks it non-retriable), so scripts
+# that download big packages use shell-level retry loops. This config increases
+# the per-request timeout so slower CI mirrors don't also time out.
+mkdir -p /etc/pip
+cat > /etc/pip/pip.conf << 'PIPCONF'
+[global]
+timeout = 120
+retries = 10
+PIPCONF
+
 # ─── 7. Hand typing-extensions ownership to pip ─────────────────────────────
 # Ubuntu 24.04 installs typing-extensions via apt without a pip RECORD file.
 # Any subsequent pip install that tries to upgrade it aborts with
@@ -266,23 +278,28 @@ update-alternatives --install /usr/bin/lld     lld     /usr/bin/lld-15     100 |
 pip3 install --break-system-packages --force-reinstall --no-deps \
   typing-extensions || true
 
-# ─── 8. Rust (via rustup, system-wide install) ──────────────────────────────
-# apt rust is too old (1.66). rustup gives current stable (≥1.72).
-echo "  Installing Rust via rustup..."
+# ─── 8. Rust — deferred to first-run (~550 MB saved from ISO) ───────────────
+# Rust is not required by any tool compiled during the ISO build. Deferring it
+# saves ~550 MB. Run 'sudo telcosec-install-rust' on the live system when needed.
+cat > /usr/local/bin/telcosec-install-rust << 'RUST_SCRIPT'
+#!/bin/bash
+set -e
+echo "=== Installing Rust toolchain (stable, system-wide) ==="
 export RUSTUP_HOME=/usr/local/rustup
 export CARGO_HOME=/usr/local/cargo
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | \
-  sh -s -- -y --no-modify-path --default-toolchain stable 2>&1 | tail -5 || true
-# System-wide environment profile
+  sh -s -- -y --no-modify-path --default-toolchain stable
 cat > /etc/profile.d/rust.sh << 'EOF'
 export RUSTUP_HOME=/usr/local/rustup
 export CARGO_HOME=/usr/local/cargo
 export PATH="$CARGO_HOME/bin:$PATH"
 EOF
 chmod 644 /etc/profile.d/rust.sh
-# Symlink binaries for immediate use in subsequent build steps
-ln -sf /usr/local/cargo/bin/rustc /usr/local/bin/rustc || true
-ln -sf /usr/local/cargo/bin/cargo /usr/local/bin/cargo || true
+ln -sf /usr/local/cargo/bin/rustc /usr/local/bin/rustc
+ln -sf /usr/local/cargo/bin/cargo /usr/local/bin/cargo
+echo "Rust installed. Run: source /etc/profile.d/rust.sh"
+RUST_SCRIPT
+chmod +x /usr/local/bin/telcosec-install-rust
 
 # ─── 9. JAVA_HOME environment ────────────────────────────────────────────────
 echo "  Setting JAVA_HOME..."

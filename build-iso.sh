@@ -315,22 +315,106 @@ if ! $PACK_ONLY; then
   chroot "$ROOTFS" dpkg-divert --local --rename --remove /usr/bin/udevadm 2>/dev/null || true
 
   # ── Live-boot fixups ───────────────────────────────────────────────────────
-  # casper.conf: anchors the live session identity used by casper initrd scripts
+  # casper.conf: sourced by casper initramfs hooks — must use 'export' syntax so
+  # child processes (lightdm, adduser hooks) inherit the variables.
   cat > "$ROOTFS/etc/casper.conf" << 'CASPER_CONF'
-USERNAME="telcosec"
-USERFULLNAME="TelcoSec Researcher"
-HOST="telcosec-chisel"
-BUILD_SYSTEM="TelcoSec"
-FLAVOUR="telcosec-chisel"
+export USERNAME=telcosec
+export USERFULLNAME="TelcoSec Researcher"
+export HOST=telcosec-chisel
+export BUILD_SYSTEM=Ubuntu
+export FLAVOUR=ubuntu
 CASPER_CONF
 
-  # Regenerate initrd AFTER all provisioning scripts have run so every initramfs
-  # hook (casper, resume, etc.) is present. The kernel postinstall runs
-  # update-initramfs during apt-get install; at that point casper hooks may not
-  # yet be on disk in the right state, producing an initrd that can't find the
-  # squashfs medium ("Unable to find a medium containing a live file system").
-  echo "--> Regenerating initrd with all hooks..."
-  chroot "$ROOTFS" update-initramfs -u -k all 2>&1 | grep -v "^update-initramfs:" || true
+  # Ensure casper is selected as the initramfs BOOT method.
+  # The casper package postinstall normally writes this, but a chroot postinstall
+  # failure would silently leave BOOT=local, causing the initramfs to skip all
+  # casper premount/bottom scripts and never find filesystem.squashfs.
+  mkdir -p "$ROOTFS/etc/initramfs-tools/conf.d"
+  echo "BOOT=casper" > "$ROOTFS/etc/initramfs-tools/conf.d/casper-boot"
+
+  # Force essential live-boot kernel modules into the initramfs.
+  # overlay is required by casper for the writable tmpfs layer.
+  # Use a sentinel to avoid duplicate entries on --resume builds.
+  if ! grep -q "^# telcosec-modules" "$ROOTFS/etc/initramfs-tools/modules" 2>/dev/null; then
+    cat >> "$ROOTFS/etc/initramfs-tools/modules" << 'MODULES_EOF'
+# telcosec-modules
+overlay
+isofs
+squashfs
+loop
+cdrom
+sr_mod
+ata_piix
+ahci
+xhci_pci
+ehci_pci
+uhci_hcd
+usb_storage
+uas
+vfat
+fat
+nls_cp437
+nls_iso8859_1
+nls_utf8
+MODULES_EOF
+  fi
+
+  # Reinstall casper to ensure initramfs hooks are fully present after all the
+  # provisioning apt transactions (some transactions may have left hooks stale).
+  echo "--> Reinstalling casper to refresh initramfs hooks..."
+  chroot "$ROOTFS" env DEBIAN_FRONTEND=noninteractive \
+    apt-get install -y --reinstall casper 2>&1 | tail -3 || true
+
+  # Add blkid to the initramfs explicitly. casper's get_fstype() calls blkid to
+  # identify block device filesystems; if blkid is absent the scan silently
+  # skips all devices, producing "Unable to find a medium". blkid is in
+  # util-linux which may not be pulled into the initramfs by default hooks.
+  cat > "$ROOTFS/etc/initramfs-tools/hooks/blkid-for-casper" << 'BLKID_HOOK'
+#!/bin/sh
+PREREQ=""
+prereqs() { echo "$PREREQ"; }
+case $1 in prereqs) prereqs; exit 0;; esac
+. /usr/share/initramfs-tools/hook-functions
+copy_exec /sbin/blkid /sbin
+copy_exec /usr/sbin/blkid /sbin 2>/dev/null || true
+# util-linux blkid depends on libblkid
+for lib in /lib/x86_64-linux-gnu/libblkid.so.* /usr/lib/x86_64-linux-gnu/libblkid.so.*; do
+    [ -f "$lib" ] && copy_exec "$lib" || true
+done
+BLKID_HOOK
+  chmod +x "$ROOTFS/etc/initramfs-tools/hooks/blkid-for-casper"
+
+  # Ensure overlay.ko is physically present in the initramfs. casper checks
+  # /proc/filesystems for 'overlay' before mounting the CoW layer; if the
+  # module isn't loaded at that point it prints "/cow format specified as
+  # 'overlay' and no support found" and drops to a shell. manual_add_modules
+  # copies the module + all its firmware/deps into the cpio archive.
+  cat > "$ROOTFS/etc/initramfs-tools/hooks/overlay-for-casper" << 'OVERLAY_HOOK'
+#!/bin/sh
+PREREQ=""
+prereqs() { echo "$PREREQ"; }
+case $1 in prereqs) prereqs; exit 0;; esac
+. /usr/share/initramfs-tools/hook-functions
+manual_add_modules overlay
+OVERLAY_HOOK
+  chmod +x "$ROOTFS/etc/initramfs-tools/hooks/overlay-for-casper"
+
+  # casper-premount script: load overlay before casper's main body checks
+  # /proc/filesystems. Scripts in casper-premount/ run just before casper
+  # attempts to mount the CoW filesystem. Numbered 00- so it runs first.
+  mkdir -p "$ROOTFS/etc/initramfs-tools/scripts/casper-premount"
+  cat > "$ROOTFS/etc/initramfs-tools/scripts/casper-premount/00-load-overlay" << 'OVERLAY_PREMOUNT'
+#!/bin/sh
+PREREQ=""
+prereqs() { echo "$PREREQ"; }
+case $1 in prereqs) prereqs; exit 0;; esac
+modprobe overlay 2>/dev/null || true
+OVERLAY_PREMOUNT
+  chmod +x "$ROOTFS/etc/initramfs-tools/scripts/casper-premount/00-load-overlay"
+
+  echo "--> Regenerating initrd (BOOT=casper, all hooks)..."
+  chroot "$ROOTFS" update-initramfs -u -k all 2>&1
+  echo "--> initrd regeneration complete."
 
   # Cleanup inside chroot to reduce squashfs size
   echo ""
@@ -341,15 +425,49 @@ apt-get autoremove -y
 apt-get clean
 rm -rf /var/lib/apt/lists/*
 rm -rf /root/.cache/pip /home/telcosec/.cache/pip
+
+# ── Conda cleanup ──────────────────────────────────────────────────────────
 if [ -x /opt/telcosec/miniconda/bin/conda ]; then
   /opt/telcosec/miniconda/bin/conda clean -afy || true
 fi
-find /opt/telcosec/src -name '.git'       -type d -exec rm -rf {} + 2>/dev/null || true
-find /opt/telcosec     -maxdepth 2 -name '.git' -type d -exec rm -rf {} + 2>/dev/null || true
-find /opt/telcosec/src -name '*.o'        -delete 2>/dev/null || true
-find /opt/telcosec/src -name 'CMakeFiles' -type d -exec rm -rf {} + 2>/dev/null || true
+# Remove conda package cache and tarballs (pkgs/ is the biggest hidden cost)
+rm -rf /opt/telcosec/miniconda/pkgs/ 2>/dev/null || true
+
+# ── Git history (no runtime value) ────────────────────────────────────────
+find /opt/telcosec     -name '.git'       -type d -exec rm -rf {} + 2>/dev/null || true
+
+# ── CMake / Meson build directories ────────────────────────────────────────
+# build/ dirs under /opt/telcosec can be 500-700 MB of object files + CMakeFiles
+find /opt/telcosec -type d -name 'build'      -exec rm -rf {} + 2>/dev/null || true
+find /opt/telcosec -type d -name '_build'     -exec rm -rf {} + 2>/dev/null || true
+find /opt/telcosec -type d -name 'CMakeFiles' -exec rm -rf {} + 2>/dev/null || true
+find /opt/telcosec -type f -name 'CMakeCache.txt' -delete 2>/dev/null || true
+find /opt/telcosec -type f -name '*.o'        -delete 2>/dev/null || true
+find /opt/telcosec -type f -name '*.a'        -delete 2>/dev/null || true
+
+# ── Python caches and build artifacts ─────────────────────────────────────
+find /opt/telcosec /usr/local/lib /root /home -type d -name '__pycache__' -exec rm -rf {} + 2>/dev/null || true
+find /opt/telcosec /usr/local/lib /root /home -type d -name '*.egg-info'  -exec rm -rf {} + 2>/dev/null || true
+find /opt/telcosec /usr/local/lib /root /home -type d -name '*.dist-info' -prune -o -type f \( -name '*.pyc' -o -name '*.pyo' \) -print -delete 2>/dev/null || true
+
+# ── Java/Maven local repository (~250 MB) ─────────────────────────────────
+rm -rf /root/.m2 /home/telcosec/.m2 2>/dev/null || true
+
+# ── Cross-compiler sysroots and debug libraries ────────────────────────────
+# arm-none-eabi and mipsel headers/specs not needed at runtime (~200 MB)
+find /usr/lib/gcc-cross -name '*.o' -delete 2>/dev/null || true
+rm -rf /usr/arm-none-eabi/lib/*.a /usr/mipsel-linux-gnu/lib/*.a 2>/dev/null || true
+
+# ── Locale trimming (~80 MB) ──────────────────────────────────────────────
+find /usr/share/locale -mindepth 1 -maxdepth 1 ! -name 'en' ! -name 'en_US' ! -name 'locale.alias' -exec rm -rf {} + 2>/dev/null || true
+find /usr/share/i18n/locales -mindepth 1 ! -name 'en_US' ! -name 'en_GB' -delete 2>/dev/null || true
+
+# ── Man pages and docs (except telcosec) ─────────────────────────────────
 find /usr/share/doc -mindepth 1 -maxdepth 1 ! -name 'telcosec' -exec rm -rf {} +
 rm -rf /usr/share/man/*
+rm -rf /usr/share/groff /usr/share/info 2>/dev/null || true
+
+# ── Logs and temp ─────────────────────────────────────────────────────────
 find /var/log -type f \( -name '*.log' -o -name '*.gz' \) -delete 2>/dev/null || true
 rm -rf /tmp/scripts /tmp/calamares-config /tmp/docs
 rm -rf /tmp/udev /tmp/security /tmp/menu /tmp/wireshark /tmp/boot
@@ -368,7 +486,7 @@ echo "--> Packing filesystem into squashfs (zstd-${SQUASHFS_LEVEL})..."
 mksquashfs "$ROOTFS" "$WORKDIR/image/casper/filesystem.squashfs" \
   -comp zstd -Xcompression-level "${SQUASHFS_LEVEL}" \
   -b 1M \
-  -processors "$(nproc)" \
+  -processors 4 -mem 4G \
   -no-exports \
   -noappend
 
@@ -380,6 +498,11 @@ printf '%s' "$(du -sx --block-size=1 "$ROOTFS" | cut -f1)" \
 # and by the installer to compute what to remove from the installed system.
 chroot "$ROOTFS" dpkg-query -W --showformat='${Package}\t${Version}\n' \
   > "$WORKDIR/image/casper/filesystem.manifest" 2>/dev/null || true
+
+# ─── Create .disk/info required by Ubuntu casper ─────────────
+mkdir -p "$WORKDIR/image/.disk"
+echo "TelcoSec-Chisel Live CD" > "$WORKDIR/image/.disk/info"
+touch "$WORKDIR/image/.disk/base_installable"
 
 # ─── Kernel + initrd ──────────────────────────────────────────────────────────
 echo "--> Copying kernel and initrd..."
@@ -397,7 +520,7 @@ echo "--> Generating GRUB boot menu..."
 mkdir -p "$WORKDIR/image/boot/grub"
 cat > "$WORKDIR/image/boot/grub/grub.cfg" << 'GRUB'
 set default=0
-set timeout=10
+set timeout=15
 
 insmod all_video
 insmod font
@@ -407,21 +530,33 @@ if loadfont /boot/grub/fonts/unicode.pf2 ; then
   terminal_output gfxterm
 fi
 
-menuentry "Try TelcoSec-Chisel (Live)" {
+# Ubuntu 24.04 casper: boot=casper activates the live-boot scripts.
+# username/hostname are set here so casper's 10adduser hook picks them up.
+# noeject/noprompt: suppress casper's "remove disc and press enter" prompts.
+# Do NOT include: live-media-path (default /casper is correct),
+#   cdrom-detect/try-usb (debian-installer only), user-fullname (space issues).
+
+menuentry "TelcoSec-Chisel Live (Try without installing)" {
     set gfxpayload=keep
-    linux /casper/vmlinuz boot=casper username=telcosec user-fullname="TelcoSec Researcher" hostname=telcosec-chisel quiet splash ---
+    linux /casper/vmlinuz boot=casper noeject noprompt username=telcosec hostname=telcosec-chisel live-media=/dev/sr0 live-media-path=/casper quiet splash ---
     initrd /casper/initrd
 }
 
-menuentry "Install TelcoSec-Chisel" {
+menuentry "TelcoSec-Chisel Live (Install)" {
     set gfxpayload=keep
-    linux /casper/vmlinuz boot=casper username=telcosec user-fullname="TelcoSec Researcher" hostname=telcosec-chisel quiet splash systemd.run=/etc/skel/Desktop/install-telcosec.desktop ---
+    linux /casper/vmlinuz boot=casper noeject noprompt username=telcosec hostname=telcosec-chisel live-media=/dev/sr0 live-media-path=/casper only-ubiquity quiet splash ---
     initrd /casper/initrd
 }
 
-menuentry "Try TelcoSec-Chisel (Safe Graphics)" {
+menuentry "TelcoSec-Chisel Live (Safe Graphics)" {
     set gfxpayload=keep
-    linux /casper/vmlinuz boot=casper username=telcosec user-fullname="TelcoSec Researcher" hostname=telcosec-chisel nomodeset quiet splash ---
+    linux /casper/vmlinuz boot=casper noeject noprompt username=telcosec hostname=telcosec-chisel live-media=/dev/sr0 live-media-path=/casper nomodeset ---
+    initrd /casper/initrd
+}
+
+menuentry "TelcoSec-Chisel Live (Debug — verbose boot)" {
+    set gfxpayload=keep
+    linux /casper/vmlinuz boot=casper noeject noprompt username=telcosec hostname=telcosec-chisel live-media=/dev/sr0 live-media-path=/casper debug systemd.log_level=debug
     initrd /casper/initrd
 }
 GRUB
@@ -446,6 +581,30 @@ exec /usr/bin/xorriso "${args[@]}"
 XWRAP
 chmod +x /tmp/xorriso-wrap/xorriso
 PATH="/tmp/xorriso-wrap:$PATH" grub-mkrescue -o "$IMAGE_NAME" "$WORKDIR/image/"
+
+# ─── ISO integrity check ──────────────────────────────────────────────────────
+# Verify that filesystem.squashfs is accessible inside the ISO (not just present
+# in the source tree). If the ISO was built without Level 3 support, the
+# squashfs directory entry would be truncated and casper would fail at boot.
+echo "--> Verifying ISO integrity (squashfs accessible inside ISO)..."
+ISO_CHECK_DIR=$(mktemp -d)
+if mount -o loop,ro "$IMAGE_NAME" "$ISO_CHECK_DIR" 2>/dev/null; then
+  SQUASHFS_SIZE=$(stat -c '%s' "$ISO_CHECK_DIR/casper/filesystem.squashfs" 2>/dev/null || echo 0)
+  if [ "$SQUASHFS_SIZE" -gt 0 ]; then
+    printf '    filesystem.squashfs visible inside ISO: %s bytes ✓\n' "$SQUASHFS_SIZE"
+  else
+    echo "    ERROR: filesystem.squashfs NOT accessible inside ISO — Level 3 may have failed!"
+  fi
+  # Verify casper init scripts are in the initrd
+  INITRD_FILE="$ISO_CHECK_DIR/casper/initrd"
+  if file "$INITRD_FILE" 2>/dev/null | grep -q "gzip\|cpio\|Zstandard"; then
+    echo "    initrd present and appears valid ✓"
+  fi
+  umount "$ISO_CHECK_DIR" 2>/dev/null || true
+else
+  echo "    WARNING: Could not loop-mount ISO to verify (non-fatal)"
+fi
+rmdir "$ISO_CHECK_DIR" 2>/dev/null || true
 
 # ─── Summary ──────────────────────────────────────────────────────────────────
 ELAPSED=$(( $(date +%s) - BUILD_START ))
