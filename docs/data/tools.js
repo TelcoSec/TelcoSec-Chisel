@@ -348,5 +348,55 @@ export const toolsCatalog = [
         desc: "GNU Radio-based TETRA protocol receiver. Decodes TETRA trunked radio voice calls and signaling using RTL-SDR or BladeRF hardware.",
         path: "/opt/telcosec/gr-tetra/",
         cmd: "python3 /opt/telcosec/gr-tetra/apps/tetraear.py"
+    },
+    // ── Newly Added Tools ─────────────────────────────────────────────────
+    {
+        name: "atinout",
+        category: "device",
+        desc: "Quick command-line tool to send AT commands to a modem and capture the output. Excellent for scripting USSD or SMS tasks.",
+        path: "/usr/local/bin/atinout",
+        cmd: "echo 'AT+CGMI' | atinout - /dev/ttyUSB0 -"
+    },
+    {
+        name: "ModemManager GUI",
+        category: "device",
+        desc: "Graphical frontend for ModemManager, dbus, and NetworkManager. Allows sending SMS, USSD, and reading SIM contacts directly from the desktop.",
+        path: "System application",
+        cmd: "modem-manager-gui"
+    },
+    {
+        name: "SP Flash Tool (Helper)",
+        category: "device",
+        desc: "Proprietary flash tool for MediaTek devices. The pre-installed helper script provides download links and extraction instructions.",
+        path: "/usr/local/bin/spflashtool-install",
+        cmd: "spflashtool-install"
+    },
+    {
+        name: "Linphone",
+        category: "voip",
+        desc: "Open-source SIP softphone used for voice and video over IP. Useful as an alternative to Zoiper for testing PBX configurations and SIP registrars.",
+        path: "System application (linphone)",
+        cmd: "linphone"
+    },
+    {
+        name: "Nokia NetAct CLI",
+        category: "sys",
+        desc: "Wrapper for connecting to Nokia NetAct OSS systems using standard telecom administrative protocols.",
+        path: "/usr/local/bin/nokia-netact-cli",
+        cmd: "nokia-netact-cli <host>"
+    },
+    {
+        name: "Ericsson ENM CLI",
+        category: "sys",
+        desc: "Wrapper for connecting to Ericsson Network Manager (ENM) infrastructure via SSH.",
+        path: "/usr/local/bin/ericsson-enm-cli",
+        cmd: "ericsson-enm-cli <host>"
+    },
+    {
+        name: "Huawei U2000 CLI",
+        category: "sys",
+        desc: "Wrapper for accessing Huawei U2000 management interfaces using telnet or SSH fallback.",
+        path: "/usr/local/bin/huawei-u2000-cli",
+        cmd: "huawei-u2000-cli <host>"
     }
 ]

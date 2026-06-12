@@ -120,8 +120,10 @@ apt-get install -y \
   \
   `# === Desktop environment (01-install-base.sh) ===` \
   xfce4 xfce4-goodies lightdm lightdm-gtk-greeter \
+  xserver-xorg xserver-xorg-input-all \
   network-manager-gnome \
   terminator firefox \
+  open-vm-tools open-vm-tools-desktop \
   \
   `# === Core system tools (01-install-base.sh) ===` \
   git vim nano htop \
@@ -241,7 +243,7 @@ apt-get install -y \
   libtalloc2 libtalloc-dev
 
 # ─── 5. Remove chroot service suppression ────────────────────────────────────
-rm -f /usr/sbin/policy-rc.d /usr/local/sbin/udevadm
+rm -f /usr/sbin/policy-rc.d /usr/local/sbin/udevadm /usr/bin/udevadm
 dpkg-divert --local --rename --remove /usr/bin/udevadm 2>/dev/null || true
 
 # ─── 6. Wireshark non-interactive config ─────────────────────────────────────

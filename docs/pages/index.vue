@@ -408,6 +408,152 @@
           </table>
         </section>
 
+        <!-- SECTION: VIRTUALIZATION -->
+        <section id="virtualization" class="content-section" :class="{ active: activeSection === 'virtualization' }" v-show="activeSection === 'virtualization'">
+          <div class="section-header" data-label="// Virtualization :: VM Setup & Troubleshooting">
+            <h2>Virtualization Guide — VMware, VirtualBox &amp; USB Passthrough</h2>
+            <p class="subtitle">Running TelcoSec-Chisel in virtual machines: USB passthrough, input device fixes, and SSH-based log extraction</p>
+          </div>
+
+          <p>
+            Most analysis and protocol tools in TelcoSec-Chisel work correctly inside a virtual machine. VMware Workstation and VirtualBox are both supported with some configuration. However, tools relying on high-bandwidth, low-latency USB streams — particularly the <strong>5Ghoul 5G NR baseband fuzzer</strong> — require bare metal or hardware USB 3.0 passthrough.
+          </p>
+
+          <AppCallout type="warning" title="USB Bandwidth Constraint for 5Ghoul">
+            The 5Ghoul fuzzer streams live RF samples through a USRP B210 or BladeRF A4. These radios require sustained USB 3.0 throughput at ~61 MS/s (megasamples per second). Hypervisors add latency that causes <code class="inline-code">O</code> (overrun) and <code class="inline-code">U</code> (underrun) errors in the UHD driver, which corrupts the 5G NR waveform and makes fuzzing unreliable. Run 5Ghoul on bare metal only.
+          </AppCallout>
+
+          <h3>1. Enabling USB 3.0 Passthrough (Non-SDR Tools)</h3>
+          <p>
+            For non-SDR USB devices (SIM card readers, HID hardware dongles), USB passthrough works reliably when correctly configured:
+          </p>
+          <div class="steps-container">
+            <div class="step-item">
+              <div class="step-badge">VMware</div>
+              <div class="step-title">VMware Workstation Pro / Fusion</div>
+              <div class="step-content">
+                <p>In the VM settings, go to <strong>USB Controller</strong> and set compatibility to <strong>USB 3.1</strong>. Enable <strong>"Show all USB input devices"</strong>. For SIM reader passthrough, use <strong>VM → Removable Devices → [Your Reader] → Connect</strong>.
+                <TerminalBlock title="Manual filter entry in .vmx file" :code='`usb.autoConnect.device0 = "vid:08e6 pid:3438"  # Gemalto/Thales reader
+usb.autoConnect.device1 = "vid:072f pid:2200"  # ACS ACR122U`' /></p>
+              </div>
+            </div>
+            <div class="step-item">
+              <div class="step-badge">VBox</div>
+              <div class="step-title">VirtualBox USB 3.0 Controller</div>
+              <div class="step-content">
+                <p>Install the <strong>VirtualBox Extension Pack</strong> (required for USB 3.0). Enable the <strong>USB 3.0 (xHCI) Controller</strong> in VM settings. Add a USB filter for your smartcard reader's vendor/product ID. Without the Extension Pack, only USB 1.1 is available.
+              </div>
+            </div>
+          </div>
+
+          <h3>2. Input Device Freeze — systemd-udevd Initialization Bug</h3>
+          <AppCallout type="info" title="Known Issue: Keyboard &amp; Mouse Freeze on Boot">
+            On some VMware and VirtualBox configurations, the keyboard and mouse may become completely unresponsive after the XFCE desktop loads. This is caused by a <strong>race condition between <code class="inline-code">systemd-udevd</code> and the virtual HID drivers</strong> during early boot. The udevd daemon re-initializes USB input devices before the virtual bus controller is fully settled, causing the kernel to unbind the HID driver.
+          </AppCallout>
+
+          <h4>Root Cause</h4>
+          <p>
+            The TelcoSec-Chisel ISO applies aggressive udev rule reloads and hardware initialization during boot (for the SDR and SIM card hardware). In a virtual environment, this causes <code class="inline-code">systemd-udevd</code> to trigger a <code class="inline-code">REMOVE</code> event for virtual input devices (keyboard, mouse) before the VMware or VirtualBox input controller registers them as settled. The result is the desktop loads but input is dead.
+          </p>
+
+          <h4>Fix A: VMware — Edit .vmx Configuration</h4>
+          <p>
+            Power off the VM completely. Open the <code class="inline-code">.vmx</code> configuration file in a text editor and append the following lines. These settings force VMware to use a legacy PS/2-compatible input model that is immune to udev re-initialization:
+          </p>
+          <TerminalBlock title="Append to TelcoSec-Chisel.vmx" :code='`# Force VMware to use PS/2 keyboard and mouse (avoids udevd race condition)
+vmmouse.present = "TRUE"
+usb.keyboard.vmport = "FALSE"
+keyboard.allowBothIRQs = "FALSE"
+
+# Disable USB HID takeover by VMware Tools
+usb.generic.allowHID = "TRUE"
+usb.generic.allowLastHID = "TRUE"`' />
+
+          <h4>Fix B: VirtualBox — PS/2 Controller Mode</h4>
+          <p>
+            In VirtualBox, navigate to <strong>Settings → System → Motherboard</strong> and ensure the <strong>Pointing Device</strong> is set to <strong>"PS/2 Mouse"</strong> (not USB tablet or USB multi-touch). For the keyboard, navigate to <strong>Settings → USB</strong> and disable the USB HID filter if one is present.
+          </p>
+
+          <h4>Fix C: Emergency SSH Recovery (If Input Is Already Frozen)</h4>
+          <p>
+            TelcoSec-Chisel pre-configures <code class="inline-code">ufw</code> with an SSH allow rule and starts the <code class="inline-code">openssh-server</code> service at boot. If your input is frozen, you can connect from your host machine and recover:
+          </p>
+          <TerminalBlock title="SSH into frozen VM from host" :code='`# Find the VM guest IP address (from VMware/VirtualBox network info)
+# or check the VM console for IP via: ip addr show
+
+# Connect using default credentials
+ssh telcosec@<guest-ip>
+
+# Once inside, collect logs for diagnosis
+sudo journalctl -u systemd-udevd --since="1 minute ago" > /tmp/udevd.log
+journalctl -k | grep -iE "input|hid|usb" > /tmp/kernel_hid.log
+
+# Copy logs to host for analysis (from host)
+scp telcosec@<guest-ip>:/tmp/udevd.log ./guest_udevd.log`' />
+
+          <h3>3. Extracting Xorg Display Logs via SSH</h3>
+          <p>
+            If the display environment loads but input is unresponsive, the Xorg log captures which input drivers initialized. Retrieve it via SSH:
+          </p>
+          <TerminalBlock title="Collect Xorg log from frozen VM" :code='`# Option A: Standard Xorg log path
+cat /var/log/Xorg.0.log | grep -iE "(EE|WW|Input|Mouse|Keyboard)"
+
+# Option B: If using Xorg with rootless mode (common in Ubuntu 24.04)
+journalctl -b --no-pager | grep -i xorg
+
+# Check active input event nodes
+ls -la /dev/input/by-id/
+evemu-record /dev/input/event0 2>&1 | head -20`' />
+
+          <h3>4. Recommended VM Configuration Summary</h3>
+          <table style="width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 0.95rem;">
+            <thead>
+              <tr style="border-bottom: 2px solid var(--border-color); text-align: left;">
+                <th style="padding: 12px; color: #ffffff;">Setting</th>
+                <th style="padding: 12px; color: #ffffff;">VMware Workstation</th>
+                <th style="padding: 12px; color: #ffffff;">VirtualBox</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style="border-bottom: 1px solid var(--border-color);">
+                <td style="padding: 12px; color: var(--text-secondary);">RAM</td>
+                <td style="padding: 12px; color: var(--text-secondary);">4 GB minimum, 8 GB recommended</td>
+                <td style="padding: 12px; color: var(--text-secondary);">4 GB minimum, 8 GB recommended</td>
+              </tr>
+              <tr style="border-bottom: 1px solid var(--border-color);">
+                <td style="padding: 12px; color: var(--text-secondary);">CPU Cores</td>
+                <td style="padding: 12px; color: var(--text-secondary);">2 cores minimum</td>
+                <td style="padding: 12px; color: var(--text-secondary);">2 cores minimum</td>
+              </tr>
+              <tr style="border-bottom: 1px solid var(--border-color);">
+                <td style="padding: 12px; color: var(--text-secondary);">USB Controller</td>
+                <td style="padding: 12px; color: var(--text-secondary);">USB 3.1 xHCI</td>
+                <td style="padding: 12px; color: var(--text-secondary);">USB 3.0 xHCI (requires Extension Pack)</td>
+              </tr>
+              <tr style="border-bottom: 1px solid var(--border-color);">
+                <td style="padding: 12px; color: var(--text-secondary);">Input Device Mode</td>
+                <td style="padding: 12px; font-family: monospace; color: var(--accent-teal);">vmmouse.present = TRUE<br>usb.keyboard.vmport = FALSE</td>
+                <td style="padding: 12px; color: var(--text-secondary);">Pointing: PS/2 Mouse</td>
+              </tr>
+              <tr style="border-bottom: 1px solid var(--border-color);">
+                <td style="padding: 12px; color: var(--text-secondary);">Network</td>
+                <td style="padding: 12px; color: var(--text-secondary);">NAT or Bridged</td>
+                <td style="padding: 12px; color: var(--text-secondary);">NAT or Bridged</td>
+              </tr>
+              <tr style="border-bottom: 1px solid var(--border-color);">
+                <td style="padding: 12px; color: var(--text-secondary);">3D Acceleration</td>
+                <td style="padding: 12px; color: var(--text-secondary);">Optional (for UI smoothness)</td>
+                <td style="padding: 12px; color: var(--text-secondary);">Optional (VMSVGA adapter)</td>
+              </tr>
+              <tr style="border-bottom: 1px solid var(--border-color);">
+                <td style="padding: 12px; color: var(--text-secondary);">5Ghoul / SDR</td>
+                <td style="padding: 12px; color: var(--text-secondary); color: #ff6b6b;">❌ Not supported (USB latency)</td>
+                <td style="padding: 12px; color: #ff6b6b;">❌ Not supported (USB latency)</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+
         <!-- SECTION: PROJECTS -->
         <section id="projects" class="content-section" :class="{ active: activeSection === 'projects' }" v-show="activeSection === 'projects'">
           <div class="section-header" data-label="// Research Ecosystem :: Open Source">
@@ -761,6 +907,29 @@ useHead({
               }
             }
           ]
+        },
+        {
+          "@context": "https://schema.org",
+          "@type": "HowTo",
+          "name": "How to deploy 5Ghoul 5G NR Baseband Fuzzer",
+          "description": "Install, configure, and run the 5Ghoul fuzzer against 5G NR UE modems using USRP B210 or BladeRF A4.",
+          "step": [
+            {
+              "@type": "HowToStep",
+              "name": "Execute the Installer",
+              "text": "Run the installer helper. Provide the radio backend parameter to target either your USRP B210 (sudo 5ghoul-install) or a BladeRF micro A4 (sudo 5ghoul-install --radio BLADERF)."
+            },
+            {
+              "@type": "HowToStep",
+              "name": "Start the Core Network",
+              "text": "Launch Open5GS services and add the default test credentials to the network subscriber database using sudo open5gs-start and sudo 5ghoul-add-subscriber."
+            },
+            {
+              "@type": "HowToStep",
+              "name": "Run the Fuzzer",
+              "text": "Connect your SDR to a USB 3.0 port on the host, place the test smartphone inside an RF shield box connected via coaxial cable, and run the fuzzer engine (sudo 5ghoul-run --Attack.Name=NAS_5GS_Fuzz --UE.IMSI=001011234567890)."
+            }
+          ]
         }
       ])
     }
@@ -768,7 +937,7 @@ useHead({
 })
 
 // Section navigation
-const VALID_SECTIONS = ['overview', 'features', 'tools', 'drivers', 'fuzzer', 'builder', 'projects']
+const VALID_SECTIONS = ['overview', 'features', 'tools', 'drivers', 'fuzzer', 'builder', 'virtualization', 'projects']
 const activeSection = ref('overview')
 const sidebarOpen = ref(false)
 

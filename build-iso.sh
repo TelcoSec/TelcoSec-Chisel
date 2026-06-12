@@ -103,7 +103,7 @@ IMAGE_NAME="telcosec-chisel-live.iso"
 
 # ─── Mount cleanup ────────────────────────────────────────────────────────────
 cleanup() {
-  rm -f "$ROOTFS/usr/sbin/policy-rc.d" "$ROOTFS/usr/local/sbin/udevadm" 2>/dev/null || true
+  rm -f "$ROOTFS/usr/sbin/policy-rc.d" "$ROOTFS/usr/local/sbin/udevadm" "$ROOTFS/usr/bin/udevadm" 2>/dev/null || true
   chroot "$ROOTFS" dpkg-divert --local --rename --remove /usr/bin/udevadm 2>/dev/null || true
   umount -lf "$ROOTFS/root/.ccache" 2>/dev/null || true
   umount -lf "$ROOTFS/dev/pts" 2>/dev/null || true
@@ -154,14 +154,14 @@ UDEVADM
 
   # Re-copy builder assets (scripts may have changed since last run)
   echo "--> Re-syncing builder assets into chroot..."
-  cp -r builder/scripts   "$ROOTFS/tmp/scripts"
-  cp -r builder/calamares "$ROOTFS/tmp/calamares-config"
-  cp -r builder/docs      "$ROOTFS/tmp/docs"
-  cp -r builder/udev      "$ROOTFS/tmp/udev"
-  cp -r builder/security  "$ROOTFS/tmp/security"
-  cp -r builder/menu      "$ROOTFS/tmp/menu"
-  cp -r builder/wireshark "$ROOTFS/tmp/wireshark"
-  cp -r builder/boot      "$ROOTFS/tmp/boot"
+  rm -rf "$ROOTFS/tmp/scripts" && cp -r builder/scripts "$ROOTFS/tmp/scripts"
+  rm -rf "$ROOTFS/tmp/calamares-config" && cp -r builder/calamares "$ROOTFS/tmp/calamares-config"
+  rm -rf "$ROOTFS/tmp/docs" && cp -r builder/docs "$ROOTFS/tmp/docs"
+  rm -rf "$ROOTFS/tmp/udev" && cp -r builder/udev "$ROOTFS/tmp/udev"
+  rm -rf "$ROOTFS/tmp/security" && cp -r builder/security "$ROOTFS/tmp/security"
+  rm -rf "$ROOTFS/tmp/menu" && cp -r builder/menu "$ROOTFS/tmp/menu"
+  rm -rf "$ROOTFS/tmp/wireshark" && cp -r builder/wireshark "$ROOTFS/tmp/wireshark"
+  rm -rf "$ROOTFS/tmp/boot" && cp -r builder/boot "$ROOTFS/tmp/boot"
 
   # Re-mount virtual filesystems
   echo "--> Mounting virtual filesystems..."
@@ -311,7 +311,7 @@ if ! $PACK_ONLY; then
   _phase 11 "11 · Device flash tools"              chroot_run 11-install-device-tools.sh
 
   # Remove chroot service suppression
-  rm -f "$ROOTFS/usr/sbin/policy-rc.d" "$ROOTFS/usr/local/sbin/udevadm"
+  rm -f "$ROOTFS/usr/sbin/policy-rc.d" "$ROOTFS/usr/local/sbin/udevadm" "$ROOTFS/usr/bin/udevadm"
   chroot "$ROOTFS" dpkg-divert --local --rename --remove /usr/bin/udevadm 2>/dev/null || true
 
   # ── Live-boot fixups ───────────────────────────────────────────────────────

@@ -1,9 +1,19 @@
 .claude.md
 CLAUDE.md
+
+# Build artifacts
 telcosec-chisel-live.iso
+live-iso-work/
+
+# Docs build artifacts
 docs/node_modules/
 docs/.nuxt/
 docs/.output/
 docs/dist/
+
+# Local agent/AI scratch dirs
 .claude/
-live-iso-work/
+
+# VM debugging artifacts (never commit these)
+guest_*.txt
+guest_*.log

@@ -21,7 +21,7 @@ pip3 install sipvicious scapy --break-system-packages
 # Compile and Install sctpscan
 echo "Compiling and installing sctpscan..."
 sudo mkdir -p /opt/telcosec
-sudo git clone --depth 1 https://github.com/philpraxis/sctpscan.git /opt/telcosec/sctpscan || true
+[ -d /opt/telcosec/sctpscan ] || sudo git clone --depth 1 https://github.com/philpraxis/sctpscan.git /opt/telcosec/sctpscan
 cd /opt/telcosec/sctpscan
 # Patch 1: Remove legacy STREAMS header (dropped in glibc 2.30 / Ubuntu 24.04)
 sudo sed -i '/#include <stropts.h>/d' sctpscan.c
@@ -39,12 +39,12 @@ cd -
 
 # Install SigPloit (SS7/Diameter/GTP Exploitation Framework)
 echo "Installing SigPloit..."
-sudo git clone --depth 1 https://github.com/SigPloiter/SigPloit.git /opt/telcosec/sigploit || true
+[ -d /opt/telcosec/sigploit ] || sudo git clone --depth 1 https://github.com/SigPloiter/SigPloit.git /opt/telcosec/sigploit
 sudo chown -R telcosec:telcosec /opt/telcosec/sigploit
 
 # Install Diafuzzer (Orange Diameter Fuzzer)
 echo "Installing Diafuzzer..."
-sudo git clone --depth 1 https://github.com/Orange-OpenSource/diafuzzer.git /opt/telcosec/diafuzzer || true
+[ -d /opt/telcosec/diafuzzer ] || sudo git clone --depth 1 https://github.com/Orange-OpenSource/diafuzzer.git /opt/telcosec/diafuzzer || true
 if [ -f /opt/telcosec/diafuzzer/requirements.txt ]; then
   pip3 install -r /opt/telcosec/diafuzzer/requirements.txt --break-system-packages || true
 fi

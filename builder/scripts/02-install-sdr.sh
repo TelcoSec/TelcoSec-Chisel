@@ -11,10 +11,14 @@ if [ ! -f /tmp/.packages-installed ]; then
 fi
 
 # 1. Install Miniconda
-echo "Installing Miniconda..."
-wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O /tmp/miniconda.sh
-bash /tmp/miniconda.sh -b -p /opt/telcosec/miniconda
-rm /tmp/miniconda.sh
+if [ ! -d /opt/telcosec/miniconda ]; then
+  echo "Installing Miniconda..."
+  wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O /tmp/miniconda.sh
+  bash /tmp/miniconda.sh -b -p /opt/telcosec/miniconda
+  rm /tmp/miniconda.sh
+else
+  echo "Miniconda already installed, skipping installer."
+fi
 
 # Make Conda available to all users
 cat << 'EOF' | sudo tee /etc/profile.d/conda.sh
@@ -34,8 +38,12 @@ conda config --set channel_priority strict
 conda config --remove channels defaults || true
 
 # 2. Create SDR Virtual Environment
-echo "Creating SDR Conda Environment..."
-conda create -y --override-channels -c conda-forge -n telcosec-sdr python=3.11 cmake ninja pkg-config boost-cpp swig pybind11 libusb mako requests numpy ruamel.yaml setuptools
+if ! conda info --envs | grep -q "telcosec-sdr"; then
+  echo "Creating SDR Conda Environment..."
+  conda create -y --override-channels -c conda-forge -n telcosec-sdr python=3.11 cmake ninja pkg-config boost-cpp swig pybind11 libusb mako requests numpy ruamel.yaml setuptools
+else
+  echo "SDR Conda Environment already exists."
+fi
 conda activate telcosec-sdr
 
 # Export compilation environment variables to prefer the Conda environment
@@ -45,17 +53,17 @@ export CMAKE_PREFIX_PATH="$CONDA_PREFIX"
 # 3. Clone all SDR source repos in parallel
 echo "Cloning SDR source repositories..."
 mkdir -p /opt/telcosec/src
-(git clone --depth 1 https://github.com/pothosware/SoapySDR.git /opt/telcosec/src/SoapySDR) &
-(git clone --depth 1 https://github.com/greatscottgadgets/hackrf.git /opt/telcosec/src/hackrf) &
-(git clone --depth 1 https://github.com/EttusResearch/uhd.git /opt/telcosec/src/uhd) &
-(git clone --depth 1 https://github.com/steve-m/kalibrate-rtl.git /opt/telcosec/src/kalibrate-rtl) &
+[ -d /opt/telcosec/src/SoapySDR ] || (git clone --depth 1 https://github.com/pothosware/SoapySDR.git /opt/telcosec/src/SoapySDR) &
+[ -d /opt/telcosec/src/hackrf ] || (git clone --depth 1 https://github.com/greatscottgadgets/hackrf.git /opt/telcosec/src/hackrf) &
+[ -d /opt/telcosec/src/uhd ] || (git clone --depth 1 https://github.com/EttusResearch/uhd.git /opt/telcosec/src/uhd) &
+[ -d /opt/telcosec/src/kalibrate-rtl ] || (git clone --depth 1 https://github.com/steve-m/kalibrate-rtl.git /opt/telcosec/src/kalibrate-rtl) &
 wait
-echo "All SDR repos cloned."
+echo "All SDR repos checked/cloned."
 
 # 4. Compile SoapySDR from Source
 echo "Compiling SoapySDR..."
 cd /opt/telcosec/src/SoapySDR
-mkdir build && cd build
+rm -rf build && mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=$CONDA_PREFIX ..
 make -j$(nproc)
 make install
@@ -63,7 +71,7 @@ make install
 # 5. Compile HackRF from Source
 echo "Compiling HackRF..."
 cd /opt/telcosec/src/hackrf/host
-mkdir build && cd build
+rm -rf build && mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=$CONDA_PREFIX ..
 make -j$(nproc)
 make install
@@ -71,7 +79,7 @@ make install
 # 6. Compile UHD (USRP) from Source
 echo "Compiling UHD..."
 cd /opt/telcosec/src/uhd/host
-mkdir build && cd build
+rm -rf build && mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=$CONDA_PREFIX -DENABLE_TESTS=OFF -DENABLE_EXAMPLES=OFF ..
 make -j$(nproc)
 make install

@@ -23,8 +23,10 @@ EOF
     linux-image-generic
   sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
     xfce4 xfce4-goodies lightdm \
+    xserver-xorg xserver-xorg-input-all \
     network-manager-gnome \
     terminator firefox \
+    open-vm-tools open-vm-tools-desktop \
     git vim nano htop \
     build-essential cmake pkg-config \
     ufw openssh-server \

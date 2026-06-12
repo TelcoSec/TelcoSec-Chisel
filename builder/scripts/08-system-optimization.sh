@@ -175,6 +175,7 @@ echo "Configuring default firewall policies..."
 if command -v ufw &> /dev/null; then
   sudo ufw default deny incoming
   sudo ufw default allow outgoing
+  sudo ufw allow ssh || true
   sudo ufw enable || true
   echo "  UFW firewall enabled with secure defaults (deny incoming, allow outgoing)"
 fi

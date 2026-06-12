@@ -56,33 +56,18 @@ sudo chown -R telcosec:telcosec /opt/telcosec
 echo "Cloning all UE analysis repositories in parallel..."
 cd /opt/telcosec
 
-(git clone --depth 1 https://github.com/FirmWire/FirmWire.git firmwire) &
-PID_FIRMWIRE=$!
-
-
-
-(git clone --depth 1 https://github.com/forth32/balongflash.git balong-flash) &
-PID_BALONG_FLASH=$!
-
-(git clone --depth 1 https://github.com/forth32/balong-nvtool.git balongtool) &
-PID_BALONGTOOL=$!
-
-(git clone --depth 1 https://github.com/bkerler/mtkclient.git mtkclient) &
-PID_MTK=$!
-
-(git clone --depth 1 https://github.com/osmocom/pysim.git pysim) &
-PID_PYSIM=$!
-
-(git clone --depth 1 https://github.com/estkme-group/lpac.git lpac) &
-PID_LPAC=$!
-
-(git clone --depth 1 https://github.com/osmocom/simtrace2.git simtrace2) &
-PID_SIMTRACE2=$!
+if [ ! -d firmwire ]; then git clone --depth 1 https://github.com/FirmWire/FirmWire.git firmwire & PID_FIRMWIRE=$!; else PID_FIRMWIRE=""; fi
+if [ ! -d balong-flash ]; then git clone --depth 1 https://github.com/forth32/balongflash.git balong-flash & PID_BALONG_FLASH=$!; else PID_BALONG_FLASH=""; fi
+if [ ! -d balongtool ]; then git clone --depth 1 https://github.com/forth32/balong-nvtool.git balongtool & PID_BALONGTOOL=$!; else PID_BALONGTOOL=""; fi
+if [ ! -d mtkclient ]; then git clone --depth 1 https://github.com/bkerler/mtkclient.git mtkclient & PID_MTK=$!; else PID_MTK=""; fi
+if [ ! -d pysim ]; then git clone --depth 1 https://github.com/osmocom/pysim.git pysim & PID_PYSIM=$!; else PID_PYSIM=""; fi
+if [ ! -d lpac ]; then git clone --depth 1 https://github.com/estkme-group/lpac.git lpac & PID_LPAC=$!; else PID_LPAC=""; fi
+if [ ! -d simtrace2 ]; then git clone --depth 1 https://github.com/osmocom/simtrace2.git simtrace2 & PID_SIMTRACE2=$!; else PID_SIMTRACE2=""; fi
 
 # Wait for all clones to complete
 echo "Waiting for all git clones to finish..."
-wait $PID_FIRMWIRE $PID_BALONG_FLASH $PID_BALONGTOOL $PID_MTK $PID_PYSIM $PID_LPAC $PID_SIMTRACE2
-echo "All repositories cloned successfully."
+wait $PID_FIRMWIRE $PID_BALONG_FLASH $PID_BALONGTOOL $PID_MTK $PID_PYSIM $PID_LPAC $PID_SIMTRACE2 2>/dev/null || true
+echo "All repositories checked/cloned."
 
 # Download SIMtrace 2 firmware binaries into the newly cloned directory
 echo "Downloading SIMtrace 2 firmware binaries..."
@@ -97,6 +82,7 @@ sudo chmod 644 /opt/telcosec/simtrace2/firmware/*.bin || true
 # FirmWire (Samsung Shannon & MediaTek baseband emulation/fuzzing)
 echo "Installing FirmWire..."
 cd /opt/telcosec/firmwire
+rm -rf venv
 python3 -m venv venv
 ./venv/bin/pip install --upgrade pip
 ./venv/bin/pip install "Cython<3.0.0" setuptools wheel
@@ -257,7 +243,7 @@ sudo_pip_retry install --break-system-packages .
 # lpac (eSIM Local Profile Assistant tool for profile downloads & management)
 echo "Compiling and installing lpac eSIM profile manager..."
 cd /opt/telcosec/lpac
-mkdir build && cd build
+rm -rf build && mkdir build && cd build
 cmake -DCMAKE_BUILD_TYPE=Release ..
 make -j$(nproc)
 sudo cp src/lpac /usr/local/bin/lpac
@@ -273,6 +259,7 @@ echo "Building libosmocore from source (Ubuntu 24.04 ships 1.7.0, need >= 1.11.0
 # resuming from a cached chroot where 00-install-all-packages.sh was skipped.
 apt-get install -y liburing-dev libtalloc-dev libgnutls28-dev autoconf-archive
 
+rm -rf /tmp/libosmocore
 git clone --depth 1 https://gitea.osmocom.org/osmocom/libosmocore.git /tmp/libosmocore
 cd /tmp/libosmocore
 autoreconf -fi
