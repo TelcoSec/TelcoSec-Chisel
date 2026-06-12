@@ -441,7 +441,7 @@ usb.autoConnect.device1 = "vid:072f pid:2200"  # ACS ACR122U`' /></p>
               <div class="step-badge">VBox</div>
               <div class="step-title">VirtualBox USB 3.0 Controller</div>
               <div class="step-content">
-                <p>Install the <strong>VirtualBox Extension Pack</strong> (required for USB 3.0). Enable the <strong>USB 3.0 (xHCI) Controller</strong> in VM settings. Add a USB filter for your smartcard reader's vendor/product ID. Without the Extension Pack, only USB 1.1 is available.
+                <p>Install the <strong>VirtualBox Extension Pack</strong> (required for USB 3.0). Enable the <strong>USB 3.0 (xHCI) Controller</strong> in VM settings. Add a USB filter for your smartcard reader's vendor/product ID. Without the Extension Pack, only USB 1.1 is available.</p>
               </div>
             </div>
           </div>
