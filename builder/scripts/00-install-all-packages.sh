@@ -243,8 +243,11 @@ apt-get install -y \
   libtalloc2 libtalloc-dev
 
 # ─── 5. Remove chroot service suppression ────────────────────────────────────
-rm -f /usr/sbin/policy-rc.d /usr/local/sbin/udevadm /usr/bin/udevadm
-dpkg-divert --local --rename --remove /usr/bin/udevadm 2>/dev/null || true
+rm -f /usr/sbin/policy-rc.d /usr/local/sbin/udevadm
+if dpkg-divert --list /usr/bin/udevadm | grep -q "diversion of"; then
+  rm -f /usr/bin/udevadm
+  dpkg-divert --local --rename --remove /usr/bin/udevadm 2>/dev/null || true
+fi
 
 # ─── 6. Wireshark non-interactive config ─────────────────────────────────────
 

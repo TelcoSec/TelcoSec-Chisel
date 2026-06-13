@@ -103,8 +103,11 @@ IMAGE_NAME="telcosec-chisel-live.iso"
 
 # ─── Mount cleanup ────────────────────────────────────────────────────────────
 cleanup() {
-  rm -f "$ROOTFS/usr/sbin/policy-rc.d" "$ROOTFS/usr/local/sbin/udevadm" "$ROOTFS/usr/bin/udevadm" 2>/dev/null || true
-  chroot "$ROOTFS" dpkg-divert --local --rename --remove /usr/bin/udevadm 2>/dev/null || true
+  rm -f "$ROOTFS/usr/sbin/policy-rc.d" "$ROOTFS/usr/local/sbin/udevadm" 2>/dev/null || true
+  if [ -d "$ROOTFS" ] && chroot "$ROOTFS" dpkg-divert --list /usr/bin/udevadm 2>/dev/null | grep -q "diversion of"; then
+    rm -f "$ROOTFS/usr/bin/udevadm" 2>/dev/null || true
+    chroot "$ROOTFS" dpkg-divert --local --rename --remove /usr/bin/udevadm 2>/dev/null || true
+  fi
   umount -lf "$ROOTFS/root/.ccache" 2>/dev/null || true
   umount -lf "$ROOTFS/dev/pts" 2>/dev/null || true
   umount -lf "$ROOTFS/dev"     2>/dev/null || true
@@ -311,8 +314,11 @@ if ! $PACK_ONLY; then
   _phase 11 "11 · Device flash tools"              chroot_run 11-install-device-tools.sh
 
   # Remove chroot service suppression
-  rm -f "$ROOTFS/usr/sbin/policy-rc.d" "$ROOTFS/usr/local/sbin/udevadm" "$ROOTFS/usr/bin/udevadm"
-  chroot "$ROOTFS" dpkg-divert --local --rename --remove /usr/bin/udevadm 2>/dev/null || true
+  rm -f "$ROOTFS/usr/sbin/policy-rc.d" "$ROOTFS/usr/local/sbin/udevadm"
+  if chroot "$ROOTFS" dpkg-divert --list /usr/bin/udevadm 2>/dev/null | grep -q "diversion of"; then
+    rm -f "$ROOTFS/usr/bin/udevadm"
+    chroot "$ROOTFS" dpkg-divert --local --rename --remove /usr/bin/udevadm 2>/dev/null || true
+  fi
 
   # ── Live-boot fixups ───────────────────────────────────────────────────────
   # casper.conf: sourced by casper initramfs hooks — must use 'export' syntax so
