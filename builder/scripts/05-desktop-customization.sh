@@ -377,28 +377,43 @@ echo ""
 EOF
 sudo chmod +x /etc/update-motd.d/05-telcosec-logo
 
-# 3. Custom Rich Bash Prompt
+# 3. Custom Rich Bash Prompt (Optimized, Zero-Lag, Professional 2-Line Style)
 echo "Configuring Global Bash Prompt..."
 cat << 'PROMPTEOF' | sudo tee /etc/profile.d/telcosec_prompt.sh
-# TelcoSec multi-line rich prompt: user@host | IP | load | date | path | tmux session | mem
+# TelcoSec professional zero-lag prompt: user@host, directory, git branch, and system load.
 __telcosec_ps1() {
-  local IP; IP=$(hostname -I 2>/dev/null | awk '{print $1}')
-  local LOAD; LOAD=$(cut -d' ' -f1-3 /proc/loadavg 2>/dev/null)
-  local MEM; MEM=$(free -m 2>/dev/null | awk '/^Mem:/{printf "%dM/%dM", $3, $2}')
-  local DT; DT=$(date '+%Y-%m-%d %H:%M:%S')
-  local SESS=""
-  [ -n "$TMUX" ] && SESS=$(tmux display-message -p '#S' 2>/dev/null)
-  local C='\[\e[0;34m\]'       # borders (mapped to color 4)
-  local Y='\[\e[1;33m\]'       # primary accent (mapped to color 11)
-  local W='\[\e[1;37m\]'       # path (mapped to color 15)
-  local G='\[\e[0;32m\]'       # IP (mapped to color 2)
-  local CY='\[\e[0;36m\]'      # user@host (mapped to color 6)
-  local M='\[\e[0;35m\]'       # statistics (mapped to color 5)
+  local EXIT="$?"
+  
+  # Read load average using bash built-in (no process forks)
+  local load=""
+  if [ -f /proc/loadavg ]; then
+    read -r load _ < /proc/loadavg
+  fi
+  
+  # Git branch detection (fast check for .git first to avoid forks in non-git directories)
+  local git_branch=""
+  if [ -d .git ] || git rev-parse --is-inside-work-tree &>/dev/null; then
+    git_branch=$(git branch --show-current 2>/dev/null)
+    if [ -n "$git_branch" ]; then
+      git_branch=" ⎇ $git_branch"
+    fi
+  fi
+
+  # Colors mapped to Terminator's professional palette (ANSI standards)
+  local C='\[\e[0;34m\]'       # borders (ANSI Blue)
+  local Y='\[\e[1;33m\]'       # primary accent (ANSI Yellow)
+  local W='\[\e[1;37m\]'       # path/directory (ANSI White)
+  local CY='\[\e[0;36m\]'      # user@host (ANSI Cyan)
   local R='\[\e[0m\]'          # reset
-  local BL='\[\e[1;36m\]'      # session (mapped to color 14)
-  PS1="\n${C}┌[${Y}TelcoSec${C}]──[${CY}\u@\h${C}]──[${G}${IP}${C}]──[${M}Load:${LOAD}${C}]──[${Y}${DT}${C}]${R}\n"
-  PS1+="${C}├[${W}\w${C}]${SESS:+──[${BL}session:${SESS}${C}]}──[mem:${G}${MEM}${C}]${R}\n"
-  PS1+="${C}└─${Y}\$${R} "
+  local G='\[\e[0;32m\]'       # success indicator (ANSI Green)
+  local RED='\[\e[0;31m\]'     # error indicator (ANSI Red)
+  
+  # Exit status indicator
+  local status_indicator="${C}❯"
+  [ "$EXIT" -ne 0 ] && status_indicator="${RED}❯"
+
+  PS1="\n${C}┌─[${CY}\u@\h${C}]──[${W}\w${C}]${git_branch:+──[${Y}${git_branch:1}${C}]}${load:+──[load:${load}${C}]}${R}\n"
+  PS1+="${C}└─${status_indicator}${R} "
 }
 export PROMPT_COMMAND=__telcosec_ps1
 PROMPTEOF
@@ -553,7 +568,7 @@ if [ -d /home/telcosec ]; then
   sudo chown -R telcosec:telcosec /home/telcosec/.config/wireshark
 fi
 
-# 6. Terminator — default terminal, 4-split layout, 4 profiles
+# 6. Terminator — default terminal, 5-split layout, 5 profiles
 echo "Configuring Terminator as default terminal..."
 sudo update-alternatives --set x-terminal-emulator /usr/bin/terminator 2>/dev/null || true
 # Add TERMINAL env var for scripts that check $TERMINAL
@@ -572,17 +587,17 @@ cat << 'TERMEOF' | sudo tee /etc/skel/.config/terminator/config
   [[default]]
     background_darkness = 0.95
     background_type = transparent
-    cursor_color = "#fbbf24"
+    cursor_color = "#e2e8f0"
     cursor_blink = True
     font = IBM Plex Mono 11
-    foreground_color = "#e2e8f0"
-    background_color = "#0a0b10"
-    palette = "#0f1015:#ef4444:#10b981:#f59e0b:#b45309:#d946ef:#e2e8f0:#cbd5e1:#475569:#f87171:#34d399:#fbbf24:#fb923c:#f472b6:#f1f5f9:#ffffff"
+    foreground_color = "#cbd5e1"
+    background_color = "#0c0f16"
+    palette = "#0c0f16:#ef4444:#10b981:#f59e0b:#3b82f6:#8b5cf6:#06b6d4:#cbd5e1:#475569:#f87171:#34d399:#fbbf24:#60a5fa:#a78bfa:#67e8f9:#ffffff"
     use_system_font = False
     scrollback_lines = 5000
     show_titlebar = True
-    title_transmit_fg_color = "#fbbf24"
-    title_transmit_bg_color = "#1c1917"
+    title_transmit_fg_color = "#e2e8f0"
+    title_transmit_bg_color = "#181f30"
     title_receive_fg_color = "#888888"
     title_receive_bg_color = "#0a0a0a"
     title_inactive_fg_color = "#555555"
@@ -590,11 +605,11 @@ cat << 'TERMEOF' | sudo tee /etc/skel/.config/terminator/config
   [[monitor]]
     background_darkness = 0.95
     background_type = transparent
-    cursor_color = "#06b6d4"
+    cursor_color = "#38bdf8"
     font = IBM Plex Mono 11
-    foreground_color = "#38bdf8"
-    background_color = "#080d16"
-    palette = "#080d16:#e11d48:#0d9488:#22d3ee:#0891b2:#6366f1:#38bdf8:#94a3b8:#334155:#fda4af:#2dd4bf:#67e8f9:#60a5fa:#a5b4fc:#7dd3fc:#ffffff"
+    foreground_color = "#e0f2fe"
+    background_color = "#08101a"
+    palette = "#08101a:#e11d48:#0d9488:#22d3ee:#0891b2:#6366f1:#38bdf8:#94a3b8:#334155:#fda4af:#2dd4bf:#67e8f9:#60a5fa:#a5b4fc:#7dd3fc:#ffffff"
     use_system_font = False
     scrollback_lines = 10000
     title_transmit_fg_color = "#38bdf8"
@@ -602,11 +617,11 @@ cat << 'TERMEOF' | sudo tee /etc/skel/.config/terminator/config
   [[analysis]]
     background_darkness = 0.95
     background_type = transparent
-    cursor_color = "#10b981"
+    cursor_color = "#34d399"
     font = IBM Plex Mono 11
-    foreground_color = "#34d399"
-    background_color = "#08140e"
-    palette = "#08140e:#dc2626:#10b981:#34d399:#047857:#84cc16:#a7f3d0:#94a3b8:#334155:#f87171:#4ade80:#6ee7b7:#059669:#a3e635:#d1fae5:#ffffff"
+    foreground_color = "#d1fae5"
+    background_color = "#05120a"
+    palette = "#05120a:#dc2626:#10b981:#34d399:#047857:#84cc16:#a7f3d0:#94a3b8:#334155:#f87171:#4ade80:#6ee7b7:#059669:#a3e635:#d1fae5:#ffffff"
     use_system_font = False
     scrollback_lines = 10000
     title_transmit_fg_color = "#34d399"
@@ -614,15 +629,28 @@ cat << 'TERMEOF' | sudo tee /etc/skel/.config/terminator/config
   [[network]]
     background_darkness = 0.95
     background_type = transparent
-    cursor_color = "#f43f5e"
+    cursor_color = "#fb7185"
     font = IBM Plex Mono 11
-    foreground_color = "#fb7185"
-    background_color = "#14090b"
-    palette = "#14090b:#ef4444:#ea580c:#f43f5e:#be123c:#d946ef:#fda4af:#cbd5e1:#475569:#fca5a5:#ff7849:#fecdd3:#e11d48:#f472b6:#ffe4e6:#ffffff"
+    foreground_color = "#ffe4e6"
+    background_color = "#16070a"
+    palette = "#16070a:#ef4444:#ea580c:#f43f5e:#be123c:#d946ef:#fda4af:#cbd5e1:#475569:#fca5a5:#ff7849:#fecdd3:#e11d48:#f472b6:#ffe4e6:#ffffff"
     use_system_font = False
     scrollback_lines = 10000
     title_transmit_fg_color = "#fb7185"
     title_transmit_bg_color = "#2e0f15"
+  [[console]]
+    background_darkness = 0.95
+    background_type = transparent
+    cursor_color = "#38bdf8"
+    font = IBM Plex Mono 11
+    foreground_color = "#cbd5e1"
+    background_color = "#090d16"
+    palette = "#090d16:#ef4444:#10b981:#f59e0b:#3b82f6:#8b5cf6:#06b6d4:#cbd5e1:#475569:#f87171:#34d399:#fbbf24:#60a5fa:#a78bfa:#67e8f9:#ffffff"
+    use_system_font = False
+    scrollback_lines = 5000
+    show_titlebar = True
+    title_transmit_fg_color = "#cbd5e1"
+    title_transmit_bg_color = "#181f30"
 
 [layouts]
   [[default]]
@@ -638,16 +666,25 @@ cat << 'TERMEOF' | sudo tee /etc/skel/.config/terminator/config
     [[[child2]]]
       type = VPaned
       parent = child1
+      ratio = 0.45
+    [[[terminal5]]]
+      type = Terminal
+      parent = child2
+      profile = console
+      title = [5] Local Console
+    [[[child4]]]
+      type = VPaned
+      parent = child2
       ratio = 0.5
     [[[terminal1]]]
       type = Terminal
-      parent = child2
+      parent = child4
       profile = default
       command = tmux new-session -A -s general
       title = [1] General
     [[[terminal2]]]
       type = Terminal
-      parent = child2
+      parent = child4
       profile = monitor
       command = tmux new-session -A -s monitor
       title = [2] Monitor
