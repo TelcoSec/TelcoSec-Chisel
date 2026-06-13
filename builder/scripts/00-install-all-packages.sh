@@ -122,7 +122,7 @@ apt-get install -y \
   xfce4 xfce4-goodies lightdm lightdm-gtk-greeter \
   xserver-xorg xserver-xorg-input-all \
   network-manager-gnome \
-  terminator firefox \
+  terminator gnome-terminal firefox \
   open-vm-tools open-vm-tools-desktop \
   \
   `# === Core system tools (01-install-base.sh) ===` \

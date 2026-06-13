@@ -14,7 +14,7 @@ cat << 'EOF' | sudo tee /etc/lightdm/lightdm-gtk-greeter.conf.d/99_telcosec.conf
 theme-name = Greybird-dark
 icon-theme-name = elementary-xfce-darkest
 font-name = Sans 11
-background = /usr/share/backgrounds/telcosec/logo.png
+background = /usr/share/backgrounds/telcosec/wallpaper.png
 EOF
 
 # Configure LightDM main config: autologin + explicit XFCE session.
@@ -127,7 +127,7 @@ cat << 'EOF' | sudo tee /etc/skel/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4
   <property name="backdrop" type="empty">
     <property name="screen0" type="empty">
       <property name="monitor0" type="empty">
-        <property name="image-path" type="string" value="/usr/share/backgrounds/telcosec/logo.png"/>
+        <property name="image-path" type="string" value="/usr/share/backgrounds/telcosec/wallpaper.png"/>
         <property name="image-style" type="int" value="5"/>
       </property>
     </property>
@@ -571,6 +571,14 @@ echo "Configuring Terminator as default terminal..."
 sudo update-alternatives --set x-terminal-emulator /usr/bin/terminator 2>/dev/null || true
 # Add TERMINAL env var for scripts that check $TERMINAL
 grep -q '^TERMINAL=' /etc/environment 2>/dev/null || echo 'TERMINAL=terminator' | sudo tee -a /etc/environment
+
+# Configure XFCE preferred applications to use Terminator and Firefox by default
+sudo mkdir -p /etc/skel/.config/xfce4/
+cat << 'EOF' | sudo tee /etc/skel/.config/xfce4/helpers.rc
+WebBrowser=firefox
+MailReader=debian-sensible-mime
+TerminalEmulator=terminator
+EOF
 
 sudo mkdir -p /etc/skel/.config/terminator
 cat << 'TERMEOF' | sudo tee /etc/skel/.config/terminator/config

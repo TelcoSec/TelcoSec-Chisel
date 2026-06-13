@@ -15,6 +15,7 @@
         <Filename>xfce4-run.desktop</Filename>
         <Separator/>
         <Filename>xfce4-terminal-emulator.desktop</Filename>
+        <Filename>org.gnome.Terminal.desktop</Filename>
         <Filename>xfce4-file-manager.desktop</Filename>
         <Filename>xfce4-web-browser.desktop</Filename>
         <Separator/>

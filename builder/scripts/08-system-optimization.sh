@@ -73,14 +73,17 @@ if [ -f /tmp/boot/grub-theme.conf ]; then
   sudo chmod 644 /etc/default/grub.d/99-telcosec.cfg
 fi
 
-# Deploy the logo background to backgrounds directory for GRUB access
+# Deploy the logo and wallpaper backgrounds
 sudo mkdir -p /usr/share/backgrounds/telcosec/
 if [ -f /tmp/calamares-config/branding/telcosec/logo.png ]; then
   sudo cp /tmp/calamares-config/branding/telcosec/logo.png /usr/share/backgrounds/telcosec/logo.png
-  # Also set as greeter greeter-background if not already done
-  sudo cp /tmp/calamares-config/branding/telcosec/logo.png /usr/share/backgrounds/telcosec/wallpaper.png || true
-  sudo chmod 644 /usr/share/backgrounds/telcosec/*
 fi
+if [ -f /tmp/boot/wallpaper.png ]; then
+  sudo cp /tmp/boot/wallpaper.png /usr/share/backgrounds/telcosec/wallpaper.png
+elif [ -f /tmp/calamares-config/branding/telcosec/logo.png ]; then
+  sudo cp /tmp/calamares-config/branding/telcosec/logo.png /usr/share/backgrounds/telcosec/wallpaper.png
+fi
+sudo chmod 644 /usr/share/backgrounds/telcosec/*
 
 # Refresh GRUB configurations inside the chroot
 if command -v update-grub &> /dev/null; then
