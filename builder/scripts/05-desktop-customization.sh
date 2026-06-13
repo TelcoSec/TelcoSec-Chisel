@@ -7,14 +7,14 @@ echo "=== Customizing Desktop Environment ==="
 echo "Setting up branding directories..."
 sudo mkdir -p /usr/share/backgrounds/telcosec
 
-# Configure LightDM greeter — no background path so greeter doesn't hang
-# if the wallpaper asset is absent
+# Configure LightDM greeter with matching Greybird-dark styling and logo background
 sudo mkdir -p /etc/lightdm/lightdm-gtk-greeter.conf.d/
 cat << 'EOF' | sudo tee /etc/lightdm/lightdm-gtk-greeter.conf.d/99_telcosec.conf
 [greeter]
-theme-name = Adwaita-dark
-icon-theme-name = gnome
+theme-name = Greybird-dark
+icon-theme-name = elementary-xfce-darkest
 font-name = Sans 11
+background = /usr/share/backgrounds/telcosec/logo.png
 EOF
 
 # Configure LightDM main config: autologin + explicit XFCE session.
@@ -77,10 +77,283 @@ cat << 'EOF' | sudo tee /etc/skel/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4
 </channel>
 EOF
 
-# Apply the skeleton to the pre-created telcosec home directory so the
-# config is present even before casper's first-boot user setup runs.
+# GTK and icon themes (Greybird-dark and elementary-xfce-darkest)
+cat << 'EOF' | sudo tee /etc/skel/.config/xfce4/xfconf/xfce-perchannel-xml/xsettings.xml
+<?xml version="1.0" encoding="UTF-8"?>
+<channel name="xsettings" version="1.0">
+  <property name="Net" type="empty">
+    <property name="ThemeName" type="string" value="Greybird-dark"/>
+    <property name="IconThemeName" type="string" value="elementary-xfce-darkest"/>
+    <property name="DoubleClickTime" type="int" value="400"/>
+  </property>
+  <property name="Gtk" type="empty">
+    <property name="FontName" type="string" value="Sans 10"/>
+    <property name="MonospaceFontName" type="string" value="IBM Plex Mono 10"/>
+    <property name="ButtonImages" type="bool" value="true"/>
+    <property name="MenuImages" type="bool" value="true"/>
+    <property name="CursorThemeName" type="string" value="Adwaita"/>
+    <property name="CursorThemeSize" type="int" value="24"/>
+  </property>
+  <property name="Xft" type="empty">
+    <property name="Antialias" type="int" value="1"/>
+    <property name="Hinting" type="int" value="1"/>
+    <property name="HintStyle" type="string" value="hintslight"/>
+    <property name="RGBA" type="string" value="rgb"/>
+  </property>
+</channel>
+EOF
+
+# Window manager settings (theme, fonts, layout)
+cat << 'EOF' | sudo tee /etc/skel/.config/xfce4/xfconf/xfce-perchannel-xml/xfwm4.xml
+<?xml version="1.0" encoding="UTF-8"?>
+<channel name="xfwm4" version="1.0">
+  <property name="general" type="empty">
+    <property name="theme" type="string" value="Greybird-dark"/>
+    <property name="title_font" type="string" value="Sans Bold 9"/>
+    <property name="title_alignment" type="string" value="center"/>
+    <property name="button_layout" type="string" value="O|HMC"/>
+    <property name="click_to_focus" type="bool" value="true"/>
+    <property name="double_click_action" type="string" value="maximize"/>
+    <property name="workspace_count" type="int" value="4"/>
+    <property name="show_dirty_workspaces" type="bool" value="true"/>
+  </property>
+</channel>
+EOF
+
+# Desktop settings (wallpaper and clean desktop icons)
+cat << 'EOF' | sudo tee /etc/skel/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-desktop.xml
+<?xml version="1.0" encoding="UTF-8"?>
+<channel name="xfce4-desktop" version="1.0">
+  <property name="backdrop" type="empty">
+    <property name="screen0" type="empty">
+      <property name="monitor0" type="empty">
+        <property name="image-path" type="string" value="/usr/share/backgrounds/telcosec/logo.png"/>
+        <property name="image-style" type="int" value="5"/>
+      </property>
+    </property>
+  </property>
+  <property name="desktop-icons" type="empty">
+    <property name="style" type="int" value="2"/>
+    <property name="icon-size" type="uint" value="48"/>
+    <property name="file-icons" type="empty">
+      <property name="show-home" type="bool" value="false"/>
+      <property name="show-filesystem" type="bool" value="false"/>
+      <property name="show-trash" type="bool" value="false"/>
+      <property name="show-removable" type="bool" value="true"/>
+    </property>
+  </property>
+</channel>
+EOF
+
+# Panel settings (set up Whisker Menu as default application menu)
+cat << 'EOF' | sudo tee /etc/skel/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-panel.xml
+<?xml version="1.0" encoding="UTF-8"?>
+<channel name="xfce4-panel" version="1.0">
+  <property name="configver" type="int" value="2"/>
+  <property name="panels" type="array">
+    <value type="int" value="1"/>
+    <value type="int" value="2"/>
+    <property name="dark-mode" type="bool" value="true"/>
+    <property name="panel-1" type="empty">
+      <property name="position" type="string" value="p=6;x=0;y=0"/>
+      <property name="length" type="uint" value="100"/>
+      <property name="position-locked" type="bool" value="true"/>
+      <property name="icon-size" type="uint" value="16"/>
+      <property name="size" type="uint" value="26"/>
+      <property name="plugin-ids" type="array">
+        <value type="int" value="1"/>
+        <value type="int" value="2"/>
+        <value type="int" value="3"/>
+        <value type="int" value="4"/>
+        <value type="int" value="5"/>
+        <value type="int" value="6"/>
+        <value type="int" value="7"/>
+        <value type="int" value="8"/>
+        <value type="int" value="9"/>
+        <value type="int" value="10"/>
+        <value type="int" value="11"/>
+        <value type="int" value="12"/>
+        <value type="int" value="13"/>
+        <value type="int" value="14"/>
+      </property>
+    </property>
+    <property name="panel-2" type="empty">
+      <property name="autohide-behavior" type="uint" value="1"/>
+      <property name="position" type="string" value="p=10;x=0;y=0"/>
+      <property name="length" type="uint" value="1"/>
+      <property name="position-locked" type="bool" value="true"/>
+      <property name="size" type="uint" value="48"/>
+      <property name="plugin-ids" type="array">
+        <value type="int" value="15"/>
+        <value type="int" value="16"/>
+        <value type="int" value="17"/>
+        <value type="int" value="18"/>
+        <value type="int" value="19"/>
+        <value type="int" value="20"/>
+        <value type="int" value="21"/>
+        <value type="int" value="22"/>
+      </property>
+    </property>
+  </property>
+  <property name="plugins" type="empty">
+    <property name="plugin-1" type="string" value="whiskermenu"/>
+    <property name="plugin-2" type="string" value="tasklist">
+      <property name="grouping" type="uint" value="1"/>
+      <property name="flat-buttons" type="bool" value="true"/>
+      <property name="show-handle" type="bool" value="false"/>
+      <property name="sort-order" type="uint" value="4"/>
+    </property>
+    <property name="plugin-3" type="string" value="separator">
+      <property name="expand" type="bool" value="true"/>
+      <property name="style" type="uint" value="0"/>
+    </property>
+    <property name="plugin-4" type="string" value="pager"/>
+    <property name="plugin-5" type="string" value="separator">
+      <property name="style" type="uint" value="0"/>
+    </property>
+    <property name="plugin-6" type="string" value="systray">
+      <property name="square-icons" type="bool" value="true"/>
+    </property>
+    <property name="plugin-8" type="string" value="pulseaudio">
+      <property name="enable-keyboard-shortcuts" type="bool" value="true"/>
+      <property name="show-notifications" type="bool" value="true"/>
+    </property>
+    <property name="plugin-9" type="string" value="power-manager-plugin"/>
+    <property name="plugin-10" type="string" value="notification-plugin"/>
+    <property name="plugin-11" type="string" value="separator">
+      <property name="style" type="uint" value="0"/>
+    </property>
+    <property name="plugin-12" type="string" value="clock"/>
+    <property name="plugin-13" type="string" value="separator">
+      <property name="style" type="uint" value="0"/>
+    </property>
+    <property name="plugin-14" type="string" value="actions"/>
+    <property name="plugin-15" type="string" value="showdesktop"/>
+    <property name="plugin-16" type="string" value="separator"/>
+    <property name="plugin-17" type="string" value="launcher">
+      <property name="items" type="array">
+        <value type="string" value="terminator.desktop"/>
+      </property>
+    </property>
+    <property name="plugin-18" type="string" value="launcher">
+      <property name="items" type="array">
+        <value type="string" value="xfce4-file-manager.desktop"/>
+      </property>
+    </property>
+    <property name="plugin-19" type="string" value="launcher">
+      <property name="items" type="array">
+        <value type="string" value="xfce4-web-browser.desktop"/>
+      </property>
+    </property>
+    <property name="plugin-20" type="string" value="launcher">
+      <property name="items" type="array">
+        <value type="string" value="xfce4-appfinder.desktop"/>
+      </property>
+    </property>
+    <property name="plugin-21" type="string" value="separator"/>
+    <property name="plugin-22" type="string" value="directorymenu"/>
+  </property>
+</channel>
+EOF
+
+# Whisker Menu configurations (Favorites + Title settings)
+sudo mkdir -p /etc/skel/.config/xfce4/panel/
+cat << 'EOF' | sudo tee /etc/skel/.config/xfce4/panel/whiskermenu-1.rc
+favorites=firefox.desktop,terminator.desktop,wireshark.desktop,thunar.desktop
+button-title=Applications
+button-icon=org.xfce.panel.applicationsmenu
+show-button-title=false
+show-button-icon=true
+show-generic-names=true
+show-category-names=true
+show-description-tooltip=true
+show-menu-tooltips=true
+position-search-alternate=false
+position-commands-alternate=false
+position-categories-alternate=false
+stay-on-focus-out=false
+profile-shape=0
+search-actions=true
+EOF
+
+# Power Manager settings (No screen blanking, sleep, or lock in live session)
+cat << 'EOF' | sudo tee /etc/skel/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-power-manager.xml
+<?xml version="1.0" encoding="UTF-8"?>
+<channel name="xfce4-power-manager" version="1.0">
+  <property name="xfce4-power-manager" type="empty">
+    <property name="power-button-action" type="uint" value="4"/>
+    <property name="inactivity-on-ac" type="uint" value="0"/>
+    <property name="dpms-enabled" type="bool" value="false"/>
+    <property name="blank-on-ac" type="int" value="0"/>
+    <property name="dpms-on-ac-sleep" type="uint" value="0"/>
+    <property name="dpms-on-ac-off" type="uint" value="0"/>
+    <property name="lock-screen-suspend-comment" type="bool" value="false"/>
+  </property>
+</channel>
+EOF
+
+# Screensaver settings (Disabled screensaver & automatic locking)
+cat << 'EOF' | sudo tee /etc/skel/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-screensaver.xml
+<?xml version="1.0" encoding="UTF-8"?>
+<channel name="xfce4-screensaver" version="1.0">
+  <property name="mode" type="int" value="0"/>
+  <property name="saver" type="empty">
+    <property name="enabled" type="bool" value="false"/>
+  </property>
+  <property name="lock" type="empty">
+    <property name="enabled" type="bool" value="false"/>
+  </property>
+</channel>
+EOF
+
+# Keyboard shortcuts (Add Super+Arrows for tiling, Super+Space for Whisker Menu)
+cat << 'EOF' | sudo tee /etc/skel/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-keyboard-shortcuts.xml
+<?xml version="1.0" encoding="UTF-8"?>
+<channel name="xfce4-keyboard-shortcuts" version="1.0">
+  <property name="commands" type="empty">
+    <property name="custom" type="empty">
+      <property name="&lt;Super&gt;space" type="string" value="xfce4-popup-whiskermenu"/>
+      <property name="&lt;Primary&gt;Escape" type="string" value="xfce4-popup-whiskermenu"/>
+      <property name="override" type="bool" value="true"/>
+    </property>
+  </property>
+  <property name="xfwm4" type="empty">
+    <property name="custom" type="empty">
+      <property name="&lt;Super&gt;Left" type="string" value="tile_left_key"/>
+      <property name="&lt;Super&gt;Right" type="string" value="tile_right_key"/>
+      <property name="&lt;Super&gt;Up" type="string" value="tile_up_key"/>
+      <property name="&lt;Super&gt;Down" type="string" value="tile_down_key"/>
+      <property name="override" type="bool" value="true"/>
+    </property>
+  </property>
+</channel>
+EOF
+
+# Thunar productivity options (Show hidden files, detailed view, folders first, full path in title)
+cat << 'EOF' | sudo tee /etc/skel/.config/xfce4/xfconf/xfce-perchannel-xml/thunar.xml
+<?xml version="1.0" encoding="UTF-8"?>
+<channel name="thunar" version="1.0">
+  <property name="last-view" type="string" value="ThunarDetailsView"/>
+  <property name="last-show-hidden" type="bool" value="true"/>
+  <property name="misc-folders-first" type="bool" value="true"/>
+  <property name="misc-full-path-in-title" type="bool" value="true"/>
+</channel>
+EOF
+
+# Notification styling (Dark theme & Bottom-Right positioning)
+cat << 'EOF' | sudo tee /etc/skel/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-notifyd.xml
+<?xml version="1.0" encoding="UTF-8"?>
+<channel name="xfce4-notifyd" version="1.0">
+  <property name="theme" type="string" value="Greybird-dark"/>
+  <property name="initial-opacity" type="double" value="0.900000"/>
+  <property name="notify-location" type="uint" value="3"/>
+</channel>
+EOF
+
+# Apply the skeleton to the pre-created telcosec home directory.
+# Force copy (-f) to apply settings updates on resume builds.
 if [ -d /home/telcosec ]; then
-  sudo cp -rn /etc/skel/.config /home/telcosec/
+  sudo cp -rf /etc/skel/.config /home/telcosec/
   sudo chown -R telcosec:telcosec /home/telcosec/.config
 fi
 
@@ -214,8 +487,16 @@ sudo mkdir -p /etc/NetworkManager/conf.d
 cat << 'EOF' | sudo tee /etc/NetworkManager/conf.d/telcosec.conf
 [main]
 dhcp=internal
+
 [device]
 wifi.scan-rand-mac-address=no
+carrier-wait-timeout=2000
+
+[connection]
+ipv4.dhcp-timeout=10
+ipv6.dhcp-timeout=10
+ipv4.may-fail=yes
+ipv6.may-fail=yes
 EOF
 
 # Monitoring interface setup script (creates mon0 from first available wlan)
