@@ -65,8 +65,8 @@ fi
 sudo mkdir -p /etc/wireshark/openapi/
 sudo chmod 755 /etc/wireshark/openapi/
 
-# 5. Boot Theme (GRUB Customization)
-echo "Deploying custom boot styling..."
+# 5. Boot Theme (GRUB & Plymouth Customization)
+echo "Deploying custom boot styling (GRUB & Plymouth)..."
 sudo mkdir -p /etc/default/grub.d/
 if [ -f /tmp/boot/grub-theme.conf ]; then
   sudo cp /tmp/boot/grub-theme.conf /etc/default/grub.d/99-telcosec.cfg
@@ -86,6 +86,30 @@ fi
 if command -v update-grub &> /dev/null; then
   sudo update-grub || true
 fi
+
+# Deploy custom Plymouth boot theme
+echo "Deploying custom Plymouth boot animation..."
+sudo mkdir -p /usr/share/plymouth/themes/telcosec/
+# Copy the password prompt assets from emerald theme (pre-installed in chroot)
+if [ -d /usr/share/plymouth/themes/emerald ]; then
+  sudo cp /usr/share/plymouth/themes/emerald/password_*.png /usr/share/plymouth/themes/telcosec/ 2>/dev/null || true
+fi
+# Copy our custom Plymouth files
+if [ -d /tmp/boot/plymouth ]; then
+  sudo cp -rf /tmp/boot/plymouth/. /usr/share/plymouth/themes/telcosec/
+fi
+# Set the official TelcoSec logo for the boot splash logo
+if [ -f /usr/share/backgrounds/telcosec/logo.png ]; then
+  sudo cp /usr/share/backgrounds/telcosec/logo.png /usr/share/plymouth/themes/telcosec/logo.png
+fi
+# Set telcosec as the default theme
+sudo mkdir -p /etc/plymouth/
+cat << 'EOF' | sudo tee /etc/plymouth/plymouthd.conf
+[Daemon]
+Theme=telcosec
+ShowDelay=0
+DeviceTimeout=8
+EOF
 
 # 6. SCTP Stack Optimizations
 echo "Deploying SCTP module loading and sysctl tuning..."

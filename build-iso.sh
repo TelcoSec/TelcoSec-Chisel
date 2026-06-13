@@ -524,6 +524,12 @@ cp "$initrd"  "$WORKDIR/image/casper/initrd"
 # ─── GRUB config ──────────────────────────────────────────────────────────────
 echo "--> Generating GRUB boot menu..."
 mkdir -p "$WORKDIR/image/boot/grub"
+# Copy branding logo for GRUB background
+if [ -f "builder/boot/grub_background.png" ]; then
+  cp "builder/boot/grub_background.png" "$WORKDIR/image/boot/grub/logo.png"
+elif [ -f "$ROOTFS/usr/share/backgrounds/telcosec/logo.png" ]; then
+  cp "$ROOTFS/usr/share/backgrounds/telcosec/logo.png" "$WORKDIR/image/boot/grub/logo.png"
+fi
 cat > "$WORKDIR/image/boot/grub/grub.cfg" << 'GRUB'
 set default=0
 set timeout=15
@@ -533,7 +539,12 @@ insmod font
 if loadfont /boot/grub/fonts/unicode.pf2 ; then
   set gfxmode=auto
   insmod gfxterm
+  insmod png
   terminal_output gfxterm
+  if background_image /boot/grub/logo.png ; then
+    set color_normal=light-gray/black
+    set color_highlight=cyan/black
+  fi
 fi
 
 # Ubuntu 24.04 casper: boot=casper activates the live-boot scripts.
