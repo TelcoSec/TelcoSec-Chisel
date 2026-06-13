@@ -377,43 +377,28 @@ echo ""
 EOF
 sudo chmod +x /etc/update-motd.d/05-telcosec-logo
 
-# 3. Custom Rich Bash Prompt (Optimized, Zero-Lag, Professional 2-Line Style)
+# 3. Custom Rich Bash Prompt (Optimized, Simple, Zero-Lag, Single-Line Style)
 echo "Configuring Global Bash Prompt..."
 cat << 'PROMPTEOF' | sudo tee /etc/profile.d/telcosec_prompt.sh
-# TelcoSec professional zero-lag prompt: user@host, directory, git branch, and system load.
+# TelcoSec simple prompt: user@host:dir $
 __telcosec_ps1() {
   local EXIT="$?"
   
-  # Read load average using bash built-in (no process forks)
-  local load=""
-  if [ -f /proc/loadavg ]; then
-    read -r load _ < /proc/loadavg
-  fi
-  
-  # Git branch detection (fast check for .git first to avoid forks in non-git directories)
-  local git_branch=""
-  if [ -d .git ] || git rev-parse --is-inside-work-tree &>/dev/null; then
-    git_branch=$(git branch --show-current 2>/dev/null)
-    if [ -n "$git_branch" ]; then
-      git_branch=" ⎇ $git_branch"
-    fi
-  fi
-
-  # Colors mapped to Terminator's professional palette (ANSI standards)
-  local C='\[\e[0;34m\]'       # borders (ANSI Blue)
-  local Y='\[\e[1;33m\]'       # primary accent (ANSI Yellow)
-  local W='\[\e[1;37m\]'       # path/directory (ANSI White)
+  # Colors mapped to ANSI standards
   local CY='\[\e[0;36m\]'      # user@host (ANSI Cyan)
+  local W='\[\e[1;37m\]'       # path/directory (ANSI White)
   local R='\[\e[0m\]'          # reset
-  local G='\[\e[0;32m\]'       # success indicator (ANSI Green)
   local RED='\[\e[0;31m\]'     # error indicator (ANSI Red)
   
-  # Exit status indicator
-  local status_indicator="${C}❯"
-  [ "$EXIT" -ne 0 ] && status_indicator="${RED}❯"
+  # Exit status indicator for the prompt symbol ($ for user, # for root)
+  local p_symbol="\$"
+  if [ "$EXIT" -ne 0 ]; then
+    p_symbol="${RED}${p_symbol}"
+  else
+    p_symbol="${CY}${p_symbol}"
+  fi
 
-  PS1="\n${C}┌─[${CY}\u@\h${C}]──[${W}\w${C}]${git_branch:+──[${Y}${git_branch:1}${C}]}${load:+──[load:${load}${C}]}${R}\n"
-  PS1+="${C}└─${status_indicator}${R} "
+  PS1="${CY}\u@\h${R}:${W}\w${R} ${p_symbol}${R} "
 }
 export PROMPT_COMMAND=__telcosec_ps1
 PROMPTEOF
@@ -512,6 +497,19 @@ ipv4.dhcp-timeout=10
 ipv6.dhcp-timeout=10
 ipv4.may-fail=yes
 ipv6.may-fail=yes
+EOF
+
+# Configure LAN interface ens160 to use DHCP via Netplan (Ubuntu 24.04 defaults)
+sudo mkdir -p /etc/netplan
+cat << 'EOF' | sudo tee /etc/netplan/90-telcosec-ens160.yaml
+network:
+  version: 2
+  renderer: NetworkManager
+  ethernets:
+    ens160:
+      dhcp4: true
+      dhcp6: true
+      optional: true
 EOF
 
 # Monitoring interface setup script (creates mon0 from first available wlan)
