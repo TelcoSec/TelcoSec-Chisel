@@ -721,6 +721,72 @@ if [ -d /home/telcosec ]; then
   sudo chown -R telcosec:telcosec /home/telcosec/.config/terminator
 fi
 
+# 7. GNOME Security & Privacy Hardening
+echo "Applying GNOME security hardening..."
+sudo mkdir -p /etc/dconf/db/local.d
+
+cat << 'EOF' | sudo tee /etc/dconf/db/local.d/03-telcosec-security
+# ── Privacy ──────────────────────────────────────────────────────────────────
+[org/gnome/desktop/privacy]
+report-technical-problems=false
+send-software-usage-stats=false
+remove-old-trash-files=false
+remove-old-temp-files=false
+recent-files-max-age=-1
+
+# ── Location services ─────────────────────────────────────────────────────────
+[org/gnome/system/location]
+enabled=false
+
+# ── Software updates: never distract researchers with update banners ──────────
+[org/gnome/software]
+allow-updates=false
+download-updates=false
+download-updates-notify=false
+
+# ── Media handling: no auto-mount ─────────────────────────────────────────────
+# Researchers plug in SDR hardware, SIM readers, and suspect devices;
+# auto-mount creates accidental write access to forensic evidence.
+[org/gnome/desktop/media-handling]
+automount=false
+automount-open=false
+autorun-never=true
+
+# ── Remote desktop: disabled by default ──────────────────────────────────────
+[org/gnome/desktop/remote-desktop/rdp]
+enable=false
+
+[org/gnome/desktop/remote-desktop/vnc]
+enable=false
+
+# ── Sharing: all off by default ───────────────────────────────────────────────
+[org/gnome/desktop/sharing]
+enabled=false
+
+# ── Notifications: no lock-screen previews ───────────────────────────────────
+[org/gnome/desktop/notifications]
+show-in-lock-screen=false
+
+# ── Nautilus security posture ─────────────────────────────────────────────────
+[org/gnome/nautilus/preferences]
+executable-text-activation='ask'
+show-hidden-files=true
+show-delete-permanently=true
+
+[org/gnome/nautilus/list-view]
+use-tree-view=true
+default-zoom-level='standard'
+
+# ── Search providers: local only, no external cloud ───────────────────────────
+[org/gnome/desktop/search-providers]
+disable-external=true
+EOF
+
+# Disable Ubuntu crash reporter — no data should leave the research environment
+sudo systemctl disable apport 2>/dev/null || true
+sudo systemctl mask apport 2>/dev/null || true
+sudo rm -f /etc/apport/crashdb.conf 2>/dev/null || true
+
 # Autostart Terminator with 4-split layout on desktop login
 sudo mkdir -p /etc/xdg/autostart
 cat << 'EOF' | sudo tee /etc/xdg/autostart/telcosec-terminal.desktop
