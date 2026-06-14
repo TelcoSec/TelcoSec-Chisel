@@ -119,7 +119,6 @@ apt-get install -y \
   linux-image-generic \
   \
   `# === Desktop environment (01-install-base.sh) ===` \
-  xfce4 xfce4-goodies lightdm lightdm-gtk-greeter \
   xserver-xorg xserver-xorg-input-all \
   network-manager-gnome \
   terminator firefox \
