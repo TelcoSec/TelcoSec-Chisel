@@ -346,159 +346,118 @@ if [ -d /home/telcosec ]; then
   sudo chown -R telcosec:telcosec /home/telcosec/.config/wireshark
 fi
 
-# 6. Terminator — default terminal, 5-split layout, 5 profiles
-echo "Configuring Terminator as default terminal..."
-sudo update-alternatives --set x-terminal-emulator /usr/bin/terminator 2>/dev/null || true
-# Add TERMINAL env var for scripts that check $TERMINAL
-grep -q '^TERMINAL=' /etc/environment 2>/dev/null || echo 'TERMINAL=terminator' | sudo tee -a /etc/environment
+# 6. GNOME Terminal profiles
+echo "Configuring GNOME Terminal profiles..."
+cat << 'EOF' | sudo tee /etc/dconf/db/local.d/02-telcosec-terminal
+[org/gnome/terminal/legacy]
+theme-variant='dark'
+default-show-menubar=false
 
-# Configure XFCE preferred applications to use Terminator and Firefox by default
-sudo mkdir -p /etc/skel/.config/xfce4/
-cat << 'EOF' | sudo tee /etc/skel/.config/xfce4/helpers.rc
-WebBrowser=firefox
-MailReader=debian-sensible-mime
-TerminalEmulator=terminator
+[org/gnome/terminal/legacy/profiles:]
+list=['b1dcc9dd-5262-4d8d-a863-c897e6d979b9', 'a47c8e1d-7b3f-4a5e-9c21-f83d4e2b1a90', 'c8f2d903-5a1b-4c8d-b7e3-29a1f4d0e5c7', 'd1b4a7e2-8c3d-4f9a-a6b1-3c2e0f5a7b8d', 'e5c6b891-2d4a-4e7f-8c10-b4f3a1e9d027']
+default='b1dcc9dd-5262-4d8d-a863-c897e6d979b9'
+
+[org/gnome/terminal/legacy/profiles:/:b1dcc9dd-5262-4d8d-a863-c897e6d979b9]
+visible-name='General'
+font='IBM Plex Mono 11'
+use-system-font=false
+use-custom-command=true
+custom-command='tmux new-session -A -s general'
+background-color='#0D1117'
+foreground-color='#C9D1D9'
+palette=['#0D1117', '#FF6B6B', '#98C379', '#E5C07B', '#61AFEF', '#C678DD', '#56B6C2', '#ABB2BF', '#5C6370', '#FF7B7B', '#A8D389', '#F5D08B', '#71BFFF', '#D688E7', '#66C6D2', '#FFFFFF']
+use-theme-colors=false
+background-transparency-percent=5
+use-transparent-background=true
+scrollback-unlimited=true
+cursor-shape='block'
+cursor-blink-mode='on'
+audible-bell=false
+
+[org/gnome/terminal/legacy/profiles:/:a47c8e1d-7b3f-4a5e-9c21-f83d4e2b1a90]
+visible-name='Monitor'
+font='IBM Plex Mono 11'
+use-system-font=false
+use-custom-command=true
+custom-command='tmux new-session -A -s monitor'
+background-color='#050C18'
+foreground-color='#00BFFF'
+palette=['#050C18', '#FF6B6B', '#98C379', '#E5C07B', '#61AFEF', '#C678DD', '#56B6C2', '#ABB2BF', '#5C6370', '#FF7B7B', '#A8D389', '#F5D08B', '#71BFFF', '#D688E7', '#66C6D2', '#FFFFFF']
+use-theme-colors=false
+background-transparency-percent=5
+use-transparent-background=true
+scrollback-unlimited=true
+cursor-shape='underline'
+cursor-blink-mode='on'
+audible-bell=false
+
+[org/gnome/terminal/legacy/profiles:/:c8f2d903-5a1b-4c8d-b7e3-29a1f4d0e5c7]
+visible-name='Analysis'
+font='IBM Plex Mono 11'
+use-system-font=false
+use-custom-command=true
+custom-command='tmux new-session -A -s analysis'
+background-color='#0A1A0F'
+foreground-color='#00FF7F'
+palette=['#0A1A0F', '#FF6B6B', '#98C379', '#E5C07B', '#61AFEF', '#C678DD', '#56B6C2', '#ABB2BF', '#5C6370', '#FF7B7B', '#A8D389', '#F5D08B', '#71BFFF', '#D688E7', '#66C6D2', '#FFFFFF']
+use-theme-colors=false
+background-transparency-percent=5
+use-transparent-background=true
+scrollback-unlimited=true
+cursor-shape='block'
+cursor-blink-mode='on'
+audible-bell=false
+
+[org/gnome/terminal/legacy/profiles:/:d1b4a7e2-8c3d-4f9a-a6b1-3c2e0f5a7b8d]
+visible-name='Network'
+font='IBM Plex Mono 11'
+use-system-font=false
+use-custom-command=true
+custom-command='tmux new-session -A -s network'
+background-color='#1A0808'
+foreground-color='#FF4500'
+palette=['#1A0808', '#FF6B6B', '#98C379', '#E5C07B', '#61AFEF', '#C678DD', '#56B6C2', '#ABB2BF', '#5C6370', '#FF7B7B', '#A8D389', '#F5D08B', '#71BFFF', '#D688E7', '#66C6D2', '#FFFFFF']
+use-theme-colors=false
+background-transparency-percent=5
+use-transparent-background=true
+scrollback-unlimited=true
+cursor-shape='block'
+cursor-blink-mode='on'
+audible-bell=false
+
+[org/gnome/terminal/legacy/profiles:/:e5c6b891-2d4a-4e7f-8c10-b4f3a1e9d027]
+visible-name='Console'
+font='IBM Plex Mono 11'
+use-system-font=false
+use-custom-command=false
+background-color='#1C1C1C'
+foreground-color='#DCDCDC'
+palette=['#1C1C1C', '#FF6B6B', '#98C379', '#E5C07B', '#61AFEF', '#C678DD', '#56B6C2', '#ABB2BF', '#5C6370', '#FF7B7B', '#A8D389', '#F5D08B', '#71BFFF', '#D688E7', '#66C6D2', '#FFFFFF']
+use-theme-colors=false
+background-transparency-percent=2
+use-transparent-background=true
+scrollback-unlimited=true
+cursor-shape='block'
+cursor-blink-mode='on'
+audible-bell=false
 EOF
 
-sudo mkdir -p /etc/skel/.config/terminator
-cat << 'TERMEOF' | sudo tee /etc/skel/.config/terminator/config
-[global_config]
-  title_use_system_font = False
-  title_font = IBM Plex Mono Medium 9
-  suppress_multiple_term_dialog = True
+# Set GNOME Terminal as default terminal
+grep -q '^TERMINAL=' /etc/environment 2>/dev/null && \
+  sudo sed -i 's/^TERMINAL=.*/TERMINAL=gnome-terminal/' /etc/environment || \
+  echo 'TERMINAL=gnome-terminal' | sudo tee -a /etc/environment
 
-[keybindings]
+sudo update-alternatives --set x-terminal-emulator /usr/bin/gnome-terminal 2>/dev/null || true
 
-[profiles]
-  [[default]]
-    background_darkness = 0.95
-    background_type = transparent
-    cursor_color = "#e2e8f0"
-    cursor_blink = True
-    font = IBM Plex Mono 11
-    foreground_color = "#cbd5e1"
-    background_color = "#0c0f16"
-    palette = "#0c0f16:#ef4444:#10b981:#f59e0b:#3b82f6:#8b5cf6:#06b6d4:#cbd5e1:#475569:#f87171:#34d399:#fbbf24:#60a5fa:#a78bfa:#67e8f9:#ffffff"
-    use_system_font = False
-    scrollback_lines = 5000
-    show_titlebar = True
-    title_transmit_fg_color = "#e2e8f0"
-    title_transmit_bg_color = "#181f30"
-    title_receive_fg_color = "#888888"
-    title_receive_bg_color = "#0a0a0a"
-    title_inactive_fg_color = "#555555"
-    title_inactive_bg_color = "#0a0a0a"
-  [[monitor]]
-    background_darkness = 0.95
-    background_type = transparent
-    cursor_color = "#38bdf8"
-    font = IBM Plex Mono 11
-    foreground_color = "#e0f2fe"
-    background_color = "#08101a"
-    palette = "#08101a:#e11d48:#0d9488:#22d3ee:#0891b2:#6366f1:#38bdf8:#94a3b8:#334155:#fda4af:#2dd4bf:#67e8f9:#60a5fa:#a5b4fc:#7dd3fc:#ffffff"
-    use_system_font = False
-    scrollback_lines = 10000
-    title_transmit_fg_color = "#38bdf8"
-    title_transmit_bg_color = "#0c1d2e"
-  [[analysis]]
-    background_darkness = 0.95
-    background_type = transparent
-    cursor_color = "#34d399"
-    font = IBM Plex Mono 11
-    foreground_color = "#d1fae5"
-    background_color = "#05120a"
-    palette = "#05120a:#dc2626:#10b981:#34d399:#047857:#84cc16:#a7f3d0:#94a3b8:#334155:#f87171:#4ade80:#6ee7b7:#059669:#a3e635:#d1fae5:#ffffff"
-    use_system_font = False
-    scrollback_lines = 10000
-    title_transmit_fg_color = "#34d399"
-    title_transmit_bg_color = "#062016"
-  [[network]]
-    background_darkness = 0.95
-    background_type = transparent
-    cursor_color = "#fb7185"
-    font = IBM Plex Mono 11
-    foreground_color = "#ffe4e6"
-    background_color = "#16070a"
-    palette = "#16070a:#ef4444:#ea580c:#f43f5e:#be123c:#d946ef:#fda4af:#cbd5e1:#475569:#fca5a5:#ff7849:#fecdd3:#e11d48:#f472b6:#ffe4e6:#ffffff"
-    use_system_font = False
-    scrollback_lines = 10000
-    title_transmit_fg_color = "#fb7185"
-    title_transmit_bg_color = "#2e0f15"
-  [[console]]
-    background_darkness = 0.95
-    background_type = transparent
-    cursor_color = "#38bdf8"
-    font = IBM Plex Mono 11
-    foreground_color = "#cbd5e1"
-    background_color = "#090d16"
-    palette = "#090d16:#ef4444:#10b981:#f59e0b:#3b82f6:#8b5cf6:#06b6d4:#cbd5e1:#475569:#f87171:#34d399:#fbbf24:#60a5fa:#a78bfa:#67e8f9:#ffffff"
-    use_system_font = False
-    scrollback_lines = 5000
-    show_titlebar = True
-    title_transmit_fg_color = "#cbd5e1"
-    title_transmit_bg_color = "#181f30"
-
-[layouts]
-  [[default]]
-    [[[window0]]]
-      type = Window
-      parent = ""
-      title = TelcoSec Terminal
-      size = 1600, 900
-    [[[child1]]]
-      type = HPaned
-      parent = window0
-      ratio = 0.5
-    [[[child2]]]
-      type = VPaned
-      parent = child1
-      ratio = 0.45
-    [[[terminal5]]]
-      type = Terminal
-      parent = child2
-      profile = console
-      title = [5] Local Console
-    [[[child4]]]
-      type = VPaned
-      parent = child2
-      ratio = 0.5
-    [[[terminal1]]]
-      type = Terminal
-      parent = child4
-      profile = default
-      command = tmux new-session -A -s general
-      title = [1] General
-    [[[terminal2]]]
-      type = Terminal
-      parent = child4
-      profile = monitor
-      command = tmux new-session -A -s monitor
-      title = [2] Monitor
-    [[[child3]]]
-      type = VPaned
-      parent = child1
-      ratio = 0.5
-    [[[terminal3]]]
-      type = Terminal
-      parent = child3
-      profile = analysis
-      command = tmux new-session -A -s analysis
-      title = [3] Analysis
-    [[[terminal4]]]
-      type = Terminal
-      parent = child3
-      profile = network
-      command = tmux new-session -A -s network
-      title = [4] Network
-
-[plugins]
-TERMEOF
-
-# Apply Terminator config to telcosec home
+# XDG default terminal via mimeapps
+sudo mkdir -p /etc/skel/.config
+cat << 'EOF' | sudo tee /etc/skel/.config/mimeapps.list
+[Default Applications]
+x-scheme-handler/terminal=org.gnome.Terminal.desktop
+EOF
 if [ -d /home/telcosec ]; then
-  sudo mkdir -p /home/telcosec/.config/terminator
-  sudo cp /etc/skel/.config/terminator/config /home/telcosec/.config/terminator/config
-  sudo chown -R telcosec:telcosec /home/telcosec/.config/terminator
+  sudo cp /etc/skel/.config/mimeapps.list /home/telcosec/.config/mimeapps.list
+  sudo chown telcosec:telcosec /home/telcosec/.config/mimeapps.list
 fi
 
 # 7. GNOME Security & Privacy Hardening
@@ -685,14 +644,15 @@ EOF
 # Compile dconf database (must run after all local.d/ keyfiles are written)
 sudo dconf update
 
-# Autostart Terminator with 4-split layout on desktop login
+# Autostart GNOME Terminal with tmux general session on desktop login
 sudo mkdir -p /etc/xdg/autostart
 cat << 'EOF' | sudo tee /etc/xdg/autostart/telcosec-terminal.desktop
 [Desktop Entry]
 Type=Application
 Name=TelcoSec Terminal
-Comment=Launch Terminator with 4-pane layout on login
-Exec=terminator --layout=default
+Comment=Open GNOME Terminal with tmux general session on login
+Exec=gnome-terminal --title "TelcoSec Terminal" -- bash -c "tmux new-session -A -s general; exec bash"
+Icon=org.gnome.Terminal
 Terminal=false
 Categories=System;TerminalEmulator;
 X-GNOME-Autostart-enabled=true
