@@ -122,8 +122,22 @@ apt-get install -y \
   xfce4 xfce4-goodies lightdm lightdm-gtk-greeter \
   xserver-xorg xserver-xorg-input-all \
   network-manager-gnome \
-  terminator gnome-terminal firefox \
+  terminator firefox \
   open-vm-tools open-vm-tools-desktop \
+  \
+  `# === GNOME shell, display manager, and core apps ===` \
+  gnome-shell gnome-session gnome-control-center \
+  gdm3 nautilus gnome-tweaks dconf-cli \
+  gnome-terminal \
+  \
+  `# === GNOME themes and icon sets ===` \
+  yaru-theme-gtk yaru-theme-gnome-shell yaru-theme-icon \
+  papirus-icon-theme \
+  \
+  `# === GNOME Shell extensions ===` \
+  gnome-shell-extensions \
+  gnome-shell-extension-appindicator \
+  gnome-extensions-app \
   \
   `# === Core system tools (01-install-base.sh) ===` \
   git vim nano htop \
