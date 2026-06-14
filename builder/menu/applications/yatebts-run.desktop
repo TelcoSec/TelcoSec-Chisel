@@ -2,7 +2,7 @@
 Type=Application
 Name=YateBTS Run
 Comment=Start Yate with YateBTS modules
-Exec=terminator -e "sudo yate -s -l /var/log/yate.log"
+Exec=gnome-terminal -- bash -c "sudo yate -s -l /var/log/yate.log"
 Icon=network-wireless
 Categories=TelcoSec-GSM;
 Terminal=false

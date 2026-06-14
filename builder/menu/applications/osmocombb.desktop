@@ -2,7 +2,7 @@
 Type=Application
 Name=OsmocomBB
 Comment=Open source GSM baseband implementation
-Exec=terminator -e "osmocon --help"
+Exec=gnome-terminal -- bash -c "osmocon --help"
 Icon=network-wireless
 Categories=TelcoSec-GSM;
 Terminal=false

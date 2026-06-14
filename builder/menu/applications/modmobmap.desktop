@@ -2,7 +2,7 @@
 Type=Application
 Name=Modmobmap
 Comment=Cell mapping via modem AT commands (2G/3G/4G)
-Exec=terminator -e "modmobmap --help"
+Exec=gnome-terminal -- bash -c "modmobmap --help"
 Icon=network-wireless
 Categories=TelcoSec-Baseband;
 Terminal=false

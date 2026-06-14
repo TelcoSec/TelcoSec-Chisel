@@ -2,7 +2,7 @@
 Type=Application
 Name=MTKClient
 Comment=MediaTek device tool (auth bypass, flashing, dump)
-Exec=terminator -e "mtk --help"
+Exec=gnome-terminal -- bash -c "mtk --help"
 Icon=phone
 Categories=TelcoSec-Device;
 Terminal=false

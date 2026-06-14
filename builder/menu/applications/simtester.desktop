@@ -2,7 +2,7 @@
 Type=Application
 Name=SIMTester
 Comment=SIM card security testing (SRLabs)
-Exec=terminator -e "simtester"
+Exec=gnome-terminal -- bash -c "simtester"
 Icon=smartcard
 Categories=TelcoSec-SIM;
 Terminal=false

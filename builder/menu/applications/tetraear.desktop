@@ -2,7 +2,7 @@
 Type=Application
 Name=TetraEar
 Comment=TETRA protocol receiver (gr-tetra)
-Exec=terminator -e "python3 /opt/telcosec/gr-tetra/apps/tetraear.py"
+Exec=gnome-terminal -- bash -c "python3 /opt/telcosec/gr-tetra/apps/tetraear.py"
 Icon=network-wireless
 Categories=TelcoSec-TETRA;
 Terminal=false
