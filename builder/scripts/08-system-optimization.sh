@@ -210,7 +210,26 @@ if command -v ufw &> /dev/null; then
   echo "  UFW firewall enabled with secure defaults (deny incoming, allow outgoing)"
 fi
 
-# 9. Custom Domain Certificates Trust
+# 9. Bluetooth: Off by Default
+echo "Disabling Bluetooth by default..."
+rfkill block bluetooth 2>/dev/null || true
+
+# 10. Restrictive Default Umask
+echo "Setting restrictive default umask (027)..."
+echo 'umask 027' | sudo tee /etc/profile.d/telcosec_umask.sh > /dev/null
+sudo chmod 644 /etc/profile.d/telcosec_umask.sh
+
+# 11. Disable Unnecessary GNOME Background Daemons
+echo "Disabling unnecessary GNOME and network daemons..."
+# Disable GNOME color profile daemon — only needed for monitor calibration
+sudo systemctl disable colord 2>/dev/null || true
+# Disable GNOME remote login
+sudo systemctl disable gnome-remote-desktop 2>/dev/null || true
+# Disable Avahi mDNS — unwanted network advertisement on a research host
+sudo systemctl disable avahi-daemon 2>/dev/null || true
+sudo systemctl mask avahi-daemon 2>/dev/null || true
+
+# 12. Custom Domain Certificates Trust
 # If a custom Root/Intermediate CA cert exists, install it to system CA trust store
 if [ -f /tmp/security/telcosec-ca.crt ]; then
   echo "Installing TelcoSec domain CA certificate..."
@@ -232,7 +251,7 @@ fi
 
 sudo update-ca-certificates || true
 
-# 10. SSH Host Keys Cleanup
+# 13. SSH Host Keys Cleanup
 # Deletes any build-time SSH keys to ensure that OpenSSH regenerates unique,
 # fresh host keys upon the first boot of the live ISO or installed system.
 if [ -d /etc/ssh ]; then
