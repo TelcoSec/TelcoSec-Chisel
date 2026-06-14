@@ -815,7 +815,7 @@ show-battery-percentage=true
 # appindicatorsupport: system tray icons (Wireshark, nm-applet, etc.).
 [org/gnome/shell]
 disable-user-extensions=false
-enabled-extensions=['apps-menu@gnome-shell-extensions.gcampax.github.com', 'places-status-indicator@gnome-shell-extensions.gcampax.github.com', 'window-list@gnome-shell-extensions.gcampax.github.com', 'appindicatorsupport@rgcjonas.gmail.com']
+enabled-extensions=['apps-menu@gnome-shell-extensions.gcampax.github.com', 'places-status-indicator@gnome-shell-extensions.gcampax.github.com', 'window-list@gnome-shell-extensions.gcampax.github.com', 'ubuntu-appindicators@ubuntu.com']
 favorite-apps=['org.gnome.Terminal.desktop', 'firefox.desktop', 'org.wireshark.Wireshark.desktop', 'org.gnome.Nautilus.desktop', 'gnuradio-companion.desktop', 'gqrx.desktop', 'open5gs-start.desktop', 'wireshark-mon.desktop']
 
 # ── Window list (bottom taskbar) behavior ─────────────────────────────────────
@@ -848,9 +848,14 @@ file:///usr/share/wordlists/telecom Telecom Wordlists
 file:///opt/telcosec TelcoSec Tools
 file:///usr/share/doc/telcosec TelcoSec Docs
 EOF
-sudo mkdir -p /home/telcosec/.config/gtk-3.0
-sudo cp /etc/skel/.config/gtk-3.0/bookmarks /home/telcosec/.config/gtk-3.0/bookmarks
-sudo chown -R telcosec:telcosec /home/telcosec/.config/gtk-3.0
+if [ -d /home/telcosec ]; then
+    sudo mkdir -p /home/telcosec/.config/gtk-3.0
+    sudo cp /etc/skel/.config/gtk-3.0/bookmarks /home/telcosec/.config/gtk-3.0/bookmarks
+    sudo chown -R telcosec:telcosec /home/telcosec/.config/gtk-3.0
+fi
+
+# Compile dconf database (must run after all local.d/ keyfiles are written)
+sudo dconf update
 
 # Autostart Terminator with 4-split layout on desktop login
 sudo mkdir -p /etc/xdg/autostart
