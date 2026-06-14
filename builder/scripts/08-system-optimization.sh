@@ -23,11 +23,13 @@ sudo groupadd -r realtime || true
 sudo usermod -aG realtime telcosec || true
 
 # 3. Custom Desktop Menu & Tool Categories
-echo "Deploying custom XFCE tool menus and categories..."
+echo "Deploying custom GNOME tool menus and categories..."
 sudo rm -f /etc/xdg/menus/applications-merged/telcosec.menu
-if [ -f /tmp/menu/xfce-applications.menu ]; then
-  sudo cp /tmp/menu/xfce-applications.menu /etc/xdg/menus/xfce-applications.menu
-  sudo chmod 644 /etc/xdg/menus/xfce-applications.menu
+# Deploy GNOME applications menu (read by apps-menu GNOME Shell extension)
+if [ -f /tmp/menu/gnome-applications.menu ]; then
+  sudo mkdir -p /etc/xdg/menus
+  sudo cp /tmp/menu/gnome-applications.menu /etc/xdg/menus/gnome-applications.menu
+  sudo chmod 644 /etc/xdg/menus/gnome-applications.menu
 fi
 
 sudo mkdir -p /usr/share/desktop-directories/
