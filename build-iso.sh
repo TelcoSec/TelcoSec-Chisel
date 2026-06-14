@@ -165,6 +165,7 @@ UDEVADM
   rm -rf "$ROOTFS/tmp/menu" && cp -r builder/menu "$ROOTFS/tmp/menu"
   rm -rf "$ROOTFS/tmp/wireshark" && cp -r builder/wireshark "$ROOTFS/tmp/wireshark"
   rm -rf "$ROOTFS/tmp/boot" && cp -r builder/boot "$ROOTFS/tmp/boot"
+  rm -rf "$ROOTFS/tmp/wordlists" && cp -r builder/wordlists "$ROOTFS/tmp/wordlists"
 
   # Re-mount virtual filesystems
   echo "--> Mounting virtual filesystems..."
@@ -249,6 +250,7 @@ UDEVADM
   cp -r builder/menu      "$ROOTFS/tmp/menu"
   cp -r builder/wireshark "$ROOTFS/tmp/wireshark"
   cp -r builder/boot      "$ROOTFS/tmp/boot"
+  cp -r builder/wordlists "$ROOTFS/tmp/wordlists"
 
   # Mount virtual filesystems
   echo "--> Mounting virtual filesystems..."
@@ -477,6 +479,7 @@ rm -rf /usr/share/groff /usr/share/info 2>/dev/null || true
 find /var/log -type f \( -name '*.log' -o -name '*.gz' \) -delete 2>/dev/null || true
 rm -rf /tmp/scripts /tmp/calamares-config /tmp/docs
 rm -rf /tmp/udev /tmp/security /tmp/menu /tmp/wireshark /tmp/boot
+rm -rf /tmp/wordlists
 rm -f  /tmp/.packages-installed
 rm -rf /tmp/*
 CLEANUP

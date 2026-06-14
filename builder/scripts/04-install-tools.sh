@@ -60,85 +60,15 @@ if ! getent group wireshark >/dev/null; then
 fi
 sudo usermod -a -G wireshark telcosec || true
 
-# Install telecom-specific wordlists
-echo "Creating dedicated telecom wordlists directory..."
+# Install telecom-specific wordlists (vendored from TelcoSec-Tools/TelcoSec-Wordlists)
+echo "Installing TelcoSec wordlists..."
 sudo mkdir -p /usr/share/wordlists/telecom
+sudo cp -r /tmp/wordlists/. /usr/share/wordlists/telecom/
+sudo find /usr/share/wordlists/telecom -type f -exec chmod 644 {} +
+sudo find /usr/share/wordlists/telecom -type d -exec chmod 755 {} +
+echo "Wordlists installed: $(find /usr/share/wordlists/telecom -type f | wc -l) files"
 
-# 1. SIP Usernames Wordlist
-cat << 'EOF' | sudo tee /usr/share/wordlists/telecom/sip-usernames.txt
-admin
-operator
-100
-101
-102
-103
-104
-105
-200
-201
-500
-1000
-1001
-2000
-3000
-8000
-9000
-asterisk
-phone
-test
-EOF
-
-# 2. SIP Passwords Wordlist
-cat << 'EOF' | sudo tee /usr/share/wordlists/telecom/sip-passwords.txt
-1234
-12345
-123456
-0000
-1111
-password
-admin
-100
-101
-1000
-2000
-pass1234
-asterisk
-test
-EOF
-
-# 3. Default Telecom Device Credentials
-cat << 'EOF' | sudo tee /usr/share/wordlists/telecom/telecom-default-credentials.txt
-# Format: <vendor/system>:<username>:<password>
-asterisk:admin:amp111
-freepbx:admin:admin
-cisco:cisco:cisco
-cisco:admin:admin
-huawei:admin:admin
-huawei:root:admin
-zte:admin:admin
-zte:telecomadmin:nE7jA%5m
-nokia:admin:admin
-nokia:root:root
-nokia:usr:pwd
-open5gs:admin:open5gs
-srsran:admin:srsran
-EOF
-
-# 4. Standard Carrier Access Point Names (APN)
-cat << 'EOF' | sudo tee /usr/share/wordlists/telecom/apns.txt
-internet
-wap
-mms
-ims
-lte
-hologram
-super
-broadband
-web
-vzwinternet
-epc.tmobile.com
-fast.t-mobile.com
-phone
-EOF
-
-sudo chmod -R 644 /usr/share/wordlists/telecom/*.txt
+# Install wordlist helper scripts as system tools
+echo "Installing wordlist helper scripts..."
+sudo install -m 755 /tmp/wordlists/scripts/apn_permutator.py  /usr/local/bin/telcosec-apn-permutator
+sudo install -m 755 /tmp/wordlists/scripts/imsi_generator.py  /usr/local/bin/telcosec-imsi-generator

@@ -170,9 +170,9 @@ export const toolsCatalog = [
     {
         name: "Telecom Wordlists",
         category: "sys",
-        desc: "Pre-loaded lists containing carrier APNs, manufacturer default console credentials, and common VoIP/SIP authentication dictionaries.",
+        desc: "Bundled telecom-specific wordlist collection covering carrier APNs, VoIP/SIP credentials, RAN element passwords, SIM OTA test keys, hardware defaults, PLMNs/IMSI prefixes, and protocol-level lists for 5G NAS, GTP, SS7, Diameter, SMS, and USSD. Includes telcosec-apn-permutator and telcosec-imsi-generator helper scripts on PATH.",
         path: "/usr/share/wordlists/telecom/",
-        cmd: "ls -l /usr/share/wordlists/telecom/"
+        cmd: "ls -lR /usr/share/wordlists/telecom/"
     },
     // ── GSM / 2G ──────────────────────────────────────────────────────────
     {
