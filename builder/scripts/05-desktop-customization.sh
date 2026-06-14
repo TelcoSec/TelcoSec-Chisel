@@ -854,6 +854,54 @@ if [ -d /home/telcosec ]; then
     sudo chown -R telcosec:telcosec /home/telcosec/.config/gtk-3.0
 fi
 
+# 5. GDM3 Login Screen Branding
+echo "Branding GDM3 login screen..."
+sudo mkdir -p /etc/dconf/db/gdm.d/locks
+sudo mkdir -p /etc/dconf/profile
+
+# GDM dconf profile tells the login screen which databases to load
+cat << 'EOF' | sudo tee /etc/dconf/profile/gdm
+user-db:user
+system-db:gdm
+EOF
+
+# Login screen settings: TelcoSec wallpaper, dark theme, security banner, no user list
+cat << 'EOF' | sudo tee /etc/dconf/db/gdm.d/00-telcosec-login
+[org/gnome/desktop/background]
+picture-uri='file:///usr/share/backgrounds/telcosec/wallpaper.png'
+picture-uri-dark='file:///usr/share/backgrounds/telcosec/wallpaper.png'
+picture-options='scaled'
+color-shading-type='solid'
+primary-color='#0A0E18'
+
+[org/gnome/desktop/screensaver]
+picture-uri='file:///usr/share/backgrounds/telcosec/wallpaper.png'
+color-shading-type='solid'
+primary-color='#0A0E18'
+
+[org/gnome/login-screen]
+logo='/usr/share/backgrounds/telcosec/logo.png'
+disable-user-list=true
+banner-message-enable=true
+banner-message-text='TelcoSec Chisel — Telecom Security Research Platform\nDefault credentials: telcosec / telcosec'
+
+[org/gnome/desktop/interface]
+color-scheme='prefer-dark'
+gtk-theme='Yaru-teal-dark'
+icon-theme='Papirus-Dark'
+clock-show-date=true
+clock-format='24h'
+EOF
+
+# Lock GDM background so extensions cannot override it
+cat << 'EOF' | sudo tee /etc/dconf/db/gdm.d/locks/00-telcosec
+/org/gnome/desktop/background/picture-uri
+/org/gnome/desktop/background/picture-options
+/org/gnome/login-screen/disable-user-list
+/org/gnome/login-screen/banner-message-enable
+/org/gnome/login-screen/banner-message-text
+EOF
+
 # Compile dconf database (must run after all local.d/ keyfiles are written)
 sudo dconf update
 
