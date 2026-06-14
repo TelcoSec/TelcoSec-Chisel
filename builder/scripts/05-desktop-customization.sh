@@ -787,6 +787,71 @@ sudo systemctl disable apport 2>/dev/null || true
 sudo systemctl mask apport 2>/dev/null || true
 sudo rm -f /etc/apport/crashdb.conf 2>/dev/null || true
 
+# 8. TelcoSec Design — Yaru-teal-dark + Papirus-Dark + GNOME Shell extensions
+echo "Applying TelcoSec design configuration..."
+cat << 'EOF' | sudo tee /etc/dconf/db/local.d/04-telcosec-design
+# ── GTK theme: Yaru teal dark — matches TelcoSec teal (#00FFD5) brand color ─
+[org/gnome/desktop/interface]
+gtk-theme='Yaru-teal-dark'
+icon-theme='Papirus-Dark'
+cursor-theme='Yaru'
+document-font-name='Sans 10'
+font-name='Ubuntu 10'
+monospace-font-name='IBM Plex Mono 11'
+color-scheme='prefer-dark'
+accent-color='teal'
+clock-show-date=true
+clock-show-weekday=true
+clock-show-seconds=false
+clock-format='24h'
+enable-hot-corners=true
+show-battery-percentage=true
+
+# ── GNOME Shell extensions to enable ─────────────────────────────────────────
+# apps-menu: traditional "Applications" dropdown in top bar reading
+#   /etc/xdg/menus/gnome-applications.menu — telecom categories appear here.
+# places-status-indicator: quick "Places" dropdown for bookmarks and mounts.
+# window-list: classic taskbar at bottom showing open windows.
+# appindicatorsupport: system tray icons (Wireshark, nm-applet, etc.).
+[org/gnome/shell]
+disable-user-extensions=false
+enabled-extensions=['apps-menu@gnome-shell-extensions.gcampax.github.com', 'places-status-indicator@gnome-shell-extensions.gcampax.github.com', 'window-list@gnome-shell-extensions.gcampax.github.com', 'appindicatorsupport@rgcjonas.gmail.com']
+favorite-apps=['org.gnome.Terminal.desktop', 'firefox.desktop', 'org.wireshark.Wireshark.desktop', 'org.gnome.Nautilus.desktop', 'gnuradio-companion.desktop', 'gqrx.desktop', 'open5gs-start.desktop', 'wireshark-mon.desktop']
+
+# ── Window list (bottom taskbar) behavior ─────────────────────────────────────
+[org/gnome/shell/extensions/window-list]
+grouping-mode='auto'
+show-on-all-monitors=true
+
+# ── Workspace behavior ────────────────────────────────────────────────────────
+[org/gnome/mutter]
+workspaces-only-on-primary=true
+edge-tiling=true
+
+[org/gnome/shell/overrides]
+dynamic-workspaces=false
+
+# ── Text editor defaults ──────────────────────────────────────────────────────
+[org/gnome/TextEditor]
+use-system-font=false
+custom-font='IBM Plex Mono 11'
+show-line-numbers=true
+show-map=true
+indent-style='space'
+tab-width=uint32 4
+EOF
+
+# Nautilus bookmarks — quick access to TelcoSec research paths
+sudo mkdir -p /etc/skel/.config/gtk-3.0
+cat << 'EOF' | sudo tee /etc/skel/.config/gtk-3.0/bookmarks
+file:///usr/share/wordlists/telecom Telecom Wordlists
+file:///opt/telcosec TelcoSec Tools
+file:///usr/share/doc/telcosec TelcoSec Docs
+EOF
+sudo mkdir -p /home/telcosec/.config/gtk-3.0
+sudo cp /etc/skel/.config/gtk-3.0/bookmarks /home/telcosec/.config/gtk-3.0/bookmarks
+sudo chown -R telcosec:telcosec /home/telcosec/.config/gtk-3.0
+
 # Autostart Terminator with 4-split layout on desktop login
 sudo mkdir -p /etc/xdg/autostart
 cat << 'EOF' | sudo tee /etc/xdg/autostart/telcosec-terminal.desktop
